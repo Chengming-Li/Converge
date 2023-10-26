@@ -3,33 +3,40 @@ import psycopg2
 from dotenv import load_dotenv
 from flask import request, jsonify
 from datetime import datetime
+import pytz
 
 # region SQL commands
 CREATE_USERS_TABLE = "CREATE TABLE IF NOT EXISTS users (id SERIAL PRIMARY KEY, username TEXT, email TEXT);"
 INSERT_USER = "INSERT INTO users (username, email) VALUES (%s, %s) RETURNING id;"
 FETCH_USER_INFO = "SELECT username, email FROM users WHERE id = (%s);"
 DELETE_USER = "DELETE FROM users WHERE id = (%s);"
-CREATE_INTERVALS_TABLE = """CREATE TABLE IF NOT EXISTS intervals (
-    interval_id SERIAL PRIMARY KEY,
-    user_id INT,
-    project_id INT,
-    name TEXT,
-    start_time TIMESTAMP,
-    end_time TIMESTAMP,
-    FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE,
-    FOREIGN KEY (project_id) REFERENCES projects(project_id) ON DELETE CASCADE
-);"""
-START_INTERVAL = "INSERT INTO intervals (user_id, project_id, name, start_time) VALUES (%s, %s, %s, %s);"
+CREATE_INTERVALS_TABLE = "CREATE TABLE IF NOT EXISTS intervals (interval_id SERIAL PRIMARY KEY, user_id INT, project_id INT, name TEXT, start_time TIMESTAMP, end_time TIMESTAMP, FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE);" # FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE
+START_INTERVAL = "INSERT INTO intervals (user_id, project_id, name, start_time) VALUES (%s, %s, %s, %s) RETURNING interval_id;"
 END_INTERVAL = "UPDATE intervals SET end_time = (%s) WHERE interval_id = (%s);"
 EDIT_INTERVAL = "UPDATE intervals SET name = (%s), project_id = (%s), start_time = (%s), end_time = (%s) WHERE interval_id = (%s);"
 GET_ALL_INTERVALS_BY_USER = "SELECT * FROM intervals WHERE user_id = %s;"
 DELETE_INTERVAL = "DELETE FROM intervals WHERE interval_id = (%s);"
 # endregion
 
-# loads environment variables from .env and gets the database URL
+# loads environment variables from .env and other miscellaneous variables
 load_dotenv()
 url = os.getenv("DATABASE_URL")
+
+timezone = [pytz.timezone('America/Los_Angeles')]  # is in list because otherwise we can't edit it with function
+def configureTimezon(timezone):
+    """
+    Configures timezone
+
+    @param {str} timezone: timezone, structured like "[Country]/[Region]". Look at pytz docs for supported timezones
+    """
+    timezone[0] = pytz.timezone(timezone)
+
 def establishConnection():
+    """
+    Establishes connection with Postgres database
+
+    @returns {connection}
+    """
     return psycopg2.connect(url)
 
 # API Functions
@@ -109,6 +116,7 @@ def createUser():
         with connection:
             with connection.cursor() as cursor:
                 cursor.execute(CREATE_USERS_TABLE)
+                connection.commit()
                 cursor.execute(INSERT_USER, (username, email,))
                 userId = cursor.fetchone()[0]
     except Exception as e:
@@ -155,6 +163,7 @@ def startInterval():
         with connection:
             with connection.cursor() as cursor:
                 cursor.execute(CREATE_INTERVALS_TABLE)
+                connection.commit()
                 cursor.execute(START_INTERVAL, (userID, projectID, name, startTime,))
                 intervalID = cursor.fetchone()[0]
     except Exception as e:
