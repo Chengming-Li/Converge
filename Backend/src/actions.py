@@ -96,9 +96,11 @@ def getUser(userId):
                 cursor.execute(FETCH_USER_INFO, (userId,))
                 data = cursor.fetchone()
                 user = {"id": userId, "username" : data[0], "email" : data[1]}
+                cursor.execute(GET_ALL_INTERVALS_BY_USER, (userId,))
+                data = [dict(zip([column[0] for column in cursor.description], row)) for row in cursor.fetchall()]
     except Exception as e:
         return {"error": f"Failed to get user: {str(e)}"}, 500
-    return jsonify(user)
+    return jsonify({"userInfo" : user, "intervals" : data})
 # endregion
 
 # region user functions
