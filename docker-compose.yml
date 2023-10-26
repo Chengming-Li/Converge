@@ -2,14 +2,8 @@ version: '3'
 
 services:
   backend:
-    build:
-      context: ./Backend
-    ports:
-      - "5000:5000"
-  #  depends_on:
-  #    - focus-frontend
-
-  # frontend:
-  #   image: focus-frontend
-  #   ports:
-  #    - "80:80"
+    build: ./Backend
+    ports: ["5000:5000"]
+    env_file:
+      - .env
+    volumes: ['./Backend:/backend']
