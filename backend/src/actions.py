@@ -10,7 +10,7 @@ CREATE_USERS_TABLE = "CREATE TABLE IF NOT EXISTS users (id SERIAL PRIMARY KEY, u
 INSERT_USER = "INSERT INTO users (username, email) VALUES (%s, %s) RETURNING id;"
 FETCH_USER_INFO = "SELECT username, email FROM users WHERE id = (%s);"
 DELETE_USER = "DELETE FROM users WHERE id = (%s);"
-CREATE_INTERVALS_TABLE = "CREATE TABLE IF NOT EXISTS intervals (interval_id SERIAL PRIMARY KEY, user_id INT, project_id INT, name TEXT, start_time TIMESTAMP, end_time TIMESTAMP, FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE);" # FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE
+CREATE_INTERVALS_TABLE = "CREATE TABLE IF NOT EXISTS intervals (interval_id SERIAL PRIMARY KEY, user_id INT, project_id INT, name TEXT, start_time timestamptz, end_time timestamptz, FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE);" # FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE
 START_INTERVAL = "INSERT INTO intervals (user_id, project_id, name, start_time) VALUES (%s, %s, %s, %s) RETURNING interval_id;"
 END_INTERVAL = "UPDATE intervals SET end_time = (%s) WHERE interval_id = (%s);"
 EDIT_INTERVAL = "UPDATE intervals SET name = (%s), project_id = (%s), start_time = (%s), end_time = (%s) WHERE interval_id = (%s);"
@@ -18,18 +18,17 @@ GET_ALL_INTERVALS_BY_USER = "SELECT * FROM intervals WHERE user_id = %s;"
 DELETE_INTERVAL = "DELETE FROM intervals WHERE interval_id = (%s);"
 # endregion
 
-# loads environment variables from .env and other miscellaneous variables
+# loads environment variables from .env and other miscellaneous stuff
 load_dotenv()
 url = os.getenv("DATABASE_URL")
-
-timezone = [pytz.timezone('America/Los_Angeles')]  # is in list because otherwise we can't edit it with function
-def configureTimezon(timezone):
+currentTimeZone = [pytz.timezone('US/Pacific')]
+def configureTimezone(timezone):
     """
-    Configures timezone
+    Configures timezone returned
 
-    @param {str} timezone: timezone, structured like "[Country]/[Region]". Look at pytz docs for supported timezones
+    @param {str} timezone: string representing timezone to be configured to. Review pytz documentation for valid timezones
     """
-    timezone[0] = pytz.timezone(timezone)
+    currentTimeZone[0] = pytz.timezone(timezone)
 
 def establishConnection():
     """
@@ -98,6 +97,10 @@ def getUser(userId):
                 user = {"id": userId, "username" : data[0], "email" : data[1]}
                 cursor.execute(GET_ALL_INTERVALS_BY_USER, (userId,))
                 data = [dict(zip([column[0] for column in cursor.description], row)) for row in cursor.fetchall()]
+
+                for item in data:
+                    item['start_time'] = item['start_time'].astimezone(currentTimeZone[0]).strftime('%A %d %B %Y %H:%M:%S') if item['start_time'] else None
+                    item['end_time'] = item['end_time'].astimezone(currentTimeZone[0]).strftime('%A %d %B %Y %H:%M:%S') if item['end_time'] else None
     except Exception as e:
         return {"error": f"Failed to get user: {str(e)}"}, 500
     return jsonify({"userInfo" : user, "intervals" : data})
@@ -160,7 +163,7 @@ def startInterval():
     name = data["name"]
     userID = data["user_id"]
     projectID = data["project_id"]
-    startTime = datetime.now()
+    startTime = datetime.now(currentTimeZone[0])
     try:
         with connection:
             with connection.cursor() as cursor:
@@ -181,7 +184,7 @@ def endInterval(intervalId):
     @returns {json}: a dictionary containing the key "id", with interval ID, and "endTime", with string representation of end time
     """
     connection = establishConnection()
-    endTime = datetime.now()
+    endTime = datetime.now(currentTimeZone[0])
     try:
         with connection:
             with connection.cursor() as cursor:
