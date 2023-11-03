@@ -3,12 +3,12 @@ import psycopg2
 from dotenv import load_dotenv
 from flask import request, jsonify
 from datetime import datetime
-import pytz
 
 # region SQL commands
-CREATE_USERS_TABLE = "CREATE TABLE IF NOT EXISTS users (id SERIAL PRIMARY KEY, username TEXT, email TEXT);"
-INSERT_USER = "INSERT INTO users (username, email) VALUES (%s, %s) RETURNING id;"
-FETCH_USER_INFO = "SELECT username, email FROM users WHERE id = (%s);"
+# when adding new settings, edit to CREATE_USERS_TABLE, INSERT_USER, EDIT_SETTINGS, editSettings(), and getUser()
+CREATE_USERS_TABLE = "CREATE TABLE IF NOT EXISTS users (id SERIAL PRIMARY KEY, username TEXT, email TEXT, timezone TEXT);"
+INSERT_USER = "INSERT INTO users (username, email, timezone) VALUES (%s, %s, %s) RETURNING id;"
+FETCH_USER_INFO = "SELECT username, email, timezone FROM users WHERE id = (%s);"
 DELETE_USER = "DELETE FROM users WHERE id = (%s);"
 CREATE_INTERVALS_TABLE = "CREATE TABLE IF NOT EXISTS intervals (interval_id SERIAL PRIMARY KEY, user_id INT, project_id INT, name TEXT, start_time timestamptz, end_time timestamptz, FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE);" # FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE
 START_INTERVAL = "INSERT INTO intervals (user_id, project_id, name, start_time) VALUES (%s, %s, %s, %s) RETURNING interval_id;"
@@ -16,19 +16,12 @@ END_INTERVAL = "UPDATE intervals SET end_time = (%s) WHERE interval_id = (%s);"
 EDIT_INTERVAL = "UPDATE intervals SET name = (%s), project_id = (%s), start_time = (%s), end_time = (%s) WHERE interval_id = (%s);"
 GET_ALL_INTERVALS_BY_USER = "SELECT * FROM intervals WHERE user_id = %s;"
 DELETE_INTERVAL = "DELETE FROM intervals WHERE interval_id = (%s);"
+EDIT_SETTINGS = "UPDATE users SET timezone = (%s) WHERE id = (%s) RETURNING id;"
 # endregion
 
 # loads environment variables from .env and other miscellaneous stuff
 load_dotenv()
 url = os.getenv("DATABASE_URL")
-currentTimeZone = [pytz.timezone('US/Pacific')]
-def configureTimezone(timezone):
-    """
-    Configures timezone returned
-
-    @param {str} timezone: string representing timezone to be configured to. Review pytz documentation for valid timezones
-    """
-    currentTimeZone[0] = pytz.timezone(timezone)
 
 def establishConnection():
     """
@@ -39,7 +32,7 @@ def establishConnection():
     return psycopg2.connect(url)
 
 # API Functions
-# region general functions
+# region general functions, for testing
 def getTable(tableName):
     """
     Fetches entire table from database
@@ -80,6 +73,9 @@ def deleteTable(tableName):
         return {"error": f"Failed to delete Table: {str(e)}"}, 500
     return jsonify(result)
 
+# endregion
+
+# region user functions
 def getUser(userId):
     """
     Fetch user information from database
@@ -94,19 +90,19 @@ def getUser(userId):
             with connection.cursor() as cursor:
                 cursor.execute(FETCH_USER_INFO, (userId,))
                 data = cursor.fetchone()
-                user = {"id": userId, "username" : data[0], "email" : data[1]}
+                user = {"id": userId, "username" : data[0], "email" : data[1], "timezone" : data[2]}
                 cursor.execute(GET_ALL_INTERVALS_BY_USER, (userId,))
                 data = [dict(zip([column[0] for column in cursor.description], row)) for row in cursor.fetchall()]
 
                 for item in data:
-                    item['start_time'] = item['start_time'].astimezone(currentTimeZone[0]).strftime('%A %d %B %Y %H:%M:%S') if item['start_time'] else None
-                    item['end_time'] = item['end_time'].astimezone(currentTimeZone[0]).strftime('%A %d %B %Y %H:%M:%S') if item['end_time'] else None
+                    startTime = item['start_time']
+                    item['start_time'] = startTime.strftime('%A %d %B %Y %H:%M:%S %Z') if startTime else None
+                    endTime = item['end_time']
+                    item['end_time'] = endTime.strftime('%A %d %B %Y %H:%M:%S %Z') if endTime else None
     except Exception as e:
         return {"error": f"Failed to get user: {str(e)}"}, 500
     return jsonify({"userInfo" : user, "intervals" : data})
-# endregion
 
-# region user functions
 def createUser():
     """
     Create a new user in table users and return their ID
@@ -117,12 +113,13 @@ def createUser():
     data = request.get_json()
     username = data["username"]
     email = data["email"]
+    timezone = data["timezone"]
     try:
         with connection:
             with connection.cursor() as cursor:
                 cursor.execute(CREATE_USERS_TABLE)
                 connection.commit()
-                cursor.execute(INSERT_USER, (username, email,))
+                cursor.execute(INSERT_USER, (username, email, timezone,))
                 userId = cursor.fetchone()[0]
     except Exception as e:
         return {"error": f"Failed to create user: {str(e)}"}, 500
@@ -145,6 +142,19 @@ def deleteUser(userId):
     except Exception as e:
         return {"error": f"Failed to delete user: {str(e)}"}, 500
     return jsonify(result)
+
+def editSettings(userId):
+    connection = establishConnection()
+    data = request.get_json()
+    timezone = data["timezone"]
+    try:
+        with connection:
+            with connection.cursor() as cursor:
+                cursor.execute(EDIT_SETTINGS, (timezone, userId,))
+                userId = cursor.fetchone()[0]
+    except Exception as e:
+        return {"error": f"Failed to edit settings: {str(e)}"}, 500
+    return jsonify({"id": userId, "timezone" : timezone}), 201
 # endregion
 
 # region interval functions
@@ -163,7 +173,7 @@ def startInterval():
     name = data["name"]
     userID = data["user_id"]
     projectID = data["project_id"]
-    startTime = datetime.now(currentTimeZone[0])
+    startTime = datetime.now()
     try:
         with connection:
             with connection.cursor() as cursor:
@@ -184,7 +194,7 @@ def endInterval(intervalId):
     @returns {json}: a dictionary containing the key "id", with interval ID, and "endTime", with string representation of end time
     """
     connection = establishConnection()
-    endTime = datetime.now(currentTimeZone[0])
+    endTime = datetime.now()
     try:
         with connection:
             with connection.cursor() as cursor:
