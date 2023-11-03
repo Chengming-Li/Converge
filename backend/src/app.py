@@ -1,8 +1,5 @@
-import os
 from flask import Flask
-import psycopg2
-from dotenv import load_dotenv
-from actions import createUser, getUser, getTable, deleteTable, deleteUser, startInterval, endInterval, editInterval, deleteInterval
+from actions import createUser, getUser, getTable, deleteTable, deleteUser, startInterval, endInterval, editInterval, deleteInterval, editSettings
 
 app = Flask(__name__)
 
@@ -42,6 +39,10 @@ def edit_interval(interval_id):
 @app.delete('/api/interval/<int:interval_id>')
 def delete_interval(interval_id):
     return deleteInterval(interval_id)
+
+@app.put('/api/user/settings/<int:user_id>')
+def edit_user_settings(user_id):
+    return editSettings(user_id)
 
 # THIS IS ONLY FOR DEVELOPMENT, REMOVE WHEN DEPLOYING
 @app.delete('/api/delete/table/<string:tableName>')
