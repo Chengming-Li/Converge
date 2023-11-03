@@ -14,7 +14,8 @@ CREATE_INTERVALS_TABLE = "CREATE TABLE IF NOT EXISTS intervals (interval_id SERI
 START_INTERVAL = "INSERT INTO intervals (user_id, project_id, name, start_time) VALUES (%s, %s, %s, %s) RETURNING interval_id;"
 END_INTERVAL = "UPDATE intervals SET end_time = (%s) WHERE interval_id = (%s);"
 EDIT_INTERVAL = "UPDATE intervals SET name = (%s), project_id = (%s), start_time = (%s), end_time = (%s) WHERE interval_id = (%s);"
-GET_ALL_INTERVALS_BY_USER = "SELECT * FROM intervals WHERE user_id = %s;"
+GET_ALL_INACTIVE_INTERVALS_BY_USER = "SELECT * FROM intervals WHERE user_id = %s AND end_time IS NOT NULL ORDER BY start_time;"
+GET_ALL_ACTIVE_INTERVALS_BY_USER = "SELECT * FROM intervals WHERE user_id = %s AND end_time IS NULL ORDER BY start_time;"
 DELETE_INTERVAL = "DELETE FROM intervals WHERE interval_id = (%s);"
 EDIT_SETTINGS = "UPDATE users SET timezone = (%s) WHERE id = (%s) RETURNING id;"
 # endregion
@@ -82,7 +83,10 @@ def getUser(userId):
 
     @param {int} userId: the ID of the user
 
-    @returns {json}: a dictionary with the keys "id", "username", and "email" with the user's ID, username, and email, respectively
+    @returns {json}: a dictionary with the keys "userInfo", "intervals", and "activeInterval"
+        "userInfo" points to a dict with keys "email", "id", "timezone", and "username"
+        "intervals" points to a list of dictionaries, each with the keys "end_time", "start_time", "interval_id", "name", "project_id", and "user_id"
+        "activeInterval" points to the current interval that hasn't been ended, with the keys "end_time", "start_time", "interval_id", "name", "project_id", and "user_id"
     """
     connection = establishConnection()
     try:
@@ -91,7 +95,7 @@ def getUser(userId):
                 cursor.execute(FETCH_USER_INFO, (userId,))
                 data = cursor.fetchone()
                 user = {"id": userId, "username" : data[0], "email" : data[1], "timezone" : data[2]}
-                cursor.execute(GET_ALL_INTERVALS_BY_USER, (userId,))
+                cursor.execute(GET_ALL_INACTIVE_INTERVALS_BY_USER, (userId,))
                 data = [dict(zip([column[0] for column in cursor.description], row)) for row in cursor.fetchall()]
 
                 for item in data:
@@ -99,13 +103,20 @@ def getUser(userId):
                     item['start_time'] = startTime.strftime('%A %d %B %Y %H:%M:%S %Z') if startTime else None
                     endTime = item['end_time']
                     item['end_time'] = endTime.strftime('%A %d %B %Y %H:%M:%S %Z') if endTime else None
+
+                cursor.execute(GET_ALL_ACTIVE_INTERVALS_BY_USER, (userId,))
+                active = dict(zip([column[0] for column in cursor.description], cursor.fetchone()))
     except Exception as e:
         return {"error": f"Failed to get user: {str(e)}"}, 500
-    return jsonify({"userInfo" : user, "intervals" : data})
+    return jsonify({"userInfo" : user, "intervals" : data, "activeInterval" : active})
 
 def createUser():
     """
     Create a new user in table users and return their ID
+    Json Body:
+        "username" : (str) name of user
+        "email" : (str) email of user
+        "timezone" : (str) abbreviated timezone of user
 
     @returns {json}: a dictionary containing the key "id", with user's ID
     """
@@ -144,6 +155,13 @@ def deleteUser(userId):
     return jsonify(result)
 
 def editSettings(userId):
+    """
+    Changes the settings associated with an account
+    Json Body:
+        "timezone" : (str) abbreviated timezone of user
+
+    @returns {json}: a dictionary containing the key "id", with user's ID, and "timezone", with the new timezone
+    """
     connection = establishConnection()
     data = request.get_json()
     timezone = data["timezone"]
@@ -161,7 +179,7 @@ def editSettings(userId):
 def startInterval():
     """
     Create a new interval and return its ID
-    Requests must contain json with keys:
+    Json Body:
         "name" : (str) name of the interval
         "user_id" : (int) ID of the user creating the interval
         "project_id" : (int) ID of the user creating the interval
@@ -206,7 +224,7 @@ def endInterval(intervalId):
 def editInterval(intervalId):
     """
     Edits interval with ID
-    Requests must contain json with keys:
+    Json Body:
         "name" : (str) name of the interval
         "project_id" : (int) ID of the user creating the interval
         "start_time" : (str) String representing a timestamp in YYYY-MM-DD HH:MI:SS fomat
