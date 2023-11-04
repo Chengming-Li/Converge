@@ -2,3 +2,4 @@ Flask==3.0.0
 python-dotenv==1.0.0
 psycopg2-binary==2.9.9
 pytz==2023.3
+Flask-Cors==4.0.0
