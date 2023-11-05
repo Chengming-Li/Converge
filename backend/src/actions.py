@@ -12,9 +12,9 @@ FETCH_USER_INFO = "SELECT username, email, timezone FROM users WHERE id = (%s);"
 DELETE_USER = "DELETE FROM users WHERE id = (%s);"
 CREATE_INTERVALS_TABLE = "CREATE TABLE IF NOT EXISTS intervals (interval_id SERIAL PRIMARY KEY, user_id INT, project_id INT, name TEXT, start_time timestamptz, end_time timestamptz, FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE);" # FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE
 START_INTERVAL = "INSERT INTO intervals (user_id, project_id, name, start_time) VALUES (%s, %s, %s, %s) RETURNING interval_id;"
-END_INTERVAL = "UPDATE intervals SET end_time = (%s) WHERE interval_id = (%s);"
+END_INTERVAL = "UPDATE intervals SET end_time = (%s) WHERE interval_id = (%s) RETURNING *;"
 EDIT_INTERVAL = "UPDATE intervals SET name = (%s), project_id = (%s), start_time = (%s), end_time = (%s) WHERE interval_id = (%s);"
-GET_ALL_INACTIVE_INTERVALS_BY_USER = "SELECT * FROM intervals WHERE user_id = %s AND end_time IS NOT NULL ORDER BY start_time;"
+GET_ALL_INACTIVE_INTERVALS_BY_USER = "SELECT * FROM intervals WHERE user_id = %s AND end_time IS NOT NULL ORDER BY start_time DESC;"
 GET_ALL_ACTIVE_INTERVALS_BY_USER = "SELECT * FROM intervals WHERE user_id = %s AND end_time IS NULL ORDER BY start_time;"
 DELETE_INTERVAL = "DELETE FROM intervals WHERE interval_id = (%s);"
 EDIT_SETTINGS = "UPDATE users SET timezone = (%s) WHERE id = (%s) RETURNING id;"
@@ -94,21 +94,31 @@ def getUser(userId):
             with connection.cursor() as cursor:
                 cursor.execute(FETCH_USER_INFO, (userId,))
                 data = cursor.fetchone()
-                user = {"id": userId, "username" : data[0], "email" : data[1], "timezone" : data[2]}
+                user = {"id": str(userId), "username" : data[0], "email" : data[1], "timezone" : data[2]}
+                
                 cursor.execute(GET_ALL_INACTIVE_INTERVALS_BY_USER, (userId,))
-                data = [dict(zip([column[0] for column in cursor.description], row)) for row in cursor.fetchall()]
-
-                for item in data:
+                data = cursor.fetchall()
+                inactive = [dict(zip([column[0] for column in cursor.description], row)) for row in data] if data else []
+                for item in inactive:
+                    item['interval_id'] = str(item['interval_id'])
+                    item['user_id'] = str(item['user_id'])
+                    item['project_id'] = str(item['project_id']) if item['project_id'] else None
                     startTime = item['start_time']
                     item['start_time'] = startTime.strftime('%A %d %B %Y %H:%M:%S %Z') if startTime else None
                     endTime = item['end_time']
                     item['end_time'] = endTime.strftime('%A %d %B %Y %H:%M:%S %Z') if endTime else None
 
                 cursor.execute(GET_ALL_ACTIVE_INTERVALS_BY_USER, (userId,))
-                active = dict(zip([column[0] for column in cursor.description], cursor.fetchone()))
+                data = cursor.fetchone()
+                active = dict(zip([column[0] for column in cursor.description], data)) if data else None
+                if active:
+                    active['interval_id'] = str(active['interval_id'])
+                    active['user_id'] = str(active['user_id'])
+                    active['project_id'] = str(active['project_id']) if active['project_id'] else None
+                    active['start_time'] = active['start_time'].strftime('%A %d %B %Y %H:%M:%S %Z')
     except Exception as e:
         return {"error": f"Failed to get user: {str(e)}"}, 500
-    return jsonify({"userInfo" : user, "intervals" : data, "activeInterval" : active})
+    return jsonify({"userInfo" : user, "intervals" : inactive, "activeInterval" : active})
 
 def createUser():
     """
@@ -134,7 +144,7 @@ def createUser():
                 userId = cursor.fetchone()[0]
     except Exception as e:
         return {"error": f"Failed to create user: {str(e)}"}, 500
-    return jsonify({"id": userId}), 201
+    return jsonify({"id": str(userId)}), 201
 
 def deleteUser(userId):
     """
@@ -149,7 +159,7 @@ def deleteUser(userId):
         with connection:
             with connection.cursor() as cursor:
                 cursor.execute(DELETE_USER, (userId,))
-                result = [{"id": userId}]
+                result = [{"id": str(userId)}]
     except Exception as e:
         return {"error": f"Failed to delete user: {str(e)}"}, 500
     return jsonify(result)
@@ -172,7 +182,7 @@ def editSettings(userId):
                 userId = cursor.fetchone()[0]
     except Exception as e:
         return {"error": f"Failed to edit settings: {str(e)}"}, 500
-    return jsonify({"id": userId, "timezone" : timezone}), 201
+    return jsonify({"id": str(userId), "timezone" : timezone}), 201
 # endregion
 
 # region interval functions
@@ -181,16 +191,16 @@ def startInterval():
     Create a new interval and return its ID
     Json Body:
         "name" : (str) name of the interval
-        "user_id" : (int) ID of the user creating the interval
-        "project_id" : (int) ID of the user creating the interval
+        "user_id" : (str) ID of the user creating the interval
+        "project_id" : (str) ID of the user creating the interval
 
     @returns {json}: a dictionary containing the key "id", with interval ID
     """
     connection = establishConnection()
     data = request.get_json()
     name = data["name"]
-    userID = data["user_id"]
-    projectID = data["project_id"]
+    userID = int(data["user_id"])
+    projectID = int(data["project_id"]) if data["project_id"] else None
     startTime = datetime.now()
     try:
         with connection:
@@ -201,7 +211,7 @@ def startInterval():
                 intervalID = cursor.fetchone()[0]
     except Exception as e:
         return {"error": f"Failed to start the interval: {str(e)}"}, 500
-    return jsonify({"id": intervalID}), 201
+    return jsonify({"id": str(intervalID)}), 201
 
 def endInterval(intervalId):
     """
@@ -213,13 +223,20 @@ def endInterval(intervalId):
     """
     connection = establishConnection()
     endTime = datetime.now()
+    originalFormat = "%a, %d %b %Y %H:%M:%S %Z"
+    desiredFormat = "%A %d %B %Y %H:%M:%S %Z"
     try:
         with connection:
             with connection.cursor() as cursor:
                 cursor.execute(END_INTERVAL, (endTime, intervalId,))
+                data = cursor.fetchone() or [""] * 6
     except Exception as e:
         return {"error": f"Failed to end interval: {str(e)}"}, 500
-    return jsonify({"id": intervalId, "endTime" : endTime}), 201
+    return jsonify({"interval_id": str(intervalId), 
+                    "end_time" : data[5].strftime('%A %d %B %Y %H:%M:%S %Z'), 
+                    "user_id" : str(data[1]), "project_id" : str(data[2]) if data[2] else None, "name" : data[3], 
+                    "start_time" : data[4].strftime('%A %d %B %Y %H:%M:%S %Z')
+                }), 201
 
 def editInterval(intervalId):
     """
@@ -227,8 +244,9 @@ def editInterval(intervalId):
     Json Body:
         "name" : (str) name of the interval
         "project_id" : (int) ID of the user creating the interval
-        "start_time" : (str) String representing a timestamp in YYYY-MM-DD HH:MI:SS fomat
-        "end_time" : (str) String representing a timestamp in YYYY-MM-DD HH:MI:SS fomat
+        "start_time" : (str) String representing a timestamp in %A %d %B %Y %H:%M:%S %Z fomat
+        "end_time" : (str) String representing a timestamp in %A %d %B %Y %H:%M:%S %Z fomat
+        Example: Sunday 06 November 2023 00:00:00 UTC
     
     @param {int} intervalId: the ID of the interval
 
@@ -237,16 +255,16 @@ def editInterval(intervalId):
     connection = establishConnection()
     data = request.get_json()
     name = data["name"]
-    projectID = data["project_id"]
-    startTime = data["start_time"]
-    endTime = data["end_time"]
+    projectID = int(data["project_id"]) if data["project_id"] else None
+    startTime = datetime.strptime(data["start_time"], "%A %d %B %Y %H:%M:%S %Z")
+    endTime = datetime.strptime(data["end_time"], "%A %d %B %Y %H:%M:%S %Z") if data["end_time"] else None
     try:
         with connection:
             with connection.cursor() as cursor:
                 cursor.execute(EDIT_INTERVAL, (name, projectID, startTime, endTime, intervalId,))
     except Exception as e:
         return {"error": f"Failed to edit interval: {str(e)}"}, 500
-    return jsonify({"id": intervalId}), 201
+    return jsonify({"id": str(intervalId)}), 201
 
 def deleteInterval(intervalId):
     """
@@ -261,7 +279,7 @@ def deleteInterval(intervalId):
         with connection:
             with connection.cursor() as cursor:
                 cursor.execute(DELETE_INTERVAL, (intervalId,))
-                result = [{"id": intervalId}]
+                result = [{"id": str(intervalId)}]
     except Exception as e:
         return {"error": f"Failed to delete interval: {str(e)}"}, 500
     return jsonify(result)
