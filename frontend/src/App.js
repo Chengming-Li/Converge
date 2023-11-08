@@ -1,7 +1,8 @@
 import './App.css';
 import React, { useState, useEffect } from 'react';
-import Input from './Input';
-import Interval from './Interval';
+import Input from './Components/Input';
+import Interval from './Components/Interval';
+import Sidebar from './Components/Sidebar';
 
 const userDataAPI = "http://localhost:5000/api/user/914587493868011521"
 const startIntervalAPI = "http://localhost:5000/api/interval"
@@ -10,6 +11,7 @@ const editIntervalAPI = "http://localhost:5000/api/interval/"
 
 
 function App() {
+  /*
   const [userInfo, setUserInfo] = useState(null);
   const [activeInterval, setActiveInterval] = useState(null);
   const [inactiveIntervals, setInactiveIntervals] = useState([]);
@@ -124,6 +126,20 @@ function App() {
         <Interval key={index} info={interval} />
       ))}
     </div>
+  );*/
+
+  const backgroundStyle = {
+    backgroundImage: 'url("/UI.png")', // Specify the path to your image relative to the public directory
+    backgroundSize: 'cover',
+    backgroundPosition: 'center center',
+    height: '100vh',
+  };
+
+  return (
+    <div className='.App' style={backgroundStyle}>
+      <Sidebar />
+    </div>
+    
   );
 }
 

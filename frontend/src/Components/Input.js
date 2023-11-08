@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import './App.css';
+import '../App.css';
 
 function Input({ activeInterval, addInterval, endInterval }) {
   const [value, setValue] = useState(activeInterval ? activeInterval.name : "");
