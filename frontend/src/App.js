@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import Input from './Components/Input';
 import Interval from './Components/Interval';
 import Sidebar from './Components/Sidebar';
+import Header from './Components/Header';
 
 const userDataAPI = "http://localhost:5000/api/user/914587493868011521"
 const startIntervalAPI = "http://localhost:5000/api/interval"
@@ -128,15 +129,16 @@ function App() {
     </div>
   );*/
 
-  const backgroundStyle = {
+  const backgroundStyle = { 
     backgroundImage: 'url("/UI.png")', // Specify the path to your image relative to the public directory
     backgroundSize: 'cover',
-    backgroundPosition: 'center center',
+    backgroundPosition: 'center calc(50% + 10px)',
     height: '100vh',
   };
 
   return (
     <div className='.App' style={backgroundStyle}>
+      <Header />
       <Sidebar />
     </div>
     
