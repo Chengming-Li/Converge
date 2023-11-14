@@ -128,7 +128,23 @@ function App() {
       ))}
     </div>
   );*/
+  const [collapsedMenu, setCollapsedMenu] = useState(false);
+  const [windowWidth, setWindowWidth] = useState(window.innerWidth);
 
+  const updateWindowWidth = () => {
+    setWindowWidth(window.innerWidth);
+  };
+  useEffect(() => {
+    // Add event listener when component mounts
+    window.addEventListener('resize', updateWindowWidth);
+
+    // Remove event listener when component unmounts
+    return () => {
+      window.removeEventListener('resize', updateWindowWidth);
+    };
+  }, []);
+
+  // remove after dev
   const backgroundStyle = { 
     backgroundImage: 'url("/UI.png")', // Specify the path to your image relative to the public directory
     backgroundSize: 'cover',
@@ -138,8 +154,15 @@ function App() {
 
   return (
     <div className='.App' style={backgroundStyle}>
-      <Header />
-      <Sidebar />
+      <Header ToggleMenu={() => {setCollapsedMenu(!collapsedMenu)}}/>
+      <Sidebar collapsed={collapsedMenu}/>
+      <Input 
+        activeInterval={undefined} 
+        addInterval={(a, b) => {console.log("Add Interval")}} 
+        endInterval={() => {console.log("End Interval")}} 
+        inputWidth = {windowWidth - (collapsedMenu ? 58 : 198) + "px"}
+        addProject = {() => {console.log("Added Project")}}
+      />
     </div>
     
   );

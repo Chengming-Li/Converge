@@ -2,6 +2,7 @@
   text-align: center;
 }
 
+
 h1 {
   margin-top: 0px;
   margin-bottom: 0px;
@@ -9,15 +10,66 @@ h1 {
   padding-bottom: 5px;
 }
 
+
 button:hover {
   cursor: pointer;
 }
 
+.Input {
+  position: absolute;
+  top: 50px;
+  background-color: #1D272C;
+  right: 0px;
+  height: 59px;
+  opacity: 100%;
+}
 .Input input {
-  color: black;
+  width: calc(100% - 325px);
+  position: absolute;
+  height: 40px;
+  top: 9px;
+  left: 9px;
+  border: none;
+  background-color: #1D272C;
+  color: white;
+  padding-left: 12px;
+  padding-right: 12px;
+}
+.Input #Start {
+  position: absolute;
+  right: 25px;
+  height: 68%;
+  top: 15%;
+  width: 105px;
+  background-color: #03A9F4;
+  border: none;
+  color: white;
+  text-align: center;
+  font-size: 14.5px;
+  font-weight: 400;
+  font-family: 'Roboto', sans-serif;
+}
+.Input #Project {
+  position: absolute;
+  border: none;
+  height: 100%;
+  right: 240px;
+  background-color: #1D272C;
+}
+.Input img {
+  height: 25px;
+  position: relative;
+  top: 2px;
+}
+.Input p {
+  position: absolute;
+  right: 150px;
+  bottom: -3%;
+  color: white;
+  text-align: center;
   font-size: 20px;
-  width: 25%;
-  margin-bottom: 10px;
+  font-weight: 400;
+  font-family: 'Roboto', sans-serif;
 }
 
 .Header {
@@ -30,9 +82,16 @@ button:hover {
 .Logo {
   height: 50px;
   position: absolute;
-  left: 60px;
-  top: -1px
+  left: 58px;
+  border: none;
+  background-color: #0b0e0f;
 }
+.Logo img {
+  height: 50px;
+  position: relative;
+  top: -2px;
+}
+
 
 .Profile {
   height: 50px;
@@ -42,7 +101,6 @@ button:hover {
   background-color: #0b0e0f;
   border: none;
 }
-
 .Profile img {
   height: 38px;
   position: relative;
@@ -50,19 +108,21 @@ button:hover {
   top: 2px;
 }
 
+
 .Menu {
   width: 50px;
   height: 50px;
-  background-color: #0b0e0f;
   border: none;
   position: absolute;
-  left: 10px;
+  left: 5px;
+  background-color: #0b0e0f;
 }
 .Menu img {
   position: relative;
   top: 1px;
   width: 25px;
 }
+
 
 .Sidebar {
   width: 198px;
@@ -110,4 +170,39 @@ button:hover {
   margin-bottom: 3%;
   position: relative;
   left: 11%;
+}
+
+
+.SidebarCollapsed {
+  width: 58px;
+  background-color: #12191D;
+  height: calc(100vh - 50px);
+  transform: translateY(50px);
+  color: #75A4AE;
+  user-select: none;
+}
+.SidebarCollapsed button {
+  height: 48px;
+  width: 100%;
+  position: relative;
+  background-color: #12191D;
+  border: none;
+  color: #75A4AE;
+}
+.SidebarCollapsed button:hover {
+  cursor: pointer;
+  background-color: #263238;
+}
+.SidebarCollapsed img {
+  height: 50%;
+  object-fit: cover;
+  position: absolute;
+  left: 17px;
+  top: 24%;
+}
+.SidebarCollapsed span {
+  display: none
+}
+.SidebarCollapsed p {
+  display: none
 }
