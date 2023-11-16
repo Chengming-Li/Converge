@@ -163,6 +163,8 @@ function App() {
         inputWidth = {windowWidth - (collapsedMenu ? 58 : 198) + "px"}
         addProject = {() => {console.log("Added Project")}}
       />
+      <div className="TimeSections">
+      </div>
     </div>
     
   );

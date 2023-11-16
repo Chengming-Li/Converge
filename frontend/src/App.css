@@ -206,3 +206,12 @@ button:hover {
 .SidebarCollapsed p {
   display: none
 }
+
+.TimeSections {
+  position: absolute;
+  top: 132px;
+  right: 28px;
+  width: 83.415vw;
+  height: calc(100vh - 132px);
+  overflow: hidden;
+}
