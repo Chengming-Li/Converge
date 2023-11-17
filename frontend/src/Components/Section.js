@@ -2,10 +2,13 @@ import React from 'react';
 import '../App.css';
 import Interval from './Interval';
 
-function Section({ title }) {
+function Section({ title, totalTime }) {
     return (
         <div className="IntervalSection">
-            <p>title</p>
+            <div id='Head'>
+                <span id='title'>{title}</span>
+                <span id='time'>{totalTime}</span>
+            </div>
         </div>
     );
 }

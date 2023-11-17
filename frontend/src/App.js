@@ -4,6 +4,7 @@ import Input from './Components/Input';
 import Interval from './Components/Interval';
 import Sidebar from './Components/Sidebar';
 import Header from './Components/Header';
+import Section from './Components/Section';
 
 const userDataAPI = "http://localhost:5000/api/user/914587493868011521"
 const startIntervalAPI = "http://localhost:5000/api/interval"
@@ -129,10 +130,10 @@ function App() {
     </div>
   );*/
   const [collapsedMenu, setCollapsedMenu] = useState(false);
-  const [windowWidth, setWindowWidth] = useState(window.innerWidth);
+  const [windowWidth, setWindowWidth] = useState(document.documentElement.clientWidth);
 
   const updateWindowWidth = () => {
-    setWindowWidth(window.innerWidth);
+    setWindowWidth(document.documentElement.clientWidth);
   };
   useEffect(() => {
     // Add event listener when component mounts
@@ -164,6 +165,7 @@ function App() {
         addProject = {() => {console.log("Added Project")}}
       />
       <div className="TimeSections">
+        <Section title={"Today"} totalTime={"00:00:00"}/>
       </div>
     </div>
     
