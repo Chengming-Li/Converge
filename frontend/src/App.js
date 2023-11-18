@@ -164,12 +164,14 @@ function App() {
         inputWidth = {windowWidth - (collapsedMenu ? 58 : 198) + "px"}
         addProject = {() => {console.log("Added Project")}}
       />
-      <div className="TimeSections">
+      <div className="TimeSections" style={{width: `${windowWidth - (collapsedMenu ? 114 : 254) + "px"}`}}>
         <Section title={"Today"} totalTime={"00:00:00"}/>
       </div>
     </div>
     
   );
+  // 
+  // 83.415vw;
 }
 
 export default App;
