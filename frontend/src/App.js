@@ -1,7 +1,6 @@
 import './App.css';
 import React, { useState, useEffect } from 'react';
 import Input from './Components/Input';
-import Interval from './Components/Interval';
 import Sidebar from './Components/Sidebar';
 import Header from './Components/Header';
 import Section from './Components/Section';
@@ -147,7 +146,7 @@ function App() {
 
   // remove after dev
   const backgroundStyle = { 
-    backgroundImage: 'url("/UI.png")', // Specify the path to your image relative to the public directory
+    //backgroundImage: 'url("/UI.png")', // Specify the path to your image relative to the public directory
     backgroundSize: 'cover',
     backgroundPosition: 'center calc(50% + 10px)',
     height: '100vh',
@@ -165,7 +164,40 @@ function App() {
         addProject = {() => {console.log("Added Project")}}
       />
       <div className="TimeSections" style={{width: `${windowWidth - (collapsedMenu ? 114 : 254) + "px"}`}}>
-        <Section title={"Today"} totalTime={"00:00:00"}/>
+        <div style={
+          {
+            width: '100%',
+            height: '100%',
+            overflowY: 'auto'
+          }}>
+            <Section 
+              title={"Today"} 
+              totalTime={"00:00:00"}
+              intervals={[
+                {name:"Interval", project:"Project", interval_id:"1", start_time:"00:00", end_time:"00:00", timeElapsed:"00:00:00"},
+                {name:"Interval", project:"Project", interval_id:"1", start_time:"00:00", end_time:"00:00", timeElapsed:"00:00:00"},
+                {name:"Interval", project:"Project", interval_id:"1", start_time:"00:00", end_time:"00:00", timeElapsed:"00:00:00"},
+              ]}
+            />
+            <Section 
+              title={"Today"} 
+              totalTime={"00:00:00"}
+              intervals={[
+                {name:"Interval", project:"Project", interval_id:"1", start_time:"00:00", end_time:"00:00", timeElapsed:"00:00:00"},
+                {name:"Interval", project:"Project", interval_id:"1", start_time:"00:00", end_time:"00:00", timeElapsed:"00:00:00"},
+                {name:"Interval", project:"Project", interval_id:"1", start_time:"00:00", end_time:"00:00", timeElapsed:"00:00:00"},
+              ]}
+            />
+            <Section 
+              title={"Today"} 
+              totalTime={"00:00:00"}
+              intervals={[
+                {name:"Interval", project:"Project", interval_id:"1", start_time:"00:00", end_time:"00:00", timeElapsed:"00:00:00"},
+                {name:"Interval", project:"Project", interval_id:"1", start_time:"00:00", end_time:"00:00", timeElapsed:"00:00:00"},
+                {name:"Interval", project:"Project", interval_id:"1", start_time:"00:00", end_time:"00:00", timeElapsed:"00:00:00"},
+              ]}
+            />
+          </div>
       </div>
     </div>
     

@@ -137,7 +137,7 @@ input {
 .Sidebar {
   width: 198px;
   background-color: #12191D;
-  height: calc(100vh - 50px);
+  height: calc(max(100vh - 50px, 300px));
   transform: translateY(50px);
   color: #75A4AE;
   user-select: none;
@@ -177,7 +177,6 @@ input {
   text-align: left;
 }
 
-
 .SidebarCollapsed {
   width: 58px;
   background-color: #12191D;
@@ -215,7 +214,7 @@ input {
   position: absolute;
   top: 132px;
   right: 28px;
-  height: calc(100vh - 132px);
+  height: calc(max(100vh - 132px, 310px));
   overflow: hidden;
 }
 
@@ -224,38 +223,51 @@ input {
   position: relative;
   top: 0%;
   user-select: none;
-  background-color: #1d272c;
+  background-color: #1b1d1e;
   margin-top: 0px;
   margin-bottom: 0px;
+  opacity: 100%;
 }
+
 .IntervalSection #Head {
   position: relative;
-  width: 100%;
   background-color: #1B1D1E;
   height: 48px;
 }
 .IntervalSection #title {
   position: absolute;
-  top: 14px;
+  top: 13px;
   left: 21px;
   font-size: 18px;
 }
 .IntervalSection #time {
   position: absolute;
-  top: 14px;
+  top: 13px;
   right: 55px;
   font-size: 18px;
+}
+.IntervalSection #collapse {
+  position: absolute;
+  right: 12px;
+  height: 100%;
+  width: 30px;
+  background-color: #1B1D1E;
+}
+.IntervalSection img {
+  width: 100%;
+  object-fit: cover;
 }
 
 .Interval {
   position: relative;
   background-color: #1d272c;
   height: 70px;
+  top: -2px;
   padding-top: 3px;
-  margin-top: -2px;
-  margin-bottom: 3.5px;
+  height: 69px;
+  margin-top: 3px;
 }
-.Interval input {
+.Interval #Name {
   position: absolute;
   font-weight: 400;
   text-align: left;
@@ -266,15 +278,94 @@ input {
   padding-left: 6px;
   padding-right: 6px;
   background-color: #1d272c;
-  width: calc(100% - 200px);
+  width: calc(100% - 400px);
 }
 .Interval #Project {
   position: absolute;
-  left: 37px;
+  left: 25px;
   top: 38px;
   font-weight: 400;
   text-align: center;
   font-size: 18px;
   color: red;
   background-color: #1d272c;
+}
+.Interval #StartTime {
+  position: absolute;
+  background-color: #1d272c;
+  text-align: left;
+  font-size: 20px;
+  width: 50px;
+  right: 272px;
+  top: 19.5px;
+  border: none;
+  color: white;
+  padding-top: 5px;
+  padding-bottom: 5px;
+}
+.Interval #EndTime {
+  position: absolute;
+  background-color: #1d272c;
+  text-align: left;
+  font-size: 20px;
+  width: 50px;
+  right: 195px;
+  top: 19.5px;
+  border: none;
+  color: white;
+  padding-top: 5px;
+  padding-bottom: 5px;
+}
+.Interval #Date {
+  position: absolute;
+  height: 100%;
+  background-color: #1d272c;
+  top: 0px;
+  right: 135px;
+  width: 50px;
+  padding-top: 5px;
+  padding-bottom: -5px;
+}
+.Interval #Date img {
+  width: 30px;
+  object-fit: cover;
+}
+.Interval #Edit {
+  position: absolute;
+  height: 100%;
+  background-color: #1d272c;
+  top: 0px;
+  right: 13px;
+  width: 25px;
+  padding-top: 6px;
+  padding-bottom: -6px;
+}
+.Interval #Edit img {
+  position: relative;
+  width: 225%;
+  object-fit: cover;
+  right: 8px;
+}
+
+
+@media (max-width: 610px) {
+  /* Styles to hide elements when screen width is 600px or less */
+  .Interval #StartTime {
+    display: none;
+  }
+  .Interval #EndTime {
+    display: none;
+  }
+  .Interval #Mid {
+    display: none;
+  }
+}
+@media (max-width: 700px) {
+  /* Styles to hide elements when screen width is 600px or less */
+  .Interval #Project {
+    display: none;
+  }
+  .Interval #Name {
+    display: none;
+  }
 }
