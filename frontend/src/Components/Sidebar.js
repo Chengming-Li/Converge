@@ -8,10 +8,10 @@ function Sidebar({ collapsed }) {
             <SidebarButton Text={"TIME TRACKER"} IconSrc = {"/Cheese.png"} Logic = {() => {console.log("Cheese")}} />
             <SidebarButton Text={"CALENDAR"} IconSrc = {"/Cheese.png"} Logic = {() => {console.log("Cheese")}} />
             <SidebarButton Text={"ROOMS"} IconSrc = {"/Cheese.png"} Logic = {() => {console.log("Cheese")}} />
-            <p>ANALYZE</p>
+            <p style={{fontWeight: 'bold'}}>ANALYZE</p>
             <SidebarButton Text={"DASHBOARD"} IconSrc = {"/Cheese.png"} Logic = {() => {console.log("Cheese")}} />
             <SidebarButton Text={"REPORTS"} IconSrc = {"/Cheese.png"} Logic = {() => {console.log("Cheese")}} />
-            <p>MANAGE</p>
+            <p style={{fontWeight: 'bold'}}>MANAGE</p>
             <SidebarButton Text={"PROJECTS"} IconSrc = {"/Cheese.png"} Logic = {() => {console.log("Cheese")}} />
             <SidebarButton Text={"SETTINGS"} IconSrc = {"/Cheese.png"} Logic = {() => {console.log("Cheese")}} />
         </div>

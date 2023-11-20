@@ -13,6 +13,26 @@ const editIntervalAPI = "http://localhost:5000/api/interval/"
 
 function App() {
   /*
+
+  return loading ? 
+  (
+    <h1>LOADING</h1>
+  ) : error ? 
+  (
+    error
+  ) :
+  (
+    <div className="App">
+      <h1>Interval List</h1>
+      <Input addInterval={startInterval} activeInterval={activeInterval} endInterval = {endInterval}/>
+      {inactiveIntervals.map((interval, index) => (
+        <Interval key={index} info={interval} />
+      ))}
+    </div>
+  );*/
+  const [collapsedMenu, setCollapsedMenu] = useState(false);
+  const [windowWidth, setWindowWidth] = useState(document.documentElement.clientWidth);
+
   const [userInfo, setUserInfo] = useState(null);
   const [activeInterval, setActiveInterval] = useState(null);
   const [inactiveIntervals, setInactiveIntervals] = useState([]);
@@ -41,19 +61,8 @@ function App() {
   // starts interval
   const startInterval = (name, project_id) => {
     if (activeInterval) {
-      fetch(editIntervalAPI + activeInterval.interval_id, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ name, start_time : activeInterval.start_time, project_id : activeInterval.project_id, end_time : activeInterval.end_time })
-      }).then((response) => {
-        if (!response.ok) {
-          console.log(response.json());
-          throw new Error(response.status);
-        }
-        return response.json();
-      })
+      console.log(typeof activeInterval)
+      return;
     } else {
       const user_id = userInfo.id
       let interval_id;
@@ -71,7 +80,7 @@ function App() {
         return response.json();
       }).then((data) => {
         interval_id = data.id;
-        const start_time = null;
+        const start_time = data.start_time;
         const end_time = null;
         setActiveInterval({name, user_id, project_id, interval_id, start_time, end_time})
       }).catch((error) => {
@@ -112,25 +121,6 @@ function App() {
     });
   }
 
-  return loading ? 
-  (
-    <h1>LOADING</h1>
-  ) : error ? 
-  (
-    error
-  ) :
-  (
-    <div className="App">
-      <h1>Interval List</h1>
-      <Input addInterval={startInterval} activeInterval={activeInterval} endInterval = {endInterval}/>
-      {inactiveIntervals.map((interval, index) => (
-        <Interval key={index} info={interval} />
-      ))}
-    </div>
-  );*/
-  const [collapsedMenu, setCollapsedMenu] = useState(false);
-  const [windowWidth, setWindowWidth] = useState(document.documentElement.clientWidth);
-
   const updateWindowWidth = () => {
     setWindowWidth(document.documentElement.clientWidth);
   };
@@ -152,14 +142,21 @@ function App() {
     height: '100vh',
   };
 
-  return (
+  return loading ? 
+  (
+    <h1>LOADING</h1>
+  ) : error ? 
+  (
+    error
+  ) :
+  (
     <div className='.App' style={backgroundStyle}>
       <Header ToggleMenu={() => {setCollapsedMenu(!collapsedMenu)}}/>
       <Sidebar collapsed={collapsedMenu}/>
       <Input 
-        activeInterval={undefined} 
-        addInterval={(a, b) => {console.log("Add Interval")}} 
-        endInterval={() => {console.log("End Interval")}} 
+        activeInterval={activeInterval} 
+        addInterval={startInterval} 
+        endInterval={endInterval} 
         inputWidth = {windowWidth - (collapsedMenu ? 58 : 198) + "px"}
         addProject = {() => {console.log("Added Project")}}
       />
@@ -170,22 +167,16 @@ function App() {
             height: '100%',
             overflowY: 'auto'
           }}>
-            <Section 
-              title={"Today"} 
-              totalTime={"00:00:00"}
-              intervals={[
-                {name:"Interval", project:"Project", interval_id:"1", start_time:"00:00", end_time:"00:00", timeElapsed:"00:00:00"},
-                {name:"Interval", project:"Project", interval_id:"1", start_time:"00:00", end_time:"00:00", timeElapsed:"00:00:00"},
-                {name:"Interval", project:"Project", interval_id:"1", start_time:"00:00", end_time:"00:00", timeElapsed:"00:00:00"},
-              ]}
-            />
-          </div>
+          <Section 
+            title={"Today"} 
+            totalTime={"00:00:00"}
+            intervals={inactiveIntervals}
+          />
+        </div>
       </div>
     </div>
     
   );
-  // 
-  // 83.415vw;
 }
 
 export default App;

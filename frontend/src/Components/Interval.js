@@ -22,19 +22,25 @@ function Interval({ info }) {
     setIntervalName(event.target.value);
   };
   
+  const formatDate = (date) => {
+    const options = { weekday: 'long', day: '2-digit', month: 'long', year: 'numeric' };
+    return date.toLocaleDateString('en-US', options);
+  };
+
   const handleDateChange = (date) => {
     setSelectedDate(date);
     setShowDatePicker(false);
-    console.log(format(date, 'MM/dd/yyyy'))
+    console.log(formatDate(date))
   };
 
   return <div className='Interval'>
     <button id="Project" onClick={() => {console.log(info.project)}}>{"• "+info.project}</button>
     <input id="Name" value={intervalName} onChange={handleNameChange}></input>
+    
     <input id="StartTime" value={startTime} onChange={handleStartChange}></input>
     <p id="Mid" style={{position: "absolute", marginTop: "15px", right: "257px", fontWeight: "100", fontSize: "30px"}}>-</p>
     <input id="EndTime" value={EndTime} onChange={handleEndChange}></input>
-    
+
     <button id="Date" onClick={() => setShowDatePicker(!showDatePicker)}><img src={'/calendar.png'} alt="date" /></button>
     {showDatePicker && (
       <div style={{position: "absolute", top: "50px", right: "50px", zIndex: 100}}>
@@ -42,7 +48,7 @@ function Interval({ info }) {
           wrapperClassName="datePicker"
           selected={selectedDate}
           onChange={handleDateChange}
-          dateFormat="MM/dd/yyyy"
+          dateFormat="dd MMMM yyyy"
           showMonthDropdown
           showYearDropdown
           dropdownMode="select"

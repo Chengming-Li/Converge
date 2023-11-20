@@ -1,10 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import '../App.css';
 import Interval from './Interval';
 
 function Section({ title, totalTime, intervals }) {
     const [collapsed, setCollapsed] = useState(false);
-
+    
     return (
         <div className="IntervalSection">
             <div id='Head'>
