@@ -22,7 +22,6 @@ function Input({ activeInterval, addInterval, endInterval, inputWidth, addProjec
     if (activeInterval) {
       endInterval();
       setValue("");
-      activeInterval = null;
     } else {
       addInterval(value, null);
     }

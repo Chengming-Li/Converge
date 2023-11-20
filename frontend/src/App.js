@@ -5,7 +5,7 @@ import Sidebar from './Components/Sidebar';
 import Header from './Components/Header';
 import Section from './Components/Section';
 
-const userDataAPI = "http://localhost:5000/api/user/914587493868011521"
+const userDataAPI = "http://localhost:5000/api/user/918939098800750593"
 const startIntervalAPI = "http://localhost:5000/api/interval"
 const endIntervalAPI = "http://localhost:5000/api/interval/end/"
 const editIntervalAPI = "http://localhost:5000/api/interval/"
@@ -65,6 +65,7 @@ function App() {
       return;
     } else {
       const user_id = userInfo.id
+      setActiveInterval({ name, start_time: new Date()})
       let interval_id;
       fetch(startIntervalAPI, {
         method: 'POST',
@@ -95,7 +96,9 @@ function App() {
       return;
     }
     let end_time, interval_id, name, project_id, start_time, user_id;
-    fetch(endIntervalAPI + activeInterval.interval_id, {
+    const id = activeInterval.interval_id;
+    setActiveInterval(null)
+    fetch(endIntervalAPI + id, {
       method: 'PUT',
       headers: {
       },
@@ -112,13 +115,25 @@ function App() {
       name = data.name;
       project_id = data.project_id;
       start_time = data.start_time;
-      user_id = data.user_id;  
-      setActiveInterval(null)
+      user_id = data.user_id;
       setInactiveIntervals([{end_time, interval_id, name, project_id, start_time, user_id}, ...inactiveIntervals])
     }).catch((error) => {
       setError(error.message);
       return;
     });
+  }
+
+  const separateSections = () => {
+    return (
+      inactiveIntervals.map((interval, index) => (
+        <Section 
+          title={interval.name}
+          totalTime={"00:00:00"}
+          intervals={[interval]} 
+          key={interval.name}
+        />
+      ))
+    )
   }
 
   const updateWindowWidth = () => {
@@ -168,7 +183,7 @@ function App() {
             overflowY: 'auto'
           }}>
           <Section 
-            title={"Today"} 
+            title={"Today"}
             totalTime={"00:00:00"}
             intervals={inactiveIntervals}
           />
