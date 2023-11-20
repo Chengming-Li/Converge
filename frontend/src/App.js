@@ -179,24 +179,6 @@ function App() {
                 {name:"Interval", project:"Project", interval_id:"1", start_time:"00:00", end_time:"00:00", timeElapsed:"00:00:00"},
               ]}
             />
-            <Section 
-              title={"Today"} 
-              totalTime={"00:00:00"}
-              intervals={[
-                {name:"Interval", project:"Project", interval_id:"1", start_time:"00:00", end_time:"00:00", timeElapsed:"00:00:00"},
-                {name:"Interval", project:"Project", interval_id:"1", start_time:"00:00", end_time:"00:00", timeElapsed:"00:00:00"},
-                {name:"Interval", project:"Project", interval_id:"1", start_time:"00:00", end_time:"00:00", timeElapsed:"00:00:00"},
-              ]}
-            />
-            <Section 
-              title={"Today"} 
-              totalTime={"00:00:00"}
-              intervals={[
-                {name:"Interval", project:"Project", interval_id:"1", start_time:"00:00", end_time:"00:00", timeElapsed:"00:00:00"},
-                {name:"Interval", project:"Project", interval_id:"1", start_time:"00:00", end_time:"00:00", timeElapsed:"00:00:00"},
-                {name:"Interval", project:"Project", interval_id:"1", start_time:"00:00", end_time:"00:00", timeElapsed:"00:00:00"},
-              ]}
-            />
           </div>
       </div>
     </div>
