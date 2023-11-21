@@ -4,8 +4,9 @@ import Input from './Components/Input';
 import Sidebar from './Components/Sidebar';
 import Header from './Components/Header';
 import Section from './Components/Section';
+import moment from "moment-timezone";
 
-const userDataAPI = "http://localhost:5000/api/user/918939098800750593"
+const userDataAPI = "http://localhost:5000/api/user/919089736405909505"
 const intervalAPI = "http://localhost:5000/api/interval"
 const endIntervalAPI = "http://localhost:5000/api/interval/end/"
 
@@ -130,19 +131,24 @@ function App() {
 
   // edits interval
   const editInterval = (id, name, project_id, start_time, end_time) => {
+    if(end_time < start_time) {
+      end_time.setDate(end_time.getDate() + 1);
+    }
+    const st = moment(start_time).tz(userInfo.timezone).utc().format("dddd DD MMMM YYYY HH:mm:ss z");
+    const et = moment(end_time).tz(userInfo.timezone).utc().format("dddd DD MMMM YYYY HH:mm:ss z");
     const indexToEdit = inactiveIntervals.findIndex((interval) => interval.interval_id === id);
     if(indexToEdit !== -1) {
       inactiveIntervals[indexToEdit].name = name;
       inactiveIntervals[indexToEdit].project_id = project_id;
-      inactiveIntervals[indexToEdit].start_time = start_time;
-      inactiveIntervals[indexToEdit].end_time = end_time;      
+      inactiveIntervals[indexToEdit].start_time = st;
+      inactiveIntervals[indexToEdit].end_time = et;      
     }
     fetch(intervalAPI + "/" + id, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ name, project_id, start_time, end_time }),
+      body: JSON.stringify({ name, project_id, start_time: st, end_time: et }),
     }).then((response) => {
       if (!response.ok) {
         console.log(response.json());
@@ -220,6 +226,7 @@ function App() {
             totalTime={"00:00:00"}
             intervals={inactiveIntervals}
             deleteInterval={deleteInterval}
+            editInterval={editInterval}
           />
         </div>
       </div>
