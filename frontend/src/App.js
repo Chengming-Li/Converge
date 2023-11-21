@@ -125,7 +125,6 @@ function App() {
       return response.json();
     }).catch((error) => {
       setError(error.message);
-      setInactiveIntervals([])
       setInactiveIntervals([removedInterval, ...inactiveIntervals])
     });
   } 
@@ -134,6 +133,8 @@ function App() {
   const editInterval = (id, name, project_id, start_time, end_time) => {
     if(end_time < start_time) {
       end_time.setDate(end_time.getDate() + 1);
+    } else if ((end_time - start_time) > (24 * 60 * 60 * 1000)) {
+      end_time.setDate(end_time.getDate() - 1);
     }
     const st = moment(start_time).tz(userInfo.timezone).utc().format("dddd DD MMMM YYYY HH:mm:ss z");
     const et = moment(end_time).tz(userInfo.timezone).utc().format("dddd DD MMMM YYYY HH:mm:ss z");
@@ -244,7 +245,7 @@ function App() {
 
   useEffect(() => {
     separateSections();
-  }, [loading]);
+  }, [loading, inactiveIntervals]);
 
   return loading ? 
   (

@@ -60,6 +60,7 @@ function Interval({ info, deleteInterval, editInterval, rerender }) {
     st.setHours(temp.getHours(), temp.getMinutes());
     updateFunction(st);
     updateInput(getTime(st));
+    setDateChanged(true);
   }
   
   const handleKeyPress = (e) => {
@@ -121,7 +122,7 @@ function Interval({ info, deleteInterval, editInterval, rerender }) {
       rerender();
       setDateChanged(false);
     }
-  }, [dateChanged, rerender, editInterval, info.interval_id, finalIntervalName, projectId, startTime, endTime])
+  }, [rerender, editInterval, info.interval_id, finalIntervalName, projectId, startTime, endTime])
 
   // calculates the difference and returns a string formatted hh:mm:ss
   function calculateTimeDifference() {
@@ -129,6 +130,8 @@ function Interval({ info, deleteInterval, editInterval, rerender }) {
     const st = new Date(startTime)
     if(et < st) {
       et.setDate(et.getDate() + 1);
+    } else if ((et - st) > (24 * 60 * 60 * 1000)) {
+      et.setDate(et.getDate() - 1);
     }
 
     const timeDifference = et - st;
