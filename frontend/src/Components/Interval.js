@@ -20,6 +20,7 @@ function Interval({ info, deleteInterval, editInterval }) {
   const [startInput, setStartInput] = useState(getTime(startTime));
   const [endInput, setEndInput] = useState(getTime(endTime));
   const [intervalName, setIntervalName] = useState(info.name);
+  const [finalIntervalName, setFinalIntervalName] = useState(info.name);
   const [projectId, setProjectId] = useState(info.project_id);
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [menuIsOpen, setMenuIsOpen] = useState(false);
@@ -70,6 +71,10 @@ function Interval({ info, deleteInterval, editInterval }) {
     setIntervalName(event.target.value);
   };
 
+  const changeName = () => {
+    setFinalIntervalName(intervalName);
+  } 
+
   const handleDateChange = (date) => {
     const et = new Date(endTime);
     const st = new Date(startTime)
@@ -109,8 +114,8 @@ function Interval({ info, deleteInterval, editInterval }) {
       isInitialRender.current = false;
       return;
     }
-    editInterval(info.interval_id, intervalName, projectId, startTime, endTime)
-  }, [editInterval, info.interval_id, intervalName, projectId, startTime, endTime])
+    editInterval(info.interval_id, finalIntervalName, projectId, startTime, endTime)
+  }, [editInterval, info.interval_id, finalIntervalName, projectId, startTime, endTime])
 
   // calculates the difference and returns a string formatted hh:mm:ss
   function calculateTimeDifference() {
@@ -136,7 +141,7 @@ function Interval({ info, deleteInterval, editInterval }) {
   return (
     <div className='Interval'>
       <button id="Project" onClick={() => {console.log(info.project)}}>{"• "+info.project}</button>
-      <input className="IntervalName" value={intervalName} onChange={handleNameChange}></input>
+      <input className="IntervalName" value={intervalName} onChange={handleNameChange} onKeyDown={handleKeyPress} onBlur={changeName}></input>
       
       <input ref={startTimeRef} className="StartTime" value={startInput} onChange={handleStartChange} onKeyDown={handleKeyPress} onBlur={() => {updateTime(startInput, startTime, setStartTime, setStartInput)}}></input>
       <p id="Mid" style={{position: "absolute", marginTop: "15px", right: "292px", fontWeight: "100", fontSize: "30px"}}>-</p>

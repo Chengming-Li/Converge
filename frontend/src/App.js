@@ -5,6 +5,7 @@ import Sidebar from './Components/Sidebar';
 import Header from './Components/Header';
 import Section from './Components/Section';
 import moment from "moment-timezone";
+import { SHA256 } from 'crypto-js';
 
 const userDataAPI = "http://localhost:5000/api/user/919089736405909505"
 const intervalAPI = "http://localhost:5000/api/interval"
@@ -162,18 +163,51 @@ function App() {
 
   // separates intervals into sections
   const separateSections = () => {
+    inactiveIntervals.sort((a, b) => {
+      const dateA = new Date(a.start_time);
+      const dateB = new Date(b.start_time);
+      return dateB-dateA;
+    });
+    const output = []
+    const compareDates = (timeOne, timeTwo) => {
+      const date1 = new Date(timeOne);
+      const date2 = new Date(timeTwo);
+      return (date1.getFullYear() === date2.getFullYear()) &&
+      (date1.getMonth() === date2.getMonth()) &&
+      (date1.getDate() === date2.getDate());
+    }
+    for (const element of inactiveIntervals) {
+      if(output.length === 0 || !compareDates(output[output.length - 1][0].start_time, element.start_time)) {
+        output.push([]);
+      }
+      output[output.length - 1].push(element);
+    }
+    const relativizeDates = (timeString) => {
+      const present = new Date();
+      const oneDayAhead = new Date(timeString);
+      oneDayAhead.setDate(oneDayAhead.getDate() + 1);
+      if (compareDates(timeString, present.toDateString())) {
+        return "Today";
+      } else if (compareDates(oneDayAhead.toDateString(), present.toDateString())) {
+        return "Yesterday";
+      } else {
+        const options = { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' };
+        return new Date(timeString).toLocaleDateString('en-US', options);
+      }
+    }
     return (
-      inactiveIntervals.map((interval, index) => (
+      output.map((intervals, index) => (
         <Section 
-          title={interval.name}
+          title={relativizeDates(intervals[0].start_time)}
           totalTime={"00:00:00"}
-          intervals={[interval]} 
-          key={interval.name}
+          intervals={intervals} 
+          deleteInterval={deleteInterval}
+          editInterval={editInterval}
+          key={SHA256(relativizeDates(intervals[0].start_time) + intervals.map(obj => obj.interval_id).join('')).toString()}
         />
       ))
     )
   }
-
   // tracks window width
   const updateWindowWidth = () => {
     setWindowWidth(document.documentElement.clientWidth);
@@ -221,13 +255,7 @@ function App() {
             height: '100%',
             overflowY: 'auto'
           }}>
-          <Section 
-            title={"Today"}
-            totalTime={"00:00:00"}
-            intervals={inactiveIntervals}
-            deleteInterval={deleteInterval}
-            editInterval={editInterval}
-          />
+          {separateSections()}
         </div>
       </div>
     </div>
