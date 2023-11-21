@@ -34,15 +34,14 @@ function Interval({ info, deleteInterval, editInterval, rerender }) {
   const handleStartChange = (event) => {
     setStartInput(event.target.value);
   };
-
   const handleEndChange = (event) => {
     setEndInput(event.target.value);
   };
 
   function updateTime(newTime, currentTime, updateFunction, updateInput) {
-    const timeRegex = /^(0?[1-9]|1[0-2]):[0-5][0-9]\s(AM|PM)$/i;
-    const timeRegexNoSpace = /^(0?[1-9]|1[0-2]):[0-5][0-9](AM|PM)$/i;
-    const timeRegexNoAMPM = /^(0?[0-9]|1[0-9]|2[0-3]):[0-5][0-9]$/i;
+    const timeRegex = /^(0?[1-9]|1[0-2]):[0-5][0-9]\s(AM|PM)$/i; // 00:00 AM/PM format
+    const timeRegexNoSpace = /^(0?[1-9]|1[0-2]):[0-5][0-9](AM|PM)$/i; // 00:00AM/PM format
+    const timeRegexNoAMPM = /^(0?[0-9]|1[0-9]|2[0-3]):[0-5][0-9]$/i; // military time format
     let temp;
     newTime = newTime.trim().toLowerCase();
     if(timeRegex.test(newTime) || timeRegexNoAMPM.test(newTime)) {
@@ -70,7 +69,9 @@ function Interval({ info, deleteInterval, editInterval, rerender }) {
   };
 
   const handleNameChange = (event) => {
-    setIntervalName(event.target.value);
+    if (event.target.value.length <= 280) {
+      setIntervalName(event.target.value);
+    }
   };
 
   const changeName = () => {
@@ -117,14 +118,13 @@ function Interval({ info, deleteInterval, editInterval, rerender }) {
       isInitialRender.current = false;
       return;
     }
-    editInterval(info.interval_id, finalIntervalName, projectId, startTime, endTime)
+    editInterval(info.interval_id, finalIntervalName, projectId, startTime, endTime);
     if(dateChanged) {
       rerender();
       setDateChanged(false);
     }
   }, [rerender, editInterval, info.interval_id, finalIntervalName, projectId, startTime, endTime])
 
-  // calculates the difference and returns a string formatted hh:mm:ss
   function calculateTimeDifference() {
     const et = new Date(endTime);
     const st = new Date(startTime)

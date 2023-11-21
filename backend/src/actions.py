@@ -25,22 +25,13 @@ load_dotenv()
 url = os.getenv("DATABASE_URL")
 
 def establishConnection():
-    """
-    Establishes connection with Postgres database
-
-    @returns {connection}
-    """
     return psycopg2.connect(url)
 
 # API Functions
 # region general functions, for testing
 def getTable(tableName):
     """
-    Fetches entire table from database
-
-    @param {int} tableName: the name of the table
-
-    @returns {json}: a list of dictionaries corresponding to the rows, each dictionary's keys corresponds to the columns
+    Fetches entire table from database based on the name of the table
     """
     connection = establishConnection()
     try:
@@ -55,11 +46,7 @@ def getTable(tableName):
 
 def deleteTable(tableName):
     """
-    Deletes entire table from database
-
-    @param {int} tableName: the name of the table
-
-    @returns {json}: a dictionary containing key "name" with the name of the deleted table
+    Deletes entire table from database based on the name of the table
     """
     connection = establishConnection()
     data = request.get_json()
@@ -83,10 +70,10 @@ def getUser(userId):
 
     @param {int} userId: the ID of the user
 
-    @returns {json}: a dictionary with the keys "userInfo", "intervals", and "activeInterval"
+    @returns {json}: a dictionary with these keys:
         "userInfo" points to a dict with keys "email", "id", "timezone", and "username"
         "intervals" points to a list of dictionaries, each with the keys "end_time", "start_time", "interval_id", "name", "project_id", and "user_id"
-        "activeInterval" points to the current interval that hasn't been ended, with the keys "end_time", "start_time", "interval_id", "name", "project_id", and "user_id"
+        "activeInterval" points to the current interval that hasn't been ended, with the keys "end_time", "start_time", "interval_id", "name", "project_id", and "user_id", or null if none exists
     """
     connection = establishConnection()
     try:
@@ -126,7 +113,7 @@ def createUser():
     Json Body:
         "username" : (str) name of user
         "email" : (str) email of user
-        "timezone" : (str) abbreviated timezone of user
+        "timezone" : (str) timezone of user
 
     @returns {json}: a dictionary containing the key "id", with user's ID
     """
@@ -152,7 +139,7 @@ def deleteUser(userId):
 
     @param {int} userId: the ID of the user
 
-    @returns {json}: a dictionary containing the key "id" with the user's ID
+    @returns {json}: a dictionary containing the key "id" with the deleted user's ID
     """
     connection = establishConnection()
     try:
@@ -168,9 +155,9 @@ def editSettings(userId):
     """
     Changes the settings associated with an account
     Json Body:
-        "timezone" : (str) abbreviated timezone of user
+        "timezone" : (str) timezone of user
 
-    @returns {json}: a dictionary containing the key "id", with user's ID, and "timezone", with the new timezone
+    @returns {json}: a dictionary containing the key "id" and "timezone"
     """
     connection = establishConnection()
     data = request.get_json()
@@ -194,7 +181,7 @@ def startInterval():
         "user_id" : (str) ID of the user creating the interval
         "project_id" : (str) ID of the user creating the interval
 
-    @returns {json}: a dictionary containing the key "id", with interval ID
+    @returns {json}: a dictionary containing the key "id" and a string "start_time"
     """
     connection = establishConnection()
     data = request.get_json()
@@ -219,7 +206,7 @@ def endInterval(intervalId):
     
     @param {int} intervalId: the ID of the interval
 
-    @returns {json}: a dictionary containing the key "id", with interval ID, and "endTime", with string representation of end time
+    @returns {json}: a dictionary containing the keys "name", "project_id", "interval_id", "user_id", "start_time", and "end_time"
     """
     connection = establishConnection()
     endTime = datetime.now()
@@ -242,15 +229,15 @@ def editInterval(intervalId):
     """
     Edits interval with ID
     Json Body:
-        "name" : (str) name of the interval
-        "project_id" : (int) ID of the user creating the interval
+        "name" : (str)
+        "project_id" : (str)
         "start_time" : (str) String representing a timestamp in %A %d %B %Y %H:%M:%S %Z fomat
         "end_time" : (str) String representing a timestamp in %A %d %B %Y %H:%M:%S %Z fomat
-        Example: Sunday 06 November 2023 00:00:00 UTC
+                    Example: Sunday 06 November 2023 00:00:00 UTC
     
     @param {int} intervalId: the ID of the interval
 
-    @returns {json}: a dictionary containing the key "id", with interval ID
+    @returns {json}: a dictionary containing the key "id"
     """
     connection = establishConnection()
     data = request.get_json()
@@ -272,7 +259,7 @@ def deleteInterval(intervalId):
 
     @param {int} intervalId: the ID of the interval
 
-    @returns {json}: a dictionary containing the key "id" with the user's ID
+    @returns {json}: a dictionary containing the key "id"
     """
     connection = establishConnection()
     try:
