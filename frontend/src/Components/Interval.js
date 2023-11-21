@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 
-function Interval({ info, deleteInterval, editInterval }) {
+function Interval({ info, deleteInterval, editInterval, rerender }) {
   // extracts and formats time from Date object
   function getTime(currentDate) {
     if(!currentDate) {
@@ -29,6 +29,7 @@ function Interval({ info, deleteInterval, editInterval }) {
   const startTimeRef = useRef(null);
   const endTimeRef = useRef(null);
   const isInitialRender = useRef(true);
+  const [dateChanged, setDateChanged] = useState(false);
 
   const handleStartChange = (event) => {
     setStartInput(event.target.value);
@@ -85,6 +86,7 @@ function Interval({ info, deleteInterval, editInterval }) {
     setStartTime(st)
     setEndTime(et)
     setShowDatePicker(false);
+    setDateChanged(true);
   };
   
   // closes date picker and options menu if clicked off
@@ -115,6 +117,10 @@ function Interval({ info, deleteInterval, editInterval }) {
       return;
     }
     editInterval(info.interval_id, finalIntervalName, projectId, startTime, endTime)
+    if(dateChanged) {
+      rerender();
+      setDateChanged(false);
+    }
   }, [editInterval, info.interval_id, finalIntervalName, projectId, startTime, endTime])
 
   // calculates the difference and returns a string formatted hh:mm:ss

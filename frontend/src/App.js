@@ -21,6 +21,7 @@ function App() {
   const [inactiveIntervals, setInactiveIntervals] = useState([]);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [reload, reloadPage] = useState(true);
 
   // fetches and stores user data from userDataAPI
   useEffect(() => {
@@ -203,6 +204,7 @@ function App() {
           intervals={intervals} 
           deleteInterval={deleteInterval}
           editInterval={editInterval}
+          rerender={rerenderPage}
           key={SHA256(relativizeDates(intervals[0].start_time) + intervals.map(obj => obj.interval_id).join('')).toString()}
         />
       ))
@@ -221,6 +223,11 @@ function App() {
       window.removeEventListener('resize', updateWindowWidth);
     };
   }, []);
+
+  // rerenders page
+  const rerenderPage = () => {
+    reloadPage(!reload);
+  }
 
   // remove after dev
   const backgroundStyle = { 
