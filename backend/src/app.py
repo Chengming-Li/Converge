@@ -3,11 +3,9 @@ from flask_cors import CORS
 from actions import createUser, getUser, getTable, deleteTable, deleteUser, startInterval, endInterval, editInterval, deleteInterval, editSettings
 
 app = Flask(__name__)
-
 # remove when deploying
 CORS(app, resources={r"/api/*": {"origins": "http://localhost:3000"}}, supports_credentials=True)
 
-# exposes endpoints
 @app.get('/api')
 def defaultApiCall():
     return {"text": "Hello, world!"}

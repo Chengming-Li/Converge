@@ -4,10 +4,11 @@ import Input from './Components/Input';
 import Sidebar from './Components/Sidebar';
 import Header from './Components/Header';
 import Section from './Components/Section';
-import moment, { min } from "moment-timezone";
+import moment from "moment-timezone";
 import { SHA256 } from 'crypto-js';
 
-const userDataAPI = "http://localhost:5000/api/user/919089736405909505"
+const userID = "919089736405909505"
+const userDataAPI = "http://localhost:5000/api/user/"
 const intervalAPI = "http://localhost:5000/api/interval"
 const endIntervalAPI = "http://localhost:5000/api/interval/end/"
 
@@ -15,7 +16,6 @@ const endIntervalAPI = "http://localhost:5000/api/interval/end/"
 function App() {
   const [collapsedMenu, setCollapsedMenu] = useState(false);
   const [windowWidth, setWindowWidth] = useState(document.documentElement.clientWidth);
-
   const [userInfo, setUserInfo] = useState(null);
   const [activeInterval, setActiveInterval] = useState(null);
   const [inactiveIntervals, setInactiveIntervals] = useState([]);
@@ -23,9 +23,8 @@ function App() {
   const [loading, setLoading] = useState(true);
   const [sections, setSections] = useState(null);
 
-  // fetches and stores user data from userDataAPI
   useEffect(() => {
-    fetch(userDataAPI).then((response) => {
+    fetch(userDataAPI + userID).then((response) => {
       if (!response.ok) {
         console.log(response.json());
         throw new Error(response.status);
@@ -42,12 +41,12 @@ function App() {
     });
   }, []);
 
-  // starts interval
   const startInterval = (name, project_id) => {
     if (activeInterval) {
       return;
     } else {
       const user_id = userInfo.id
+      // sets ActiveInterval so there's no delay, incorrect information will be updated after response
       setActiveInterval({ name, start_time: new Date()})
       let interval_id;
       fetch(intervalAPI, {
@@ -66,20 +65,22 @@ function App() {
         interval_id = data.id;
         const start_time = data.start_time;
         const end_time = null;
+        // overwrites previously started ActiveInterval with correct data
         setActiveInterval({name, user_id, project_id, interval_id, start_time, end_time})
       }).catch((error) => {
+        setActiveInterval(null);
         setError(error.message);
       });
     }
   };
 
-  // ends interval
   const endInterval = () => {
     if (!activeInterval) {
       return;
     }
     let end_time, interval_id, name, project_id, start_time, user_id;
     const id = activeInterval.interval_id;
+    const prevActive = activeInterval;
     setActiveInterval(null)
     fetch(endIntervalAPI + id, {
       method: 'PUT',
@@ -101,17 +102,17 @@ function App() {
       user_id = data.user_id;
       setInactiveIntervals([{end_time, interval_id, name, project_id, start_time, user_id}, ...inactiveIntervals])
     }).catch((error) => {
+      setActiveInterval(prevActive);
       setError(error.message);
       return;
     });
   }
 
-  // deletes interval
   const deleteInterval = (id) => {
     const indexToRemove = inactiveIntervals.findIndex((interval) => interval.interval_id === id);
-    const removedInterval = indexToRemove !== -1 ? inactiveIntervals[indexToRemove] : null
+    const removedInterval = indexToRemove !== -1 ? inactiveIntervals[indexToRemove] : null;
     const updatedList = inactiveIntervals.filter((interval) => interval.interval_id !== id);
-    setInactiveIntervals(updatedList)
+    setInactiveIntervals(updatedList);
     fetch(intervalAPI+"/"+id, {
       method: 'DELETE',
       headers: {
@@ -124,26 +125,31 @@ function App() {
       }
       return response.json();
     }).catch((error) => {
+      setInactiveIntervals([removedInterval, ...inactiveIntervals]);
       setError(error.message);
-      setInactiveIntervals([removedInterval, ...inactiveIntervals])
     });
   } 
 
-  // edits interval
   const editInterval = (id, name, project_id, start_time, end_time) => {
+    // if end_time is before start_time, add a day to end_time. If end_time is more than a day ahead of start_time, remove a day
     if(end_time < start_time) {
       end_time.setDate(end_time.getDate() + 1);
     } else if ((end_time - start_time) > (24 * 60 * 60 * 1000)) {
       end_time.setDate(end_time.getDate() - 1);
     }
+
     const st = moment(start_time).tz(userInfo.timezone).utc().format("dddd DD MMMM YYYY HH:mm:ss z");
     const et = moment(end_time).tz(userInfo.timezone).utc().format("dddd DD MMMM YYYY HH:mm:ss z");
     const indexToEdit = inactiveIntervals.findIndex((interval) => interval.interval_id === id);
+    let copy;
     if(indexToEdit !== -1) {
+      copy = Object.assign({}, inactiveIntervals[indexToEdit]);
       inactiveIntervals[indexToEdit].name = name;
       inactiveIntervals[indexToEdit].project_id = project_id;
       inactiveIntervals[indexToEdit].start_time = st;
       inactiveIntervals[indexToEdit].end_time = et;      
+    } else {
+      return;
     }
     fetch(intervalAPI + "/" + id, {
       method: 'PUT',
@@ -158,18 +164,24 @@ function App() {
       }
       return response.json();
     }).catch((error) => {
+      // undos changes
+      inactiveIntervals[indexToEdit].name = copy.name;
+      inactiveIntervals[indexToEdit].project_id = copy.project_id;
+      inactiveIntervals[indexToEdit].start_time = copy.start_time;
+      inactiveIntervals[indexToEdit].end_time = copy.end_time;  
       setError(error.message);
     });
   }
 
   // separates intervals into sections
   const separateSections = () => {
+    // sorts in descending order
     inactiveIntervals.sort((a, b) => {
       const dateA = new Date(a.start_time);
       const dateB = new Date(b.start_time);
       return dateB-dateA;
     });
-    const output = []
+    const output = [];
     const compareDates = (timeOne, timeTwo) => {
       const date1 = new Date(timeOne);
       const date2 = new Date(timeTwo);
@@ -178,6 +190,7 @@ function App() {
       (date1.getDate() === date2.getDate());
     }
     for (const element of inactiveIntervals) {
+      // if no subarray matches the date of the current interval, add one
       if(output.length === 0 || !compareDates(output[output.length - 1][0].start_time, element.start_time)) {
         output.push([]);
       }
@@ -198,7 +211,6 @@ function App() {
       }
     }
 
-    // calculate total time of all intervals in a section
     const calcTotalTime = (intervals) => {
       let hours = 0;
       let minutes = 0;
@@ -214,6 +226,7 @@ function App() {
       return String(hours).padStart(2, '0') + ":" + String(minutes).padStart(2, '0') + ":" + String(seconds).padStart(2, '0');
     }
 
+    // each section's key is the hash of the relative time along with all the interval id's
     setSections((
       output.map((intervals, index) => (
         <Section 
@@ -229,15 +242,11 @@ function App() {
     ))
   }
 
-  // tracks window width
   const updateWindowWidth = () => {
     setWindowWidth(document.documentElement.clientWidth);
   };
   useEffect(() => {
-    // Add event listener when component mounts
     window.addEventListener('resize', updateWindowWidth);
-
-    // Remove event listener when component unmounts
     return () => {
       window.removeEventListener('resize', updateWindowWidth);
     };
@@ -245,7 +254,7 @@ function App() {
 
   useEffect(() => {
     separateSections();
-  }, [loading, inactiveIntervals]);
+  }, [inactiveIntervals]);
 
   return loading ? 
   (
