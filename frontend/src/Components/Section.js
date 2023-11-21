@@ -1,10 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import '../App.css';
 import Interval from './Interval';
 
-function Section({ title, totalTime, intervals }) {
+function Section({ title, totalTime, intervals, deleteInterval }) {
     const [collapsed, setCollapsed] = useState(false);
-    const [tempInterval, setTempInterval] = useState(null)
+    
     return (
         <div className="IntervalSection">
             <div id='Head'>
@@ -14,18 +14,12 @@ function Section({ title, totalTime, intervals }) {
                     <img src={'/Cheese.png'} alt="collapse" />
                 </button>
             </div>
-            {tempInterval}
             {!collapsed && 
                 intervals.map((interval, index) => (
-                    <Interval key={interval.interval_id} info={interval} />
+                    <Interval key={interval.interval_id} info={interval} deleteInterval={deleteInterval} />
                 ))
             }
         </div>
     );
 }
 export default Section;
-/*
-{intervals.map((interval, index) => (
-                <Interval key={index} info={interval} />
-            ))}
-*/

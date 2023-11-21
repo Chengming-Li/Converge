@@ -150,7 +150,6 @@ input {
   color: #75A4AE;
 }
 .Sidebar button:hover {
-  cursor: pointer;
   background-color: #263238;
 }
 .Sidebar img {
@@ -267,7 +266,7 @@ input {
   height: 69px;
   margin-top: 3px;
 }
-.Interval #Name {
+.IntervalName {
   position: absolute;
   font-weight: 400;
   text-align: left;
@@ -290,25 +289,25 @@ input {
   color: red;
   background-color: #1d272c;
 }
-.Interval #StartTime {
+.StartTime {
   position: absolute;
   background-color: #1d272c;
   text-align: left;
   font-size: 20px;
-  width: 50px;
-  right: 272px;
+  width: 85px;
+  right: 307px;
   top: 19.5px;
   border: none;
   color: white;
   padding-top: 5px;
   padding-bottom: 5px;
 }
-.Interval #EndTime {
+.EndTime {
   position: absolute;
   background-color: #1d272c;
   text-align: left;
   font-size: 20px;
-  width: 50px;
+  width: 85px;
   right: 195px;
   top: 19.5px;
   border: none;
@@ -346,26 +345,44 @@ input {
   object-fit: cover;
   right: 8px;
 }
+.EditMenu {
+  position: absolute;
+  top: 50px;
+  right: 0px;
+  z-index: 99;
+  background-color: black;
+  padding-top: 5px;
+  padding-bottom: 5px;
+}
+.EditMenu button {
+  background-color: black;
+  color: red;
+  font-size: 14.5px;
+  width: 100%;
+  padding: 8px;
+}
+.EditMenu button:hover {
+  background-color: #263238;
+}
 
-
-@media (max-width: 610px) {
+@media (max-width: 700px) {
   /* Styles to hide elements when screen width is 600px or less */
-  .Interval #StartTime {
+  .StartTime {
     display: none;
   }
-  .Interval #EndTime {
+  .EndTime {
     display: none;
   }
   .Interval #Mid {
     display: none;
   }
 }
-@media (max-width: 700px) {
+@media (max-width: 800px) {
   /* Styles to hide elements when screen width is 600px or less */
   .Interval #Project {
     display: none;
   }
-  .Interval #Name {
+  .IntervalName {
     display: none;
   }
 }

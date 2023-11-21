@@ -6,30 +6,11 @@ import Header from './Components/Header';
 import Section from './Components/Section';
 
 const userDataAPI = "http://localhost:5000/api/user/918939098800750593"
-const startIntervalAPI = "http://localhost:5000/api/interval"
+const intervalAPI = "http://localhost:5000/api/interval"
 const endIntervalAPI = "http://localhost:5000/api/interval/end/"
-const editIntervalAPI = "http://localhost:5000/api/interval/"
 
 
 function App() {
-  /*
-
-  return loading ? 
-  (
-    <h1>LOADING</h1>
-  ) : error ? 
-  (
-    error
-  ) :
-  (
-    <div className="App">
-      <h1>Interval List</h1>
-      <Input addInterval={startInterval} activeInterval={activeInterval} endInterval = {endInterval}/>
-      {inactiveIntervals.map((interval, index) => (
-        <Interval key={index} info={interval} />
-      ))}
-    </div>
-  );*/
   const [collapsedMenu, setCollapsedMenu] = useState(false);
   const [windowWidth, setWindowWidth] = useState(document.documentElement.clientWidth);
 
@@ -67,7 +48,7 @@ function App() {
       const user_id = userInfo.id
       setActiveInterval({ name, start_time: new Date()})
       let interval_id;
-      fetch(startIntervalAPI, {
+      fetch(intervalAPI, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -123,6 +104,57 @@ function App() {
     });
   }
 
+  // deletes interval
+  const deleteInterval = (id) => {
+    const indexToRemove = inactiveIntervals.findIndex((interval) => interval.interval_id === id);
+    const removedInterval = indexToRemove !== -1 ? inactiveIntervals[indexToRemove] : null
+    const updatedList = inactiveIntervals.filter((interval) => interval.interval_id !== id);
+    setInactiveIntervals(updatedList)
+    fetch(intervalAPI+"/"+id, {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+      }
+    }).then((response) => {
+      if (!response.ok) {
+        console.log(response.json());
+        throw new Error(response.status);
+      }
+      return response.json();
+    }).catch((error) => {
+      setError(error.message);
+      setInactiveIntervals([])
+      setInactiveIntervals([removedInterval, ...inactiveIntervals])
+    });
+  } 
+
+  // edits interval
+  const editInterval = (id, name, project_id, start_time, end_time) => {
+    const indexToEdit = inactiveIntervals.findIndex((interval) => interval.interval_id === id);
+    if(indexToEdit !== -1) {
+      inactiveIntervals[indexToEdit].name = name;
+      inactiveIntervals[indexToEdit].project_id = project_id;
+      inactiveIntervals[indexToEdit].start_time = start_time;
+      inactiveIntervals[indexToEdit].end_time = end_time;      
+    }
+    fetch(intervalAPI + "/" + id, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ name, project_id, start_time, end_time }),
+    }).then((response) => {
+      if (!response.ok) {
+        console.log(response.json());
+        throw new Error(response.status);
+      }
+      return response.json();
+    }).catch((error) => {
+      setError(error.message);
+    });
+  }
+
+  // separates intervals into sections
   const separateSections = () => {
     return (
       inactiveIntervals.map((interval, index) => (
@@ -136,6 +168,7 @@ function App() {
     )
   }
 
+  // tracks window width
   const updateWindowWidth = () => {
     setWindowWidth(document.documentElement.clientWidth);
   };
@@ -186,6 +219,7 @@ function App() {
             title={"Today"}
             totalTime={"00:00:00"}
             intervals={inactiveIntervals}
+            deleteInterval={deleteInterval}
           />
         </div>
       </div>
