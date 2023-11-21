@@ -11,7 +11,7 @@ INSERT_USER = "INSERT INTO users (username, email, timezone) VALUES (%s, %s, %s)
 FETCH_USER_INFO = "SELECT username, email, timezone FROM users WHERE id = (%s);"
 DELETE_USER = "DELETE FROM users WHERE id = (%s);"
 CREATE_INTERVALS_TABLE = "CREATE TABLE IF NOT EXISTS intervals (interval_id SERIAL PRIMARY KEY, user_id INT, project_id INT, name TEXT, start_time timestamptz, end_time timestamptz, FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE);" # FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE
-START_INTERVAL = "INSERT INTO intervals (user_id, project_id, name, start_time) VALUES (%s, %s, %s, %s) RETURNING interval_id;"
+START_INTERVAL = "INSERT INTO intervals (user_id, project_id, name, start_time) VALUES (%s, %s, %s, %s) RETURNING *;"
 END_INTERVAL = "UPDATE intervals SET end_time = (%s) WHERE interval_id = (%s) RETURNING *;"
 EDIT_INTERVAL = "UPDATE intervals SET name = (%s), project_id = (%s), start_time = (%s), end_time = (%s) WHERE interval_id = (%s);"
 GET_ALL_INACTIVE_INTERVALS_BY_USER = "SELECT * FROM intervals WHERE user_id = %s AND end_time IS NOT NULL ORDER BY start_time DESC;"
@@ -208,10 +208,10 @@ def startInterval():
                 cursor.execute(CREATE_INTERVALS_TABLE)
                 connection.commit()
                 cursor.execute(START_INTERVAL, (userID, projectID, name, startTime,))
-                intervalID = cursor.fetchone()[0]
+                data = cursor.fetchone()
     except Exception as e:
         return {"error": f"Failed to start the interval: {str(e)}"}, 500
-    return jsonify({"id": str(intervalID)}), 201
+    return jsonify({"id": str(data[0]), "start_time": data[4].strftime('%A %d %B %Y %H:%M:%S %Z')}), 201
 
 def endInterval(intervalId):
     """
@@ -223,8 +223,6 @@ def endInterval(intervalId):
     """
     connection = establishConnection()
     endTime = datetime.now()
-    originalFormat = "%a, %d %b %Y %H:%M:%S %Z"
-    desiredFormat = "%A %d %B %Y %H:%M:%S %Z"
     try:
         with connection:
             with connection.cursor() as cursor:
@@ -234,7 +232,9 @@ def endInterval(intervalId):
         return {"error": f"Failed to end interval: {str(e)}"}, 500
     return jsonify({"interval_id": str(intervalId), 
                     "end_time" : data[5].strftime('%A %d %B %Y %H:%M:%S %Z'), 
-                    "user_id" : str(data[1]), "project_id" : str(data[2]) if data[2] else None, "name" : data[3], 
+                    "user_id" : str(data[1]), 
+                    "project_id" : str(data[2]) if data[2] else None, 
+                    "name" : data[3], 
                     "start_time" : data[4].strftime('%A %d %B %Y %H:%M:%S %Z')
                 }), 201
 
