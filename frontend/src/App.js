@@ -4,7 +4,7 @@ import Input from './Components/Input';
 import Sidebar from './Components/Sidebar';
 import Header from './Components/Header';
 import Section from './Components/Section';
-import moment from "moment-timezone";
+import moment, { min } from "moment-timezone";
 import { SHA256 } from 'crypto-js';
 
 const userDataAPI = "http://localhost:5000/api/user/919089736405909505"
@@ -21,7 +21,7 @@ function App() {
   const [inactiveIntervals, setInactiveIntervals] = useState([]);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [reload, reloadPage] = useState(true);
+  const [sections, setSections] = useState(null);
 
   // fetches and stores user data from userDataAPI
   useEffect(() => {
@@ -45,7 +45,6 @@ function App() {
   // starts interval
   const startInterval = (name, project_id) => {
     if (activeInterval) {
-      console.log(typeof activeInterval)
       return;
     } else {
       const user_id = userInfo.id
@@ -183,6 +182,7 @@ function App() {
       }
       output[output.length - 1].push(element);
     }
+
     const relativizeDates = (timeString) => {
       const present = new Date();
       const oneDayAhead = new Date(timeString);
@@ -196,20 +196,38 @@ function App() {
         return new Date(timeString).toLocaleDateString('en-US', options);
       }
     }
-    return (
+
+    // calculate total time of all intervals in a section
+    const calcTotalTime = (intervals) => {
+      let hours = 0;
+      let minutes = 0;
+      let seconds = 0;
+      for (const interval of intervals) {
+        const st = new Date(interval.start_time)
+        const et = new Date(interval.end_time)
+        const timeDifference = et - st;
+        hours += Math.floor(timeDifference / 3600000);
+        minutes += Math.floor((timeDifference % 3600000) / 60000);
+        seconds += Math.floor((timeDifference % 60000) / 1000);
+      }
+      return String(hours).padStart(2, '0') + ":" + String(minutes).padStart(2, '0') + ":" + String(seconds).padStart(2, '0');
+    }
+
+    setSections((
       output.map((intervals, index) => (
         <Section 
           title={relativizeDates(intervals[0].start_time)}
-          totalTime={"00:00:00"}
+          totalTime={calcTotalTime(intervals)}
           intervals={intervals} 
           deleteInterval={deleteInterval}
           editInterval={editInterval}
-          rerender={rerenderPage}
+          rerender={separateSections}
           key={SHA256(relativizeDates(intervals[0].start_time) + intervals.map(obj => obj.interval_id).join('')).toString()}
         />
       ))
-    )
+    ))
   }
+
   // tracks window width
   const updateWindowWidth = () => {
     setWindowWidth(document.documentElement.clientWidth);
@@ -224,18 +242,9 @@ function App() {
     };
   }, []);
 
-  // rerenders page
-  const rerenderPage = () => {
-    reloadPage(!reload);
-  }
-
-  // remove after dev
-  const backgroundStyle = { 
-    //backgroundImage: 'url("/UI.png")', // Specify the path to your image relative to the public directory
-    backgroundSize: 'cover',
-    backgroundPosition: 'center calc(50% + 10px)',
-    height: '100vh',
-  };
+  useEffect(() => {
+    separateSections();
+  }, [loading]);
 
   return loading ? 
   (
@@ -245,7 +254,7 @@ function App() {
     error
   ) :
   (
-    <div className='.App' style={backgroundStyle}>
+    <div className='.App'>
       <Header ToggleMenu={() => {setCollapsedMenu(!collapsedMenu)}}/>
       <Sidebar collapsed={collapsedMenu}/>
       <Input 
@@ -262,7 +271,7 @@ function App() {
             height: '100%',
             overflowY: 'auto'
           }}>
-          {separateSections()}
+          {sections}
         </div>
       </div>
     </div>

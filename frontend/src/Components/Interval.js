@@ -121,7 +121,7 @@ function Interval({ info, deleteInterval, editInterval, rerender }) {
       rerender();
       setDateChanged(false);
     }
-  }, [editInterval, info.interval_id, finalIntervalName, projectId, startTime, endTime])
+  }, [dateChanged, rerender, editInterval, info.interval_id, finalIntervalName, projectId, startTime, endTime])
 
   // calculates the difference and returns a string formatted hh:mm:ss
   function calculateTimeDifference() {
