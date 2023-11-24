@@ -14,3 +14,6 @@ def test_create_user(client):
     assert response.status_code == 201, f"Expected status code 201, but got {response.status_code}"
     assert "id" in response.get_json(), "id not included in response"
     assert response.get_json()["id"] is not "", f"invalid id returned, got {response.get_json()['id']}"
+
+    # clean up
+    client.delete("/api/user/" + response.get_json()['id'])

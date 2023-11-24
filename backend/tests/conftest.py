@@ -12,10 +12,6 @@ def app():
     })
 
     yield app
-    
-    with app.test_client() as client:
-        client.delete("/api/clear/table/users", json={"confimration" : os.getenv("DEV_PASSWORD")})
-        client.delete("/api/clear/table/intervals", json={"confimration" : os.getenv("DEV_PASSWORD")})
 
 @pytest.fixture()
 def client(app):
