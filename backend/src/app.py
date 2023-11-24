@@ -1,6 +1,6 @@
 from flask import Flask, render_template
 from flask_cors import CORS
-from flask_socketio import SocketIO, send
+from flask_socketio import SocketIO, send, join_room, leave_room
 import os
 from dotenv import load_dotenv
 import psycopg2
@@ -78,15 +78,39 @@ def create_app(test_config=None):
     #region rooms API
     socketio = SocketIO(app, cors_allowed_origins="*")
 
-    @socketio.on('message')
-    def handle_message(message):
-        print("Received message: " + message)
-        if message != "User Connected!":
-            send(message, broadcast=True)
-
     @app.route('/chat')
     def chat():
         return render_template('index.html')
+    
+    @socketio.on('connect')
+    def handle_connect():
+        print('Client connected')
+    
+    @socketio.on('disconnect')
+    def handle_disconnect():
+        print('Client disconnected')
+
+    @socketio.on('join')
+    def handle_join(data):
+        username = data['username']
+        room = data['room']
+        join_room(room)
+        send(username + ' has entered the room.', to=room)
+
+    @socketio.on('leave')
+    def handle_leave(data):
+        username = data['username']
+        room = data['room']
+        leave_room(room)
+        send(username + ' has left the room.', to=room)
+
+    @socketio.on('message')
+    def handle_message(data):
+        print(type(data))
+        username = data['username']
+        room = data['room']
+        message = data['msg']
+        send(f"{username}: {message}", to=room)
     #endregion
 
     return app, socketio

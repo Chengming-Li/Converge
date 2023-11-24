@@ -2,9 +2,11 @@
 
 def test_api_home(app):
     client = app[1]
-    client.send("Hello there")
+    client.emit('join', {"room": "Test", 'username': "Tester"})
+    client.emit('message', {'msg': "Hello there", 'room': "Test", 'username': "Tester"})
 
     response = client.get_received()
 
-    assert len(response) > 0, "No message received"
-    assert response[0]['args'] == "Hello there", "Incorrect message received"
+    assert len(response) == 2, "Invalid number of messages received"
+    assert response[0]['args'] == "Tester has entered the room.", "Failed to join room"
+    assert response[1]['args'] == "Tester: Hello there", "Invalid message received"
