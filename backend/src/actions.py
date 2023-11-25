@@ -1,6 +1,3 @@
-import os
-import psycopg2
-from dotenv import load_dotenv
 from flask import request, jsonify
 from datetime import datetime
 
@@ -20,16 +17,9 @@ DELETE_INTERVAL = "DELETE FROM intervals WHERE interval_id = (%s);"
 EDIT_SETTINGS = "UPDATE users SET timezone = (%s) WHERE id = (%s) RETURNING id;"
 # endregion
 
-# loads environment variables from .env and other miscellaneous stuff
-load_dotenv()
-url = os.getenv("DATABASE_URL")
-
-def establishConnection():
-    return psycopg2.connect(url)
-
 # API Functions
 # region general functions, for testing
-def getTable(tableName):
+def getTable(tableName, establishConnection):
     """
     Fetches entire table from database based on the name of the table
     """
@@ -37,34 +27,50 @@ def getTable(tableName):
     try:
         with connection:
             with connection.cursor() as cursor:
-                cursor.execute(f"SELECT * FROM {tableName}",)
+                cursor.execute(f"SELECT * FROM {tableName};",)
                 table = cursor.fetchall()
                 result = [dict(zip([column[0] for column in cursor.description], row)) for row in table]
     except Exception as e:
         return {"error": f"Failed to get table: {str(e)}"}, 500
     return jsonify(result)
 
-def deleteTable(tableName):
+def deleteTable(tableName, establishConnection, password):
     """
     Deletes entire table from database based on the name of the table
     """
     connection = establishConnection()
     data = request.get_json()
-    if data["confimration"] != "Confirm":
+    if data["confimration"] != password:
         return {"error": "Access Denied"}, 403
     try:
         with connection:
             with connection.cursor() as cursor:
-                cursor.execute(f"DROP TABLE {tableName}",)
+                cursor.execute(f"DROP TABLE {tableName};",)
                 result = [{"name": tableName}]
     except Exception as e:
         return {"error": f"Failed to delete Table: {str(e)}"}, 500
     return jsonify(result)
 
+def clearTable(tableName, establishConnection, password):
+    """
+    Deletes all rows in table based on the name of the table
+    """
+    connection = establishConnection()
+    data = request.get_json()
+    if data["confimration"] != password:
+        return {"error": "Access Denied"}, 403
+    try:
+        with connection:
+            with connection.cursor() as cursor:
+                cursor.execute(f"DELETE FROM {tableName};",)
+                result = [{"name": tableName}]
+    except Exception as e:
+        return {"error": f"Failed to clear Table: {str(e)}"}, 500
+    return jsonify(result)
 # endregion
 
 # region user functions
-def getUser(userId):
+def getUser(userId, establishConnection):
     """
     Fetch user information from database
 
@@ -107,7 +113,7 @@ def getUser(userId):
         return {"error": f"Failed to get user: {str(e)}"}, 500
     return jsonify({"userInfo" : user, "intervals" : inactive, "activeInterval" : active})
 
-def createUser():
+def createUser(establishConnection):
     """
     Create a new user in table users and return their ID
     Json Body:
@@ -133,7 +139,7 @@ def createUser():
         return {"error": f"Failed to create user: {str(e)}"}, 500
     return jsonify({"id": str(userId)}), 201
 
-def deleteUser(userId):
+def deleteUser(userId, establishConnection):
     """
     Delete user from database
 
@@ -151,7 +157,7 @@ def deleteUser(userId):
         return {"error": f"Failed to delete user: {str(e)}"}, 500
     return jsonify(result)
 
-def editSettings(userId):
+def editSettings(userId, establishConnection):
     """
     Changes the settings associated with an account
     Json Body:
@@ -173,7 +179,7 @@ def editSettings(userId):
 # endregion
 
 # region interval functions
-def startInterval():
+def startInterval(establishConnection):
     """
     Create a new interval and return its ID
     Json Body:
@@ -200,7 +206,7 @@ def startInterval():
         return {"error": f"Failed to start the interval: {str(e)}"}, 500
     return jsonify({"id": str(data[0]), "start_time": data[4].strftime('%A %d %B %Y %H:%M:%S %Z')}), 201
 
-def endInterval(intervalId):
+def endInterval(intervalId, establishConnection):
     """
     Ends interval with ID
     
@@ -225,7 +231,7 @@ def endInterval(intervalId):
                     "start_time" : data[4].strftime('%A %d %B %Y %H:%M:%S %Z')
                 }), 201
 
-def editInterval(intervalId):
+def editInterval(intervalId, establishConnection):
     """
     Edits interval with ID
     Json Body:
@@ -253,7 +259,7 @@ def editInterval(intervalId):
         return {"error": f"Failed to edit interval: {str(e)}"}, 500
     return jsonify({"id": str(intervalId)}), 201
 
-def deleteInterval(intervalId):
+def deleteInterval(intervalId, establishConnection):
     """
     Delete interval from database
 
