@@ -1,10 +1,13 @@
-from flask import Flask
+from flask import Flask, render_template
 from flask_cors import CORS
-from flask_socketio import SocketIO, send
+from flask_socketio import SocketIO, send, join_room, leave_room
 import os
 from dotenv import load_dotenv
-from src.actions import clearTable, createUser, getUser, getTable, deleteTable, deleteUser, startInterval, endInterval, editInterval, deleteInterval, editSettings
 import psycopg2
+
+import sys
+sys.path.append('/backend/src/')
+from src.actions import clearTable, createUser, getUser, getTable, deleteTable, deleteUser, startInterval, endInterval, editInterval, deleteInterval, editSettings
 
 def create_app(test_config=None):
     load_dotenv()
