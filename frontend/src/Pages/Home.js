@@ -1,4 +1,4 @@
-import '../App.css';
+import '../Styles/Home.css';
 import React, { useState, useEffect } from 'react';
 import Input from '../Components/Input';
 import Sidebar from '../Components/Sidebar';
@@ -21,6 +21,7 @@ const Home = () => {
     const [error, setError] = useState(null);
     const [loading, setLoading] = useState(true);
     const [sections, setSections] = useState(null);
+    const [value, setValue] = useState("");
   
     useEffect(() => {
         fetch(userDataAPI + userID).then((response) => {
@@ -33,6 +34,7 @@ const Home = () => {
             setUserInfo(data.userInfo);
             setInactiveIntervals(data.intervals);
             setActiveInterval(data.activeInterval);
+            setValue(data.activeInterval ? data.activeInterval.name : "")
             setLoading(false);
         }).catch((error) => {
             setError(error.message);
@@ -42,7 +44,22 @@ const Home = () => {
   
     const startInterval = (name, project_id) => {
         if (activeInterval) {
-            return;
+            fetch(intervalAPI + "/" + activeInterval.interval_id, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ name, project_id, start_time: activeInterval.start_time, end_time: null }),
+            }).then((response) => {
+                if (!response.ok) {
+                    console.log(response.json());
+                    throw new Error(response.status);
+                }
+                return response.json();
+            }).catch((error) => {
+                setError(error.message);
+            });
+            activeInterval.name = name;
         } else {
             const user_id = userInfo.id
             // sets ActiveInterval so there's no delay, incorrect information will be updated after response
@@ -80,6 +97,7 @@ const Home = () => {
         let end_time, interval_id, name, project_id, start_time, user_id;
         const id = activeInterval.interval_id;
         const prevActive = activeInterval;
+        console.log(inactiveIntervals)
         setActiveInterval(null)
         fetch(endIntervalAPI + id, {
             method: 'PUT',
@@ -234,6 +252,7 @@ const Home = () => {
                     deleteInterval={deleteInterval}
                     editInterval={editInterval}
                     rerender={separateSections}
+                    resumeInterval={(name, project_id) => {setValue(name); startInterval(name, project_id)}}
                     key={SHA256(relativizeDates(intervals[0].start_time) + intervals.map(obj => obj.interval_id).join('')).toString()}
                 />
             ))
@@ -262,7 +281,7 @@ const Home = () => {
       error
     ) :
     (
-        <div className='.App'>
+        <div className='App'>
             <Header ToggleMenu={() => {setCollapsedMenu(!collapsedMenu)}}/>
             <Sidebar collapsed={collapsedMenu}/>
             <Input 
@@ -271,6 +290,8 @@ const Home = () => {
                 endInterval={endInterval} 
                 inputWidth = {windowWidth - (collapsedMenu ? 58 : 198) + "px"}
                 addProject = {() => {console.log("Added Project")}}
+                value={value}
+                setValue={setValue}
             />
             <div className="TimeSections" style={{width: `${windowWidth - (collapsedMenu ? 114 : 254) + "px"}`}}>
                 <div style={

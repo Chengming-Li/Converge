@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import '../App.css';
+import '../Styles/Home.css';
 
-function Input({ activeInterval, addInterval, endInterval, inputWidth, addProject }) {
-  const [value, setValue] = useState(activeInterval ? activeInterval.name : "");
+function Input({ activeInterval, addInterval, endInterval, inputWidth, addProject, value, setValue }) {
   const [time, setTime] = useState(activeInterval ? activeInterval.start_time : "00:00:00")
 
   const handleInputChange = (event) => {

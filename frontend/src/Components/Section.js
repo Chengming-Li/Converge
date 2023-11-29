@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import '../App.css';
+import '../Styles/Home.css';
 import Interval from './Interval';
 
-function Section({ title, totalTime, intervals, deleteInterval, editInterval, rerender }) {
+function Section({ title, totalTime, intervals, deleteInterval, editInterval, rerender, resumeInterval, setIntervalName }) {
     const [collapsed, setCollapsed] = useState(false);
     
     return (
@@ -16,7 +16,7 @@ function Section({ title, totalTime, intervals, deleteInterval, editInterval, re
             </div>
             {!collapsed && 
                 intervals.map((interval, index) => (
-                    <Interval key={interval.interval_id} info={interval} deleteInterval={deleteInterval} editInterval={editInterval} rerender={rerender} />
+                    <Interval key={interval.interval_id} info={interval} deleteInterval={deleteInterval} editInterval={editInterval} rerender={rerender} resumeInterval={resumeInterval} />
                 ))
             }
         </div>

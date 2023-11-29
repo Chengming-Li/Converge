@@ -284,10 +284,11 @@ input {
   left: 25px;
   top: 38px;
   font-weight: 400;
-  text-align: center;
+  text-align: left;
   font-size: 18px;
   color: red;
   background-color: #1d272c;
+  width: 120px;
 }
 .StartTime {
   position: absolute;
@@ -353,19 +354,30 @@ input {
   background-color: black;
   padding-top: 5px;
   padding-bottom: 5px;
+  width: 75px;
 }
-.EditMenu button {
+.EditMenu #delete {
   background-color: black;
   color: red;
   font-size: 14.5px;
   width: 100%;
   padding: 8px;
 }
-.EditMenu button:hover {
+.EditMenu #resume {
+  background-color: black;
+  color: #75A4AE;
+  font-size: 14.5px;
+  width: 100%;
+  padding: 8px;
+}
+.EditMenu #delete:hover {
+  background-color: #263238;
+}
+.EditMenu #resume:hover {
   background-color: #263238;
 }
 
-@media (max-width: 700px) {
+@media (max-width: 800px) {
   /* Styles to hide elements when screen width is 600px or less */
   .StartTime {
     display: none;
@@ -376,13 +388,19 @@ input {
   .Interval #Mid {
     display: none;
   }
-}
-@media (max-width: 800px) {
+  .IntervalName {
+    width: calc(100% - 230px);
+  }
+} 
+@media (max-width: 600px) {
   /* Styles to hide elements when screen width is 600px or less */
-  .Interval #Project {
+  #Date {
+    display: none;
+  }
+  #TimeElapsed {
     display: none;
   }
   .IntervalName {
-    display: none;
+    width: calc(100% - 80px);
   }
 }

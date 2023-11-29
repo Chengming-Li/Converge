@@ -1,5 +1,5 @@
 import React from 'react';
-import '../App.css';
+import '../Styles/Home.css';
 
 function Header({ ToggleMenu }) {
     return (

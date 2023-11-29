@@ -1,5 +1,5 @@
 import React from 'react';
-import '../App.css';
+import '../Styles/Home.css';
 import SidebarButton from './SidebarButton';
 
 function Sidebar({ collapsed }) {

@@ -1,4 +1,4 @@
-from flask import Flask, render_template
+from flask import Flask
 from flask_cors import CORS
 from flask_socketio import SocketIO, send, join_room, leave_room
 import os
@@ -6,8 +6,8 @@ from dotenv import load_dotenv
 import psycopg2
 
 import sys
-sys.path.append('/backend/src/')
-from actions import clearTable, createUser, getUser, getTable, deleteTable, deleteUser, startInterval, endInterval, editInterval, deleteInterval, editSettings
+sys.path.append('/backend/src/actions')
+from dbActions import clearTable, createUser, getUser, getTable, deleteTable, deleteUser, startInterval, endInterval, editInterval, deleteInterval, editSettings
 
 def create_app(test_config=None):
     load_dotenv()
@@ -77,10 +77,6 @@ def create_app(test_config=None):
 
     #region rooms API
     socketio = SocketIO(app, cors_allowed_origins="*")
-
-    @app.route('/chat')
-    def chat():
-        return render_template('index.html')
     
     @socketio.on('connect')
     def handle_connect():
@@ -106,10 +102,10 @@ def create_app(test_config=None):
 
     @socketio.on('message')
     def handle_message(data):
-        print(type(data))
         username = data['username']
         room = data['room']
         message = data['msg']
+        print(message)
         send(f"{username}: {message}", to=room)
     #endregion
 

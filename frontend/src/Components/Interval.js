@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 
-function Interval({ info, deleteInterval, editInterval, rerender }) {
+function Interval({ info, deleteInterval, editInterval, rerender, resumeInterval }) {
   // extracts and formats time from Date object
   function getTime(currentDate) {
     if(!currentDate) {
@@ -179,7 +179,10 @@ function Interval({ info, deleteInterval, editInterval, rerender }) {
       <button id="Edit" onClick={() => {setMenuIsOpen(!menuIsOpen)}}><img src={'/options.png'} alt="edit" /></button>
       {menuIsOpen && (
         <div className="EditMenu" ref={dropdownRef}>
-          <button onClick={() => {deleteInterval(info.interval_id)}}>
+          <button id='resume' onClick={() => {resumeInterval(intervalName, projectId)}}>
+            Resume
+          </button>
+          <button id='delete' onClick={() => {deleteInterval(info.interval_id)}}>
             Delete
           </button>
         </div>
