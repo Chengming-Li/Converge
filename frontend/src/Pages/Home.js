@@ -21,7 +21,7 @@ const Home = () => {
     const [error, setError] = useState(null);
     const [loading, setLoading] = useState(true);
     const [sections, setSections] = useState(null);
-    const [value, setValue] = useState("");
+    const [inputValue, setInputValue] = useState("");
   
     useEffect(() => {
         fetch(userDataAPI + userID).then((response) => {
@@ -34,7 +34,7 @@ const Home = () => {
             setUserInfo(data.userInfo);
             setInactiveIntervals(data.intervals);
             setActiveInterval(data.activeInterval);
-            setValue(data.activeInterval ? data.activeInterval.name : "")
+            setInputValue(data.activeInterval ? data.activeInterval.name : "")
             setLoading(false);
         }).catch((error) => {
             setError(error.message);
@@ -94,10 +94,18 @@ const Home = () => {
         if (!activeInterval) {
             return;
         }
-        let end_time, interval_id, name, project_id, start_time, user_id;
+        // let end_time, interval_id, name, project_id, start_time, user_id;
         const id = activeInterval.interval_id;
         const prevActive = activeInterval;
-        console.log(inactiveIntervals)
+        const endedInterval = {
+            name: prevActive.name, 
+            interval_id: prevActive.interval_id, 
+            project_id: prevActive.project_id,
+            user_id: prevActive.user_id,
+            start_time: prevActive.start_time,
+            end_time: new Date()
+        };
+        setInactiveIntervals([endedInterval, ...inactiveIntervals]);
         setActiveInterval(null)
         fetch(endIntervalAPI + id, {
             method: 'PUT',
@@ -110,15 +118,11 @@ const Home = () => {
             }
             return response.json();
         }).then((data) => {
-            end_time = data.end_time;
-            interval_id = data.interval_id;
-            name = data.name;
-            project_id = data.project_id;
-            start_time = data.start_time;
-            user_id = data.user_id;
-            setInactiveIntervals([{end_time, interval_id, name, project_id, start_time, user_id}, ...inactiveIntervals])
+            endedInterval.end_time = data.end_time;
         }).catch((error) => {
             setActiveInterval(prevActive);
+            setInputValue(prevActive.name);
+            setInactiveIntervals(inactiveIntervals.filter((item, index) => item !== endedInterval));
             setError(error.message);
             return;
         });
@@ -189,7 +193,7 @@ const Home = () => {
         });
     }
   
-    // separates intervals into sections
+    // separates intervals into sections by date
     const separateSections = () => {
         // sorts in descending order
         inactiveIntervals.sort((a, b) => {
@@ -252,7 +256,7 @@ const Home = () => {
                     deleteInterval={deleteInterval}
                     editInterval={editInterval}
                     rerender={separateSections}
-                    resumeInterval={(name, project_id) => {setValue(name); startInterval(name, project_id)}}
+                    resumeInterval={(name, project_id) => {setInputValue(name); startInterval(name, project_id)}}
                     key={SHA256(relativizeDates(intervals[0].start_time) + intervals.map(obj => obj.interval_id).join('')).toString()}
                 />
             ))
@@ -272,15 +276,11 @@ const Home = () => {
     useEffect(() => {
         separateSections();
     }, [inactiveIntervals]);
-  
+
     return loading ? 
     (
       <h1>LOADING</h1>
-    ) : error ? 
-    (
-      error
-    ) :
-    (
+    ) : (
         <div className='App'>
             <Header ToggleMenu={() => {setCollapsedMenu(!collapsedMenu)}}/>
             <Sidebar collapsed={collapsedMenu}/>
@@ -290,8 +290,8 @@ const Home = () => {
                 endInterval={endInterval} 
                 inputWidth = {windowWidth - (collapsedMenu ? 58 : 198) + "px"}
                 addProject = {() => {console.log("Added Project")}}
-                value={value}
-                setValue={setValue}
+                value={inputValue}
+                setValue={setInputValue}
             />
             <div className="TimeSections" style={{width: `${windowWidth - (collapsedMenu ? 114 : 254) + "px"}`}}>
                 <div style={
