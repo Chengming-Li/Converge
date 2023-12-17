@@ -14,13 +14,11 @@ const Rooms = () => {
         const newSocket = io.connect('http://localhost:5000');
         setSocket(newSocket);
 
-        console.log("Connected");
-        /*newSocket.on('message', (data) => {
+        newSocket.on('message', (data) => {
             setReceivedMessages((prevMessages) => [...prevMessages, data]);
-        });*/
+        });
 
         return () => {
-            console.log("Disconnected");
             newSocket.disconnect();
         };
     }, []);

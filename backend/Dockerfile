@@ -16,4 +16,4 @@ EXPOSE 5000
 
 RUN cd src
 
-CMD ["python", "src/app.py"]
+CMD ["python", "-u", "src/app.py"]
