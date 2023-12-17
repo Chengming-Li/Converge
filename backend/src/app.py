@@ -24,6 +24,7 @@ def create_app(test_config=None):
 
     # remove when deploying
     CORS(app, resources={r"/api/*": {"origins": "http://localhost:3000"}}, supports_credentials=True)
+    CORS(app, resources={r"/test/*": {"origins": "http://localhost:3000"}}, supports_credentials=True)
 
     #region interval API
     @app.get('/api')
@@ -109,6 +110,14 @@ def create_app(test_config=None):
         send(f"{username}: {message}", to=room)
     #endregion
 
+    output = [""]
+    @app.put('/test/<string:interval_id>')
+    def test_thingy(interval_id):
+        output[0] = interval_id
+        return {}
+    @app.get('/test')
+    def test_check():
+        return {"test": output[0]}
     return app, socketio
 
 if __name__ == '__main__':

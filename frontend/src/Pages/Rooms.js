@@ -14,11 +14,13 @@ const Rooms = () => {
         const newSocket = io.connect('http://localhost:5000');
         setSocket(newSocket);
 
-        newSocket.on('message', (data) => {
+        console.log("Connected");
+        /*newSocket.on('message', (data) => {
             setReceivedMessages((prevMessages) => [...prevMessages, data]);
-        });
-    
+        });*/
+
         return () => {
+            console.log("Disconnected");
             newSocket.disconnect();
         };
     }, []);
@@ -34,8 +36,8 @@ const Rooms = () => {
     const joinRoom = () => {
         if (room.trim() !== '' && socket !== null) {
             setJoinedRoom(true);
-            socket.emit('join', {'room': room, 'username': username});
-        }
+            socket.emit('join', {'room': room.trim(), 'username': username});
+        };
     }
 
     const leaveRoom = () => {

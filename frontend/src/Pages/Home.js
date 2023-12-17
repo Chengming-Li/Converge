@@ -282,6 +282,10 @@ const Home = () => {
       <h1>LOADING</h1>
     ) : (
         <div className='App'>
+            {error !== null && <div style={{position: "absolute", textAlign: 'center', top: "35px", left: "calc(50vw - 100px)", backgroundColor: 'red', width: "200px", height: "87px", zIndex: 101}}>
+                <p>Error: {error}</p>
+                <button onClick={() => {setError(null)}} style={{position: "absolute", width: "50px", bottom: "10px", left: "calc(50% - 25px)"}}>Ok</button>
+            </div>}
             <Header ToggleMenu={() => {setCollapsedMenu(!collapsedMenu)}}/>
             <Sidebar collapsed={collapsedMenu}/>
             <Input 
