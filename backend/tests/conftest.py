@@ -1,13 +1,13 @@
 import os
 from dotenv import load_dotenv
-from src import app as a
+from ..src.app import create_app
 
 import pytest
 
 @pytest.fixture
 def app():
     load_dotenv()
-    app, socketio = a.create_app({
+    app, socketio = create_app({
         "DATABASE": os.getenv("TEST_DATABASE_URL")
     })
 
