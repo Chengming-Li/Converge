@@ -279,7 +279,7 @@ const Home = () => {
 
     return loading ? 
     (
-      <h1>LOADING</h1>
+      <h1 style={{textAlign: "center"}}>LOADING</h1>
     ) : (
         <div className='App'>
             {error !== null && <div style={{position: "absolute", textAlign: 'center', top: "35px", left: "calc(50vw - 100px)", backgroundColor: 'red', width: "200px", height: "87px", zIndex: 101}}>
