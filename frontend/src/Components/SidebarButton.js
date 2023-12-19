@@ -1,4 +1,4 @@
-import '../Styles/Home.css';
+import '../Styles/Components.css';
 import React from 'react';
 
 function SidebarButton({ Text, IconSrc, Logic }) {

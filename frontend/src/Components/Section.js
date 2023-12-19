@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import '../Styles/Home.css';
+import '../Styles/Components.css';
 import Interval from './Interval';
 
 function Section({ title, totalTime, intervals, deleteInterval, editInterval, rerender, resumeInterval, setIntervalName }) {

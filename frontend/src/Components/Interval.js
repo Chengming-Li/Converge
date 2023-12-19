@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
+import '../Styles/Components.css';
 
 function Interval({ info, deleteInterval, editInterval, rerender, resumeInterval }) {
   // extracts and formats time from Date object
