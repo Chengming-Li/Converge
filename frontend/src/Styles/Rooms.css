@@ -48,6 +48,15 @@ p {
 }
 
 
+.Users {
+    position: absolute;
+    top: 235px;
+    right: 28px;
+    height: calc(max(100vh - 235px, 310px));
+    overflow: hidden;
+}
+
+
 .RoomsMenu {
     position: absolute;
     background-color: #525252;

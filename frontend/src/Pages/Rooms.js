@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import Input from '../Components/Input';
 import Sidebar from '../Components/Sidebar';
 import Header from '../Components/Header';
+import UserSection from '../Components/UserSection';
 
 const Rooms = () => {
     const [collapsedMenu, setCollapsedMenu] = useState(false);
@@ -56,7 +57,7 @@ const Rooms = () => {
     }
 
     const backgroundStyle = { 
-        backgroundImage: 'url("/RoomUI.png")',
+        //backgroundImage: 'url("/RoomUI.png")',
         backgroundSize: 'cover',
         backgroundPosition: 'center calc(50% + 10px)',
         height: '100vh',
@@ -85,6 +86,13 @@ const Rooms = () => {
                     <div className="Banner" style={{width: `${windowWidth - (collapsedMenu ? 114 : 254) + "px"}`}}>
                         <p id="Title">FOCUS ROOM</p>
                         <p id="Code">{room}</p>
+                    </div>
+                    <div className="Users" style={{width: `${windowWidth - (collapsedMenu ? 114 : 254) + "px"}`}}>
+                        <UserSection 
+                            username={"NAME"}
+                            totalTime={"00:00:00"}
+                            pfp={"/pfp.png"}
+                        />
                     </div>
                 </div> :
                 <div className='RoomsMenu' style={{

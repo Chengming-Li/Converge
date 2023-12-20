@@ -214,7 +214,6 @@ input {
     margin-bottom: 0px;
     opacity: 100%;
 }
-
 .IntervalSection #Head {
     position: relative;
     background-color: #1B1D1E;
@@ -225,6 +224,18 @@ input {
     top: 13px;
     left: 21px;
     font-size: 18px;
+}
+.IntervalSection #username {
+    position: absolute;
+    top: 20px;
+    left: 75px;
+    font-size: 18px;
+}
+.IntervalSection #pfp {
+    position: absolute;
+    left: 12px;
+    top: 6px;
+    width: 50px;
 }
 .IntervalSection #time {
     position: absolute;
