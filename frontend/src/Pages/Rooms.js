@@ -13,7 +13,7 @@ const Rooms = () => {
     const [error, setError] = useState(null);
     const [inputValue, setInputValue] = useState("");
     const [roomCode, setRoomCode] = useState('');
-    const [room, setRoom] = useState('');
+    const [room, setRoom] = useState('CODE');
   
     const updateWindowDimensions = () => {
         setWindowWidth(document.documentElement.clientWidth);
@@ -56,7 +56,7 @@ const Rooms = () => {
     }
 
     const backgroundStyle = { 
-        //backgroundImage: 'url("/JoinRooms.png")', // Specify the path to your image relative to the public directory
+        backgroundImage: 'url("/RoomUI.png")',
         backgroundSize: 'cover',
         backgroundPosition: 'center calc(50% + 10px)',
         height: '100vh',
@@ -72,15 +72,21 @@ const Rooms = () => {
             <Sidebar collapsed={collapsedMenu}/>
             {
                 room ?
-                <Input 
-                    activeInterval={activeInterval} 
-                    addInterval={startInterval} 
-                    endInterval={endInterval} 
-                    inputWidth = {windowWidth - (collapsedMenu ? 58 : 198) + "px"}
-                    addProject = {() => {console.log("Added Project")}}
-                    value={inputValue}
-                    setValue={setInputValue}
-                /> :
+                <div>
+                    <Input 
+                        activeInterval={activeInterval} 
+                        addInterval={startInterval} 
+                        endInterval={endInterval} 
+                        inputWidth = {windowWidth - (collapsedMenu ? 58 : 198) + "px"}
+                        addProject = {() => {console.log("Added Project")}}
+                        value={inputValue}
+                        setValue={setInputValue}
+                    />
+                    <div className="Banner" style={{width: `${windowWidth - (collapsedMenu ? 114 : 254) + "px"}`}}>
+                        <p id="Title">FOCUS ROOM</p>
+                        <p id="Code">{room}</p>
+                    </div>
+                </div> :
                 <div className='RoomsMenu' style={{
                     width: `${Math.min(windowWidth - (collapsedMenu ? 114 : 254), 370)}px`,
                     top: `${Math.max(0.53 * windowHeight, 300)}px`,
