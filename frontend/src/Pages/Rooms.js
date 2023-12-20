@@ -92,6 +92,28 @@ const Rooms = () => {
                             username={"NAME"}
                             totalTime={"00:00:00"}
                             pfp={"/pfp.png"}
+                            intervals={[{
+                                end_time: "Saturday 25 November 2023 03:49:59 UTC",
+                                interval_id: "920170251495473153", 
+                                name: "Started 4", 
+                                project_id: null,
+                                start_time: "Saturday 25 November 2023 03:47:59 UTC",
+                                user_id: "920170250246422529"
+                            }, {
+                                end_time: "Saturday 25 November 2023 03:49:59 UTC",
+                                interval_id: "920170251495473153", 
+                                name: "Started 4", 
+                                project_id: null,
+                                start_time: "Saturday 25 November 2023 03:47:59 UTC",
+                                user_id: "920170250246422529"
+                            }, {
+                                end_time: "Saturday 25 November 2023 03:49:59 UTC",
+                                interval_id: "920170251495473153", 
+                                name: "Started 4", 
+                                project_id: null,
+                                start_time: "Saturday 25 November 2023 03:47:59 UTC",
+                                user_id: "920170250246422529"
+                            }]}
                         />
                     </div>
                 </div> :

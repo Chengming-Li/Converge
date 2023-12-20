@@ -1,23 +1,24 @@
 import React, { useState } from 'react';
 import '../Styles/Components.css';
+import UserInterval from "./UserInterval"
 
 function UserSection({ username, pfp, totalTime, intervals, resumeInterval }) {
     const [collapsed, setCollapsed] = useState(false);
-    
+
     return (
         <div className="IntervalSection" style={{
-            height: "61px", 
             borderTopLeftRadius: "15px", 
             borderTopRightRadius: "15px", 
-            borderBottomRightRadius: "15px", 
-            borderBottomLeftRadius: "15px",
+            borderBottomRightRadius: `${collapsed ? 15 : 0}px`, 
+            borderBottomLeftRadius: `${collapsed ? 15 : 0}px`, 
+            backgroundColor: "#34464f"
         }}>
             <div id='Head' style={{
                 borderTopLeftRadius: "15px", 
-                borderTopRightRadius: `${collapsed ? 15 : 0}px`, 
+                borderTopRightRadius: "15px", 
                 borderBottomRightRadius: `${collapsed ? 15 : 0}px`, 
                 borderBottomLeftRadius: `${collapsed ? 15 : 0}px`, 
-                height: "100%",
+                height: "61px", 
                 backgroundColor: "#34464f"
             }}>
                 <span id='username'>{username}</span>
@@ -27,6 +28,12 @@ function UserSection({ username, pfp, totalTime, intervals, resumeInterval }) {
                     <img src={'/Cheese.png'} alt="collapse" />
                 </button>
             </div>
+            {
+                !collapsed && 
+                intervals.map((interval, index) => (
+                    <UserInterval key={interval.interval_id} info={interval} resumeInterval={resumeInterval} />
+                ))
+            }
         </div>
     );
 }
