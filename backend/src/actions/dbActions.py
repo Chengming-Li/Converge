@@ -3,9 +3,9 @@ from datetime import datetime
 
 # region SQL commands
 # when adding new settings, edit to CREATE_USERS_TABLE, INSERT_USER, EDIT_SETTINGS, editSettings(), and getUser()
-CREATE_USERS_TABLE = "CREATE TABLE IF NOT EXISTS users (id SERIAL PRIMARY KEY, username TEXT, email TEXT, timezone TEXT);"
-INSERT_USER = "INSERT INTO users (username, email, timezone) VALUES (%s, %s, %s) RETURNING id;"
-FETCH_USER_INFO = "SELECT username, email, timezone FROM users WHERE id = (%s);"
+CREATE_USERS_TABLE = "CREATE TABLE IF NOT EXISTS users (id SERIAL PRIMARY KEY, username TEXT, email TEXT, timezone TEXT, profile_picture TEXT);"
+INSERT_USER = "INSERT INTO users (username, email, timezone, profile_picture) VALUES (%s, %s, %s, %s) RETURNING id;"
+FETCH_USER_INFO = "SELECT username, email, timezone, profile_picture FROM users WHERE id = (%s);"
 DELETE_USER = "DELETE FROM users WHERE id = (%s);"
 CREATE_INTERVALS_TABLE = "CREATE TABLE IF NOT EXISTS intervals (interval_id SERIAL PRIMARY KEY, user_id INT, project_id INT, name TEXT, start_time timestamptz, end_time timestamptz, FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE);" # FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE
 START_INTERVAL = "INSERT INTO intervals (user_id, project_id, name, start_time) VALUES (%s, %s, %s, %s) RETURNING *;"
@@ -14,7 +14,7 @@ EDIT_INTERVAL = "UPDATE intervals SET name = (%s), project_id = (%s), start_time
 GET_ALL_INACTIVE_INTERVALS_BY_USER = "SELECT * FROM intervals WHERE user_id = %s AND end_time IS NOT NULL ORDER BY start_time DESC;"
 GET_ALL_ACTIVE_INTERVALS_BY_USER = "SELECT * FROM intervals WHERE user_id = %s AND end_time IS NULL ORDER BY start_time;"
 DELETE_INTERVAL = "DELETE FROM intervals WHERE interval_id = (%s);"
-EDIT_SETTINGS = "UPDATE users SET timezone = (%s) WHERE id = (%s) RETURNING id;"
+EDIT_SETTINGS = "UPDATE users SET username = %s, profile_picture = (%s), timezone = (%s) WHERE id = (%s) RETURNING id;"
 # endregion
 
 # API Functions
@@ -77,7 +77,7 @@ def getUser(userId, establishConnection):
     @param {int} userId: the ID of the user
 
     @returns {json}: a dictionary with these keys:
-        "userInfo" points to a dict with keys "email", "id", "timezone", and "username"
+        "userInfo" points to a dict with keys "email", "id", "timezone", "profile_picture", and "username"
         "intervals" points to a list of dictionaries, each with the keys "end_time", "start_time", "interval_id", "name", "project_id", and "user_id"
         "activeInterval" points to the current interval that hasn't been ended, with the keys "end_time", "start_time", "interval_id", "name", "project_id", and "user_id", or null if none exists
     """
@@ -87,7 +87,8 @@ def getUser(userId, establishConnection):
             with connection.cursor() as cursor:
                 cursor.execute(FETCH_USER_INFO, (userId,))
                 data = cursor.fetchone()
-                user = {"id": str(userId), "username" : data[0], "email" : data[1], "timezone" : data[2]}
+                print(data)
+                user = {"id": str(userId), "username" : data[0], "email" : data[1], "timezone" : data[2], "profile_picture" : data[3]}
                 
                 cursor.execute(GET_ALL_INACTIVE_INTERVALS_BY_USER, (userId,))
                 data = cursor.fetchall()
@@ -128,12 +129,14 @@ def createUser(establishConnection):
     username = data["username"]
     email = data["email"]
     timezone = data["timezone"]
+    pfp = data["profile_picture"]
+    print(pfp)
     try:
         with connection:
             with connection.cursor() as cursor:
                 cursor.execute(CREATE_USERS_TABLE)
                 connection.commit()
-                cursor.execute(INSERT_USER, (username, email, timezone,))
+                cursor.execute(INSERT_USER, (username, email, timezone, pfp))
                 userId = cursor.fetchone()[0]
     except Exception as e:
         return {"error": f"Failed to create user: {str(e)}"}, 500
@@ -162,20 +165,23 @@ def editSettings(userId, establishConnection):
     Changes the settings associated with an account
     Json Body:
         "timezone" : (str) timezone of user
-
-    @returns {json}: a dictionary containing the key "id" and "timezone"
+        "username" : (str) username of user
+        
+    @returns {json}: a dictionary containing the key "id"
     """
     connection = establishConnection()
     data = request.get_json()
     timezone = data["timezone"]
+    username = data["username"]
+    pfp = data["profile_picture"]
     try:
         with connection:
             with connection.cursor() as cursor:
-                cursor.execute(EDIT_SETTINGS, (timezone, userId,))
+                cursor.execute(EDIT_SETTINGS, (username, pfp, timezone, userId,))
                 userId = cursor.fetchone()[0]
     except Exception as e:
         return {"error": f"Failed to edit settings: {str(e)}"}, 500
-    return jsonify({"id": str(userId), "timezone" : timezone}), 201
+    return jsonify({"id": str(userId)}), 201
 # endregion
 
 # region interval functions

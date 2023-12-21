@@ -78,63 +78,24 @@ def create_app(test_config=None):
 
     #region rooms API
     socketio = SocketIO(app, cors_allowed_origins="*")
-    clients = {}
-    rooms = {}
 
     @socketio.on('connect')
     def handle_connect():
         client = request.sid
-        clients[client] = {"Name":"", "Room":None}
 
     @socketio.on('disconnect')
     def handle_disconnect():
         client = request.sid
-        room = clients[client]["Room"]
-        if room != None:
-            send(clients[client]["Name"] + ' has left the room.', to=room)
-            rooms[room].discard(client)
-        del clients[client]
 
     @socketio.on('join')
     def handle_join(data):
         client = request.sid
-        username = data['username']
-        room = data['room']
-        clients[client]["Name"] = username
-        clients[client]["Room"] = room
-        if room not in rooms:
-            rooms[room] = set()
-        rooms[room].add(client)
-        join_room(room)
-        send(username + ' has entered the room.', to=room)
 
     @socketio.on('leave')
     def handle_leave(data):
         client = request.sid
-        username = data['username']
-        room = data['room']
-        rooms[room].discard(client)
-        if len(rooms[room]) == 0:
-            del rooms[room]
-        leave_room(room)
-        send(username + ' has left the room.', to=room)
-
-    @socketio.on('message')
-    def handle_message(data):
-        username = data['username']
-        room = data['room']
-        message = data['msg']
-        send(f"{username}: {message}", to=room)
     #endregion
-
-    output = [""]
-    @app.put('/test/<string:interval_id>')
-    def test_thingy(interval_id):
-        output[0] = interval_id
-        return {}
-    @app.get('/test')
-    def test_check():
-        return {"test": output[0]}
+        
     return app, socketio
 
 if __name__ == '__main__':
