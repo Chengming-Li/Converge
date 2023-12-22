@@ -20,8 +20,8 @@ const Rooms = () => {
     const [socket, setSocket] = useState(null);
 
     const [thisUser, setThisUser] = useState({});
-    const [userID, setUserID] = useState(userIDs[Math.floor(Math.random() * userIDs.length)]);
-    const [users, setUsers] = useState([]);
+    const [userID, setUserID] = useState(userIDs[Math.floor(Math.random() * userIDs.length)]);  // active_interval, id, intervals, profile_picture, timeJoined, username
+    const [users, setUsers] = useState([]);  // active_interval, id, intervals, profile_picture, timeJoined, username
     
     useEffect(() => {
         const newSocket = io.connect('http://localhost:5000');
@@ -35,7 +35,7 @@ const Rooms = () => {
             return response.json();
         }).then((d) => {
             setThisUser({
-                activeInterval: null,
+                active_interval: null,
                 id: userID,
                 intervals: [],
                 profile_picture: d.users[0].profile_picture, 
@@ -50,7 +50,6 @@ const Rooms = () => {
         newSocket.on('host', (data) => {
             setRoom(data);
         });
-
         newSocket.on("join_room", (data) => {
             fetch(userDataAPI + "/" + data["userID"]).then((response) => {
                 if (!response.ok) {
@@ -72,7 +71,6 @@ const Rooms = () => {
                 return;
             });
         })
-
         newSocket.on("join_data", (data) => {
             const keysString = Object.keys(data).join(', ');
             if(keysString.length > 0) {
@@ -102,7 +100,6 @@ const Rooms = () => {
             }
             
         })
-
         newSocket.on("leave", (data) => {
             setUsers(users.filter(user => user.id !== data));
         })
@@ -111,10 +108,6 @@ const Rooms = () => {
             newSocket.disconnect();
         };
     }, []);
-
-    useEffect(() => {
-        // console.log(users);
-    }, [users]);
 
     const updateWindowDimensions = () => {
         setWindowWidth(document.documentElement.clientWidth);
@@ -140,7 +133,7 @@ const Rooms = () => {
     };
     const handleJoinRoom = () => {
         if (roomCode) {
-            socket.emit('join', {"room": "roomCode", 'ID': userID});
+            socket.emit('join', {"room": roomCode, 'ID': userID});
             setRoom(roomCode);
         }
     }
