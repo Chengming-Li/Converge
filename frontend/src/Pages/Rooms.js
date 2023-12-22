@@ -6,6 +6,7 @@ import Sidebar from '../Components/Sidebar';
 import Header from '../Components/Header';
 import UserSection from '../Components/UserSection';
 
+const userDataAPI = "http://localhost:5000/api/users"
 const Rooms = () => {
     const [collapsedMenu, setCollapsedMenu] = useState(false);
     const [windowWidth, setWindowWidth] = useState(document.documentElement.clientWidth);
@@ -14,17 +15,49 @@ const Rooms = () => {
     const [error, setError] = useState(null);
     const [inputValue, setInputValue] = useState("");
     const [roomCode, setRoomCode] = useState('');
-    const [room, setRoom] = useState('CODE');
+    const [room, setRoom] = useState('');
     const [socket, setSocket] = useState(null);
-  
+
+    const [userID, setUserID] = useState("927795817798598657");
+    const [users, setUsers] = useState([]);
+    
     useEffect(() => {
         const newSocket = io.connect('http://localhost:5000');
         setSocket(newSocket);
+
+        newSocket.on('host', (data) => {
+            setRoom(data);
+        });
+
+        newSocket.on("join_room", (data) => {
+            fetch(userDataAPI + "/" + data).then((response) => {
+                if (!response.ok) {
+                    console.log(response.json());
+                    throw new Error(response.status);
+                }
+                return response.json();
+            }).then((data) => {
+                setUsers(oldUsers => [...oldUsers, {
+                    id: data.users[0].id, 
+                    profile_picture: data.users[0].profile_picture, 
+                    username: data.users[0].username,
+                    active_interval: null,
+                    intervals: []
+                }])
+            }).catch((error) => {
+                setError(error.message);
+                return;
+            });
+        })
 
         return () => {
             newSocket.disconnect();
         };
     }, []);
+
+    useEffect(() => {
+        console.log(users);
+    }, [users]);
 
     const updateWindowDimensions = () => {
         setWindowWidth(document.documentElement.clientWidth);
@@ -49,25 +82,25 @@ const Rooms = () => {
         }
     };
     const handleJoinRoom = () => {
-        // socket.emit('join', {'room': room.trim(), 'username': username});
         if (roomCode) {
+            socket.emit('join', {"room": "roomCode", 'ID': userID});
             setRoom(roomCode);
         }
     }
     const handleHostRoom = () => {
-        // host room
+        socket.emit('host', {'ID': userID});
     }
     const handleLeaveRoom = () => {
-        //socket.emit('leave', {'room': room, 'username': username});
+        socket.emit('leave');
+        setUsers([]);
     }
 
     const startInterval = (name, project_id) => {
-        console.log("Started: " + name)
         // socket.emit('message', {'msg': message, 'room': room, 'username': username});
     };
   
     const endInterval = () => {
-        console.log("Ended Interval")
+        // socket.emit('message', {'msg': message, 'room': room, 'username': username});
     }
 
     const backgroundStyle = { 
@@ -108,22 +141,22 @@ const Rooms = () => {
                             pfp={"/pfp.png"}
                             intervals={[{
                                 end_time: "Saturday 25 November 2023 03:49:59 UTC",
-                                interval_id: "920170251495473153", 
+                                interval_id: "a", 
                                 name: "Started 4", 
                                 project_id: null,
                                 start_time: "Saturday 25 November 2023 03:47:59 UTC",
                                 user_id: "920170250246422529"
                             }, {
                                 end_time: "Saturday 25 November 2023 03:49:59 UTC",
-                                interval_id: "920170251495473153", 
+                                interval_id: "b", 
                                 name: "Started 4", 
                                 project_id: null,
                                 start_time: "Saturday 25 November 2023 03:47:59 UTC",
                                 user_id: "920170250246422529"
                             }, {
                                 end_time: "Saturday 25 November 2023 03:49:59 UTC",
-                                interval_id: "920170251495473153", 
-                                name: "Started 4", 
+                                interval_id: "c", 
+                                name: "bleh", 
                                 project_id: null,
                                 start_time: "Saturday 25 November 2023 03:47:59 UTC",
                                 user_id: "920170250246422529"

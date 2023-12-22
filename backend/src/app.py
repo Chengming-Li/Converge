@@ -40,9 +40,9 @@ def create_app(test_config=None):
     def get_user_profile(user_id):
         return getUser(user_id, establishConnection)
     
-    @app.get('/api/users')
-    def get_users_profile():
-        return getUsersInfo(establishConnection)
+    @app.get('/api/users/<string:user_ids>')
+    def get_users_profile(user_ids):
+        return getUsersInfo(user_ids, establishConnection)
     
     @app.get('/api/table/<string:tableName>')
     def fetch_table(tableName):

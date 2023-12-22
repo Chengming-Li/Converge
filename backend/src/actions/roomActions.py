@@ -32,7 +32,7 @@ def onDisconnect(client_id, establishConnection, emit):
         del roomUsers[room][client_id]
         if len(roomUsers[room]) == 0:
             del roomUsers[room]
-        emit("leave room", clients[client_id]["UserID"], room=room)
+        emit("leave", clients[client_id]["UserID"], room=room)
     del clients[client_id]
 
 def onJoin(client_id, data, join_room, emit):
@@ -45,8 +45,8 @@ def onJoin(client_id, data, join_room, emit):
         roomUsers[room] = {}
     roomUsers[room][client_id] = set()
     join_room(room)
-    emit("join room", userID, room=room, skip_sid=client_id)
-    emit("join data", {clients[x]["UserID"]: {"timeJoined": clients[x]["timeJoined"], "activeInterval": clients[x]["activeInterval"], "intervals": list(roomUsers[room][x])} for x in roomUsers[room]}, to=client_id)
+    emit("join_room", userID, room=room, skip_sid=client_id)
+    emit("join_data", {clients[x]["UserID"]: {"timeJoined": clients[x]["timeJoined"], "activeInterval": clients[x]["activeInterval"], "intervals": list(roomUsers[room][x])} for x in roomUsers[room]}, to=client_id)
 
 def onLeave(client_id, leave_room, establishConnection, emit):
     room = clients[client_id]["room"]
@@ -65,7 +65,7 @@ def onLeave(client_id, leave_room, establishConnection, emit):
         except Exception as e:
             pass
     leave_room(room)
-    emit("leave room", clients[client_id]["UserID"], room=room)
+    emit("leave", clients[client_id]["UserID"], room=room)
 
 def startRoomInterval(client_id, data, establishConnection, emit):
     userID = clients[client_id]["UserID"]
@@ -85,7 +85,7 @@ def startRoomInterval(client_id, data, establishConnection, emit):
         emit("error", f"Failed to start interval: {str(e)}", to=client_id)
         return
     clients[client_id]["activeInterval"] = str(data[0])
-    emit("start interval", {"userID": userID, "interval_id": clients[client_id]["activeInterval"], "start_time": data[4].strftime('%A %d %B %Y %H:%M:%S %Z')}, room=room, skip_sid=client_id)
+    emit("start", {"userID": userID, "interval_id": clients[client_id]["activeInterval"], "start_time": data[4].strftime('%A %d %B %Y %H:%M:%S %Z')}, room=room, skip_sid=client_id)
 
 def stopRoomInterval(client_id, establishConnection, emit):
     userID = clients[client_id]["UserID"]
@@ -104,7 +104,7 @@ def stopRoomInterval(client_id, establishConnection, emit):
             emit("error", f"Failed to end interval: {str(e)}", to=client_id)
             return
     clients[client_id]["activeInterval"] = None
-    emit("stop interval", {
+    emit("stop", {
         "userID": userID, 
         "interval_id": intervalID, 
         "start_time": data[4].strftime('%A %d %B %Y %H:%M:%S %Z'), 
@@ -127,7 +127,7 @@ def editActiveInterval(client_id, data, establishConnection, emit):
     except Exception as e:
         emit("error", f"Failed to modify interval: {str(e)}", to=client_id)
         return
-    emit("edit interval", {"userID": userID, "interval_id": interval_id, "interval_name": interval_name, "projectID": projectID}, room=room, skip_sid=client_id)
+    emit("edit", {"userID": userID, "interval_id": interval_id, "interval_name": interval_name, "projectID": projectID}, room=room, skip_sid=client_id)
 
 def hostRoom(client_id, data, join_room, emit):
     room = secrets.token_hex(3).upper()
@@ -139,4 +139,4 @@ def hostRoom(client_id, data, join_room, emit):
     clients[client_id]["timeJoined"] = datetime.datetime.now(datetime.UTC).strftime('%A %d %B %Y %H:%M:%S %Z')
     roomUsers[room] = {client_id : set()}
     join_room(room)
-    emit("host data", room, to=client_id)
+    emit("host", room, to=client_id)

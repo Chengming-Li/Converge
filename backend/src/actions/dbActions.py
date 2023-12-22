@@ -115,12 +115,9 @@ def getUser(userId, establishConnection):
         return {"error": f"Failed to get user: {str(e)}"}, 500
     return jsonify({"userInfo" : user, "intervals" : inactive, "activeInterval" : active})
 
-def getUsersInfo(establishConnection):
+def getUsersInfo(user_ids, establishConnection):
     """
     Fetch information for multiple users from database
-
-    Json Body:
-        "ids" : (list of str) ids of user
 
     @returns {json}: a list of objects with the following attributes:
         "id": (str) id of user
@@ -131,7 +128,7 @@ def getUsersInfo(establishConnection):
     try:
         with connection:
             with connection.cursor() as cursor:
-                ids = request.json.get('ids', [])
+                ids = user_ids.split(", ")
                 cursor.execute(FETCH_MULTIPLE_USER_INFO, (tuple(ids),))
                 results = cursor.fetchall()
                 user_objects = [{'id': row[0], 'username': row[1], "profile_picture": row[2]} for row in results]
