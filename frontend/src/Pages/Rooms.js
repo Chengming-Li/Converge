@@ -30,24 +30,55 @@ const Rooms = () => {
         });
 
         newSocket.on("join_room", (data) => {
-            fetch(userDataAPI + "/" + data).then((response) => {
+            fetch(userDataAPI + "/" + data["userID"]).then((response) => {
                 if (!response.ok) {
                     console.log(response.json());
                     throw new Error(response.status);
                 }
                 return response.json();
-            }).then((data) => {
+            }).then((d) => {
                 setUsers(oldUsers => [...oldUsers, {
-                    id: data.users[0].id, 
-                    profile_picture: data.users[0].profile_picture, 
-                    username: data.users[0].username,
+                    id: d.users[0].id, 
+                    profile_picture: d.users[0].profile_picture, 
+                    username: d.users[0].username,
                     active_interval: null,
-                    intervals: []
+                    intervals: [],
+                    timeJoined: data["timeJoined"]
                 }])
             }).catch((error) => {
                 setError(error.message);
                 return;
             });
+        })
+
+        newSocket.on("join_data", (data) => {
+            const keysString = Object.keys(data).join(', ');
+            if(keysString.length > 0) {
+                fetch(userDataAPI + "/" + keysString).then((response) => {
+                    if (!response.ok) {
+                        console.log(response.json());
+                        throw new Error(response.status);
+                    }
+                    return response.json();
+                }).then((d) => {
+                    const newUsers = [];
+                    for (const user of d.users) {
+                        newUsers.push({
+                            id: user.id,
+                            active_interval: data[user.id]["active_interval"],
+                            intervals: data[user.id]["intervals"],
+                            profile_picture: user.profile_picture, 
+                            username: user.username,
+                            timeJoined: data[user.id]["timeJoined"]
+                        });
+                    }
+                    setUsers(oldUsers => newUsers);
+                }).catch((error) => {
+                    setError(error.message);
+                    return;
+                });
+            }
+            
         })
 
         return () => {

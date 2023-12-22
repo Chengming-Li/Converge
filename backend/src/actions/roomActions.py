@@ -43,10 +43,10 @@ def onJoin(client_id, data, join_room, emit):
     clients[client_id]["timeJoined"] = datetime.datetime.now(datetime.UTC).strftime('%A %d %B %Y %H:%M:%S %Z')
     if room not in roomUsers:
         roomUsers[room] = {}
+    emit("join_data", {clients[x]["UserID"]: {"timeJoined": clients[x]["timeJoined"], "activeInterval": clients[x]["activeInterval"], "intervals": list(roomUsers[room][x])} for x in roomUsers[room]}, to=client_id)
     roomUsers[room][client_id] = set()
     join_room(room)
-    emit("join_room", userID, room=room, skip_sid=client_id)
-    emit("join_data", {clients[x]["UserID"]: {"timeJoined": clients[x]["timeJoined"], "activeInterval": clients[x]["activeInterval"], "intervals": list(roomUsers[room][x])} for x in roomUsers[room]}, to=client_id)
+    emit("join_room", {"timeJoined": datetime.datetime.now(datetime.UTC).strftime('%A %d %B %Y %H:%M:%S %Z'), "userID": userID}, room=room, skip_sid=client_id)
 
 def onLeave(client_id, leave_room, establishConnection, emit):
     room = clients[client_id]["room"]

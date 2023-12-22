@@ -20,7 +20,7 @@ def test_join_leave_room(app):
     response1 = client1.get_received()
     response2 = client2.get_received()
     assert len(response1) == len(response2) == 1, "Invalid number of messages received"
-    assert response1[0]['args'][0] == "11002330", "Client2 joining room failed to notify client1"
+    assert response1[0]['args'][0]["userID"] == "11002330", "Client2 joining room failed to notify client1"
     client1.emit('leave')
     response2 = client2.get_received()
     assert len(response2) == 1, "Invalid number of messages received"

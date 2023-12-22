@@ -131,7 +131,7 @@ def getUsersInfo(user_ids, establishConnection):
                 ids = user_ids.split(", ")
                 cursor.execute(FETCH_MULTIPLE_USER_INFO, (tuple(ids),))
                 results = cursor.fetchall()
-                user_objects = [{'id': row[0], 'username': row[1], "profile_picture": row[2]} for row in results]
+                user_objects = [{'id': str(row[0]), 'username': row[1], "profile_picture": row[2]} for row in results]
     except Exception as e:
         return {"error": f"Failed to get users"}, 500
     return jsonify({'users': user_objects})
