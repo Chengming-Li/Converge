@@ -32,7 +32,15 @@ def test_start_stop_interval(app):
         assert len(response1) == 0, "Interval failed to start"
         assert len(response2) == 1, "Invalid number of messages received"
         data = response2[0]['args'][0]
-        assert response2[0]["name"] == "start interval" and data["userID"] == "927795817798598657" and data["id"], "Client2 was not notified of client1's interval"
+        intervalID = data["interval_id"]
+        assert response2[0]["name"] == "start interval" and data["userID"] == "927795817798598657" and intervalID, "Client2 was not notified of client1's interval"
+        client1.emit('stop_interval')
+        response1 = client1.get_received()
+        response2 = client2.get_received()
+        assert len(response1) == 0, "Interval failed to stop"
+        assert len(response2) == 1, "Invalid number of messages received"
+        data = response2[0]['args'][0]
+        assert response2[0]["name"] == "stop interval" and data["userID"] == "927795817798598657" and data["interval_id"] == intervalID and data["start_time"] and data["end_time"] and data["name"], "Client2 was not notified of client1's interval"
     finally:
         client = app[0].test_client()
-        assert client.delete("/api/interval/" + data["id"]).status_code == 200
+        assert client.delete("/api/interval/" + data["interval_id"]).status_code == 200

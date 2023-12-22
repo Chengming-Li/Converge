@@ -1,5 +1,5 @@
 from flask import request, jsonify
-from datetime import datetime
+import datetime
 
 # region SQL commands
 # when adding new settings, edit to CREATE_USERS_TABLE, INSERT_USER, EDIT_SETTINGS, editSettings(), and getUser()
@@ -200,7 +200,7 @@ def startInterval(establishConnection):
     name = data["name"]
     userID = int(data["user_id"])
     projectID = int(data["project_id"]) if data["project_id"] else None
-    startTime = datetime.now()
+    startTime = datetime.datetime.now(datetime.UTC)
     try:
         with connection:
             with connection.cursor() as cursor:
@@ -221,7 +221,7 @@ def endInterval(intervalId, establishConnection):
     @returns {json}: a dictionary containing the keys "name", "project_id", "interval_id", "user_id", "start_time", and "end_time"
     """
     connection = establishConnection()
-    endTime = datetime.now()
+    endTime = datetime.datetime.now(datetime.UTC)
     try:
         with connection:
             with connection.cursor() as cursor:
@@ -255,8 +255,8 @@ def editInterval(intervalId, establishConnection):
     data = request.get_json()
     name = data["name"]
     projectID = int(data["project_id"]) if data["project_id"] else None
-    startTime = datetime.strptime(data["start_time"], "%A %d %B %Y %H:%M:%S %Z")
-    endTime = datetime.strptime(data["end_time"], "%A %d %B %Y %H:%M:%S %Z") if data["end_time"] else None
+    startTime = datetime.datetime.strptime(data["start_time"], "%A %d %B %Y %H:%M:%S %Z")
+    endTime = datetime.datetime.strptime(data["end_time"], "%A %d %B %Y %H:%M:%S %Z") if data["end_time"] else None
     try:
         with connection:
             with connection.cursor() as cursor:

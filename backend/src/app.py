@@ -8,7 +8,7 @@ import psycopg2
 import sys
 sys.path.append('/backend/src/actions')
 from dbActions import clearTable, createUser, getUser, getTable, deleteTable, deleteUser, startInterval, endInterval, editInterval, deleteInterval, editSettings
-from roomActions import onConnect, onDisconnect, onJoin, onLeave, startRoomInterval
+from roomActions import onConnect, onDisconnect, onJoin, onLeave, startRoomInterval, stopRoomInterval
 
 def create_app(test_config=None):
     load_dotenv()
@@ -88,7 +88,7 @@ def create_app(test_config=None):
     @socketio.on('disconnect')
     def handle_disconnect():
         client = request.sid
-        onDisconnect(client, emit)
+        onDisconnect(client, establishConnection, emit)
 
     @socketio.on('join')
     def handle_join(data):
@@ -98,12 +98,17 @@ def create_app(test_config=None):
     @socketio.on('leave')
     def handle_leave():
         client = request.sid
-        onLeave(client, leave_room, emit)
+        onLeave(client, leave_room, establishConnection, emit)
     
     @socketio.on('start_interval')
     def handle_start_interval(data):
         client = request.sid
         startRoomInterval(client, data, establishConnection, emit)
+        
+    @socketio.on('stop_interval')
+    def handle_stop_interval():
+        client = request.sid
+        stopRoomInterval(client, establishConnection, emit)
     #endregion
         
     return app, socketio
