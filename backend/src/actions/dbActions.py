@@ -6,6 +6,7 @@ import datetime
 CREATE_USERS_TABLE = "CREATE TABLE IF NOT EXISTS users (id SERIAL PRIMARY KEY, username TEXT, email TEXT, timezone TEXT, profile_picture TEXT);"
 INSERT_USER = "INSERT INTO users (username, email, timezone, profile_picture) VALUES (%s, %s, %s, %s) RETURNING id;"
 FETCH_USER_INFO = "SELECT username, email, timezone, profile_picture FROM users WHERE id = (%s);"
+FETCH_MULTIPLE_USER_INFO = "SELECT id, username, profile_picture FROM users WHERE id IN %s;"
 DELETE_USER = "DELETE FROM users WHERE id = (%s);"
 CREATE_INTERVALS_TABLE = "CREATE TABLE IF NOT EXISTS intervals (interval_id SERIAL PRIMARY KEY, user_id INT, project_id INT, name TEXT, start_time timestamptz, end_time timestamptz, FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE);" # FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE
 START_INTERVAL = "INSERT INTO intervals (user_id, project_id, name, start_time) VALUES (%s, %s, %s, %s) RETURNING *;"
@@ -113,6 +114,30 @@ def getUser(userId, establishConnection):
     except Exception as e:
         return {"error": f"Failed to get user: {str(e)}"}, 500
     return jsonify({"userInfo" : user, "intervals" : inactive, "activeInterval" : active})
+
+def getUsersInfo(establishConnection):
+    """
+    Fetch information for multiple users from database
+
+    Json Body:
+        "ids" : (list of str) ids of user
+
+    @returns {json}: a list of objects with the following attributes:
+        "id": (str) id of user
+        "username": (str) username of user 
+        "profile_picture": (str) encoded profile picture
+    """
+    connection = establishConnection()
+    try:
+        with connection:
+            with connection.cursor() as cursor:
+                ids = request.json.get('ids', [])
+                cursor.execute(FETCH_MULTIPLE_USER_INFO, (tuple(ids),))
+                results = cursor.fetchall()
+                user_objects = [{'id': row[0], 'username': row[1], "profile_picture": row[2]} for row in results]
+    except Exception as e:
+        return {"error": f"Failed to get users"}, 500
+    return jsonify({'users': user_objects})
 
 def createUser(establishConnection):
     """

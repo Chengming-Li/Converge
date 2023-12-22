@@ -1,9 +1,11 @@
 from flask import jsonify
 import datetime
+import secrets
 
 CREATE_INTERVALS_TABLE = "CREATE TABLE IF NOT EXISTS intervals (interval_id SERIAL PRIMARY KEY, user_id INT, project_id INT, name TEXT, start_time timestamptz, end_time timestamptz, FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE);" # FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE
 START_INTERVAL = "INSERT INTO intervals (user_id, project_id, name, start_time) VALUES (%s, %s, %s, %s) RETURNING *;"
 END_INTERVAL = "UPDATE intervals SET end_time = (%s) WHERE interval_id = (%s) RETURNING *;"
+EDIT_INTERVAL = "UPDATE intervals SET name = (%s), project_id = (%s) WHERE interval_id = (%s);"
 
 # keys: client session ID
 # values: dictionary with keys for UserID, Room, activeInterval, and timeJoined
@@ -80,7 +82,7 @@ def startRoomInterval(client_id, data, establishConnection, emit):
                 cursor.execute(START_INTERVAL, (int(userID), projectID, interval_name, startTime,))
                 data = cursor.fetchone()
     except Exception as e:
-        emit("error", "Failed to start interval", to=client_id)
+        emit("error", f"Failed to start interval: {str(e)}", to=client_id)
         return
     clients[client_id]["activeInterval"] = str(data[0])
     emit("start interval", {"userID": userID, "interval_id": clients[client_id]["activeInterval"], "start_time": data[4].strftime('%A %d %B %Y %H:%M:%S %Z')}, room=room, skip_sid=client_id)
@@ -99,7 +101,7 @@ def stopRoomInterval(client_id, establishConnection, emit):
                     cursor.execute(END_INTERVAL, (endTime, clients[client_id]["activeInterval"],))
                     data = cursor.fetchone() or [""] * 6
         except Exception as e:
-            emit("error", "Failed to end interval", to=client_id)
+            emit("error", f"Failed to end interval: {str(e)}", to=client_id)
             return
     clients[client_id]["activeInterval"] = None
     emit("stop interval", {
@@ -110,3 +112,31 @@ def stopRoomInterval(client_id, establishConnection, emit):
         "project_id" : str(data[2]) if data[2] else None, 
         "name" : data[3]
         }, room=room, skip_sid=client_id)
+
+def editActiveInterval(client_id, data, establishConnection, emit):
+    userID = clients[client_id]["UserID"]
+    room = clients[client_id]["room"]
+    connection = establishConnection()
+    interval_id = clients[client_id]["activeInterval"]
+    interval_name = data["name"]
+    projectID = int(data["project_id"]) if data["project_id"] else None
+    try:
+        with connection:
+            with connection.cursor() as cursor:
+                cursor.execute(EDIT_INTERVAL, (interval_name, projectID, interval_id,))
+    except Exception as e:
+        emit("error", f"Failed to modify interval: {str(e)}", to=client_id)
+        return
+    emit("edit interval", {"userID": userID, "interval_id": interval_id, "interval_name": interval_name, "projectID": projectID}, room=room, skip_sid=client_id)
+
+def hostRoom(client_id, data, join_room, emit):
+    room = secrets.token_hex(3).upper()
+    while room in roomUsers:
+        room = str(secrets.token_hex(3).upper())
+    userID = data['ID']
+    clients[client_id]["UserID"] = userID
+    clients[client_id]["room"] = room
+    clients[client_id]["timeJoined"] = datetime.datetime.now(datetime.UTC).strftime('%A %d %B %Y %H:%M:%S %Z')
+    roomUsers[room] = {client_id : set()}
+    join_room(room)
+    emit("host data", room, to=client_id)

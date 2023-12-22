@@ -7,8 +7,8 @@ import psycopg2
 
 import sys
 sys.path.append('/backend/src/actions')
-from dbActions import clearTable, createUser, getUser, getTable, deleteTable, deleteUser, startInterval, endInterval, editInterval, deleteInterval, editSettings
-from roomActions import onConnect, onDisconnect, onJoin, onLeave, startRoomInterval, stopRoomInterval
+from dbActions import clearTable, createUser, getUser, getUsersInfo, getTable, deleteTable, deleteUser, startInterval, endInterval, editInterval, deleteInterval, editSettings
+from roomActions import onConnect, onDisconnect, onJoin, onLeave, startRoomInterval, stopRoomInterval, editActiveInterval, hostRoom
 
 def create_app(test_config=None):
     load_dotenv()
@@ -39,6 +39,10 @@ def create_app(test_config=None):
     @app.get('/api/user/<int:user_id>')
     def get_user_profile(user_id):
         return getUser(user_id, establishConnection)
+    
+    @app.get('/api/users')
+    def get_users_profile():
+        return getUsersInfo(establishConnection)
     
     @app.get('/api/table/<string:tableName>')
     def fetch_table(tableName):
@@ -109,6 +113,16 @@ def create_app(test_config=None):
     def handle_stop_interval():
         client = request.sid
         stopRoomInterval(client, establishConnection, emit)
+
+    @socketio.on('edit_interval')
+    def handle_active_interval(data):
+        client = request.sid
+        editActiveInterval(client, data, establishConnection, emit)
+        
+    @socketio.on('host')
+    def handle_host_room(data):
+        client = request.sid
+        hostRoom(client, data, join_room, emit)
     #endregion
         
     return app, socketio

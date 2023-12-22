@@ -15,7 +15,17 @@ const Rooms = () => {
     const [inputValue, setInputValue] = useState("");
     const [roomCode, setRoomCode] = useState('');
     const [room, setRoom] = useState('CODE');
+    const [socket, setSocket] = useState(null);
   
+    useEffect(() => {
+        const newSocket = io.connect('http://localhost:5000');
+        setSocket(newSocket);
+
+        return () => {
+            newSocket.disconnect();
+        };
+    }, []);
+
     const updateWindowDimensions = () => {
         setWindowWidth(document.documentElement.clientWidth);
         setWIndowHeight(document.documentElement.clientHeight);
@@ -39,17 +49,21 @@ const Rooms = () => {
         }
     };
     const handleJoinRoom = () => {
-        // join room
+        // socket.emit('join', {'room': room.trim(), 'username': username});
         if (roomCode) {
             setRoom(roomCode);
         }
     }
     const handleHostRoom = () => {
-        // join room
+        // host room
+    }
+    const handleLeaveRoom = () => {
+        //socket.emit('leave', {'room': room, 'username': username});
     }
 
     const startInterval = (name, project_id) => {
         console.log("Started: " + name)
+        // socket.emit('message', {'msg': message, 'room': room, 'username': username});
     };
   
     const endInterval = () => {
