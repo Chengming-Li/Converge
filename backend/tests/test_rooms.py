@@ -30,7 +30,7 @@ def test_start_stop_interval(app):
     try:
         client1 = app[1]
         client2 = app[2]
-        client1.emit('join', {"room": "Test", 'ID': "927795817798598657"})
+        client1.emit('join', {"room": "Test", 'ID': "928024115890290689"})
         client2.emit('join', {"room": "Test", 'ID': "11002330"})
         response1 = client1.get_received()
         response2 = client2.get_received()
@@ -41,14 +41,14 @@ def test_start_stop_interval(app):
         assert len(response2) == 1, "Invalid number of messages received"
         data = response2[0]['args'][0]
         intervalID = data["interval_id"]
-        assert response2[0]["name"] == "start" and data["userID"] == "927795817798598657" and intervalID, "Client2 was not notified of client1's interval"
+        assert response2[0]["name"] == "start" and data["userID"] == "928024115890290689" and intervalID, "Client2 was not notified of client1's interval"
         client1.emit('stop_interval')
         response1 = client1.get_received()
         response2 = client2.get_received()
         assert len(response1) == 0, "Interval failed to stop"
         assert len(response2) == 1, "Invalid number of messages received"
         data = response2[0]['args'][0]
-        assert response2[0]["name"] == "stop" and data["userID"] == "927795817798598657" and data["interval_id"] == intervalID and data["start_time"] and data["end_time"] and data["name"], "Client2 was not notified of client1's interval"
+        assert response2[0]["name"] == "stop" and data["userID"] == "928024115890290689" and data["interval_id"] == intervalID and data["start_time"] and data["end_time"] and data["name"], "Client2 was not notified of client1's interval"
     finally:
         client = app[0].test_client()
         assert client.delete("/api/interval/" + data["interval_id"]).status_code == 200
@@ -90,7 +90,7 @@ def test_edit_interval(app):
     try:
         client1 = app[1]
         client2 = app[2]
-        client1.emit('join', {"room": "Test", 'ID': "927795817798598657"})
+        client1.emit('join', {"room": "Test", 'ID': "928024115890290689"})
         client2.emit('join', {"room": "Test", 'ID': "11002330"})
         client1.emit('start_interval', {"name": "Test Interval", "project_id": None})
         response1 = client1.get_received()
@@ -101,7 +101,7 @@ def test_edit_interval(app):
         assert len(response1) == 0, "Failed to edit interval"
         assert len(response2) == 1, "Invalid number of messages received"
         data = response2[0]['args'][0]
-        assert response2[0]["name"] == "edit" and data["userID"] == "927795817798598657" and data["interval_name"] == "Test Interval2", "Client2 was not notified of client1's interval"
+        assert response2[0]["name"] == "edit" and data["userID"] == "928024115890290689" and data["interval_name"] == "Test Interval2", "Client2 was not notified of client1's interval"
     finally:
         client = app[0].test_client()
         assert client.delete("/api/interval/" + data["interval_id"]).status_code == 200

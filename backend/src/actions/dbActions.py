@@ -133,7 +133,7 @@ def getUsersInfo(user_ids, establishConnection):
                 results = cursor.fetchall()
                 user_objects = [{'id': str(row[0]), 'username': row[1], "profile_picture": row[2]} for row in results]
     except Exception as e:
-        return {"error": f"Failed to get users"}, 500
+        return {"error": f"Failed to get users, {str(e)}"}, 500
     return jsonify({'users': user_objects})
 
 def createUser(establishConnection):

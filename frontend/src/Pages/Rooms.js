@@ -7,6 +7,7 @@ import Header from '../Components/Header';
 import UserSection from '../Components/UserSection';
 
 const userDataAPI = "http://localhost:5000/api/users"
+const userIDs = ["928024115890290689", "928024337585373185", "928024346425458689", "928024359007387649", "928024370164203521", "928024381448749057", "928024391600209921", "928024400232022017", "928024409210814465", "928024417875197953", "928024426321412097", "928025913362939905", "928025921605763073", "928025931312431105", "928025938905333761", "928025946355236865", "928026047797690369", "928026055325384705"]
 const Rooms = () => {
     const [collapsedMenu, setCollapsedMenu] = useState(false);
     const [windowWidth, setWindowWidth] = useState(document.documentElement.clientWidth);
@@ -18,12 +19,33 @@ const Rooms = () => {
     const [room, setRoom] = useState('');
     const [socket, setSocket] = useState(null);
 
-    const [userID, setUserID] = useState("927795817798598657");
+    const [thisUser, setThisUser] = useState({});
+    const [userID, setUserID] = useState(userIDs[Math.floor(Math.random() * userIDs.length)]);
     const [users, setUsers] = useState([]);
     
     useEffect(() => {
         const newSocket = io.connect('http://localhost:5000');
         setSocket(newSocket);
+
+        fetch(userDataAPI + "/" + userID).then((response) => {
+            if (!response.ok) {
+                console.log(response.json());
+                throw new Error(response.status);
+            }
+            return response.json();
+        }).then((d) => {
+            setThisUser({
+                activeInterval: null,
+                id: userID,
+                intervals: [],
+                profile_picture: d.users[0].profile_picture, 
+                timeJoined: new Date(),
+                username: d.users[0].username
+            });
+        }).catch((error) => {
+            setError(error.message);
+            return;
+        });
 
         newSocket.on('host', (data) => {
             setRoom(data);
@@ -81,13 +103,17 @@ const Rooms = () => {
             
         })
 
+        newSocket.on("leave", (data) => {
+            setUsers(users.filter(user => user.id !== data));
+        })
+
         return () => {
             newSocket.disconnect();
         };
     }, []);
 
     useEffect(() => {
-        console.log(users);
+        // console.log(users);
     }, [users]);
 
     const updateWindowDimensions = () => {
@@ -166,33 +192,15 @@ const Rooms = () => {
                         <p id="Code">{room}</p>
                     </div>
                     <div className="Users" style={{width: `${windowWidth - (collapsedMenu ? 114 : 254) + "px"}`}}>
-                        <UserSection 
-                            username={"NAME"}
-                            totalTime={"00:00:00"}
-                            pfp={"/pfp.png"}
-                            intervals={[{
-                                end_time: "Saturday 25 November 2023 03:49:59 UTC",
-                                interval_id: "a", 
-                                name: "Started 4", 
-                                project_id: null,
-                                start_time: "Saturday 25 November 2023 03:47:59 UTC",
-                                user_id: "920170250246422529"
-                            }, {
-                                end_time: "Saturday 25 November 2023 03:49:59 UTC",
-                                interval_id: "b", 
-                                name: "Started 4", 
-                                project_id: null,
-                                start_time: "Saturday 25 November 2023 03:47:59 UTC",
-                                user_id: "920170250246422529"
-                            }, {
-                                end_time: "Saturday 25 November 2023 03:49:59 UTC",
-                                interval_id: "c", 
-                                name: "bleh", 
-                                project_id: null,
-                                start_time: "Saturday 25 November 2023 03:47:59 UTC",
-                                user_id: "920170250246422529"
-                            }]}
-                        />
+                        {[thisUser, ...users].map((user) => (
+                            <UserSection 
+                                username={user.username}
+                                totalTime={"00:00:00"}
+                                pfp={"/pfp.png"}
+                                intervals={user.intervals}
+                                key={user.id}
+                            />
+                        ))}
                     </div>
                 </div> :
                 <div className='RoomsMenu' style={{
