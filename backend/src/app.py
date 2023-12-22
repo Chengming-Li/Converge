@@ -1,6 +1,6 @@
 from flask import Flask, request
 from flask_cors import CORS
-from flask_socketio import SocketIO, send, join_room, leave_room
+from flask_socketio import SocketIO, emit, join_room, leave_room
 import os
 from dotenv import load_dotenv
 import psycopg2
@@ -8,6 +8,7 @@ import psycopg2
 import sys
 sys.path.append('/backend/src/actions')
 from dbActions import clearTable, createUser, getUser, getTable, deleteTable, deleteUser, startInterval, endInterval, editInterval, deleteInterval, editSettings
+from roomActions import onConnect, onDisconnect, onJoin, onLeave, startRoomInterval
 
 def create_app(test_config=None):
     load_dotenv()
@@ -82,18 +83,27 @@ def create_app(test_config=None):
     @socketio.on('connect')
     def handle_connect():
         client = request.sid
+        onConnect(client)
 
     @socketio.on('disconnect')
     def handle_disconnect():
         client = request.sid
+        onDisconnect(client, emit)
 
     @socketio.on('join')
     def handle_join(data):
         client = request.sid
+        onJoin(client, data, join_room, emit)
 
     @socketio.on('leave')
-    def handle_leave(data):
+    def handle_leave():
         client = request.sid
+        onLeave(client, leave_room, emit)
+    
+    @socketio.on('start_interval')
+    def handle_start_interval(data):
+        client = request.sid
+        startRoomInterval(client, data, establishConnection, emit)
     #endregion
         
     return app, socketio

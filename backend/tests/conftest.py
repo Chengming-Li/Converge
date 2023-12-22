@@ -11,8 +11,10 @@ def app():
         "DATABASE": os.getenv("TEST_DATABASE_URL")
     })
 
-    socket = socketio.test_client(app, flask_test_client=app.test_client())
+    socket1 = socketio.test_client(app, flask_test_client=app.test_client())
+    socket2 = socketio.test_client(app, flask_test_client=app.test_client())
 
-    yield app, socket
+    yield app, socket1, socket2
 
-    socket.disconnect()
+    socket1.disconnect()
+    socket2.disconnect()

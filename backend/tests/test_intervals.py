@@ -69,8 +69,7 @@ def test_edit_user(app):
         assert responseJson.get("timezone", False) == "UTC", "incorrect timezone"
     finally:
         # clean up
-        # assert client.delete("/api/user/" + userID).status_code == 200
-        None
+        assert client.delete("/api/user/" + userID).status_code == 200
 
 def test_interval(app):
     try:
