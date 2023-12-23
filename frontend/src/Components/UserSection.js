@@ -1,9 +1,35 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import '../Styles/Components.css';
 import UserInterval from "./UserInterval"
 
-function UserSection({ username, pfp, totalTime, intervals, resumeInterval }) {
+function UserSection({ username, pfp, timeJoined, intervals, resumeInterval }) {
+
     const [collapsed, setCollapsed] = useState(true);
+    const [totalTime, setTotalTime] = useState("00:00:00");
+
+    console.log(timeJoined);
+
+    useEffect(() => {
+        const calcTotalTime = () => {
+            let hours = 0;
+            let minutes = 0;
+            let seconds = 0;
+            if (intervals) {
+                for (const interval of intervals) {
+                    const st = new Date(interval.start_time);
+                    const et = new Date(interval.end_time);
+                    const timeDifference = et - st;
+                    hours += Math.floor(timeDifference / 3600000);
+                    minutes += Math.floor((timeDifference % 3600000) / 60000);
+                    seconds += Math.floor((timeDifference % 60000) / 1000);
+                }
+            }
+            return setTotalTime(String(hours).padStart(2, '0') + ":" + String(minutes).padStart(2, '0') + ":" + String(seconds).padStart(2, '0'));
+        }
+        const intervalId = setInterval(calcTotalTime, 500);
+        calcTotalTime();
+        return () => clearInterval(intervalId);
+    }, []);
     
     return (
         <div className="IntervalSection" style={{

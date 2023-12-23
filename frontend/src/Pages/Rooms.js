@@ -254,21 +254,6 @@ const Rooms = () => {
         height: '100vh',
     };
 
-    const calcTotalTime = (intervals) => {
-        let hours = 0;
-        let minutes = 0;
-        let seconds = 0;
-        for (const interval of intervals) {
-            const st = new Date(interval.start_time)
-            const et = new Date(interval.end_time)
-            const timeDifference = et - st;
-            hours += Math.floor(timeDifference / 3600000);
-            minutes += Math.floor((timeDifference % 3600000) / 60000);
-            seconds += Math.max(Math.floor((timeDifference % 60000) / 1000), 1);
-        }
-        return String(hours).padStart(2, '0') + ":" + String(minutes).padStart(2, '0') + ":" + String(seconds).padStart(2, '0');
-    }
-
     return (
         <div className='App' style={backgroundStyle}>
             {error !== null && <div style={{position: "absolute", textAlign: 'center', top: "35px", left: "calc(50vw - 100px)", backgroundColor: 'red', width: "200px", height: "87px", zIndex: 101}}>
@@ -298,7 +283,7 @@ const Rooms = () => {
                             {[thisUser, ...users].map((user) => (
                                 <UserSection 
                                     username={user.username}
-                                    totalTime={calcTotalTime(user.intervals)}
+                                    timeJoined={user.timeJoined}
                                     pfp={"/pfp.png"}
                                     intervals={user.intervals}
                                     key={user.id}
