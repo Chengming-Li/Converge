@@ -48,6 +48,22 @@ const Rooms = () => {
             return;
         });
 
+        const updateUserActive = (users, user_id, active_interval) => {
+            let foundObject = users.find(obj => obj.id === user_id);
+            foundObject.active_interval = active_interval;
+            return users
+        }
+        const updateUserIntervals = (users, user_id, intervals) => {
+            let foundObject = users.find(obj => obj.id === user_id);
+            foundObject.active_interval = null;
+            foundObject.intervals = intervals;
+            return users
+        }
+
+        newSocket.on("error", (data) => {
+            console.log(data);
+            setError(data);
+        });
         newSocket.on('join', (data) => {
             setRoom(data);
         });
@@ -130,19 +146,35 @@ const Rooms = () => {
             
         });
         newSocket.on("leave", (data) => {
-            setUsers(users.filter(user => user.id !== data));
-        });
-        newSocket.on("error", (data) => {
-            console.log(data);
-            setError(data);
+            setUsers(oldUsers => oldUsers.filter(user => user.id !== data));
         });
         newSocket.on("start", (data) => {
-            console.log(data.user_id);
+            setUsers(oldUsers => {
+                let foundObject = oldUsers.find(obj => obj.id === data.user_id);
+                foundObject.active_interval = {
+                    project_id: data.project_id,
+                    interval_id: data.interval_id,
+                    start_time: data.start_time,
+                    user_id: data.user_id,
+                    interval_name: data.interval_name
+                };
+                return [...oldUsers];
+            });
         });
         newSocket.on("stop", (data) => {
-            const userID = data.user_id
-            console.log(data);
-            console.log(userID);
+            setUsers(oldUsers => {
+                let foundObject = oldUsers.find(obj => obj.id === data.user_id);
+                foundObject.active_interval = null;
+                foundObject.intervals.push({
+                    project_id: data.project_id,
+                    interval_id: data.interval_id,
+                    start_time: data.start_time,
+                    end_time: data.end_time,
+                    user_id: data.user_id,
+                    interval_name: data.interval_name
+                });
+                return [...oldUsers];
+            });
         });
 
         return () => {
