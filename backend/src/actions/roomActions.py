@@ -25,14 +25,13 @@ class User:
     def joinRoom(self, client_id, data, join_room, emit):
         self.userID = data['ID']
         room = data['room']
+        emit("join", room, to=client_id)
         self.room = room
         self.timeJoined = datetime.datetime.now(datetime.UTC).strftime('%A %d %B %Y %H:%M:%S %Z')
-        if room not in roomUsers:
-            roomUsers[room] = set()
-        emit("join_data", {clients[x].userID: {"timeJoined": clients[x].timeJoined, "activeInterval": clients[x].activeInterval, "intervals": clients[x].intervals} for x in roomUsers[room]}, to=client_id)
+        emit("join_data", {clients[x].userID: {"timeJoined": clients[x].timeJoined, "active_interval": clients[x].activeInterval, "intervals": clients[x].intervals} for x in roomUsers[room]}, to=client_id)
         roomUsers[room].add(client_id)
         join_room(room)
-        emit("join_room", {"timeJoined": datetime.datetime.now(datetime.UTC).strftime('%A %d %B %Y %H:%M:%S %Z'), "userID": data['ID']}, room=room, skip_sid=client_id)
+        emit("join_room", {"timeJoined": datetime.datetime.now(datetime.UTC).strftime('%A %d %B %Y %H:%M:%S %Z'), "user_id": data['ID']}, room=room, skip_sid=client_id)
 
     def leaveRoom(self, client_id, leave_room, establishConnection, emit):
         roomUsers[self.room].remove(client_id)
@@ -70,7 +69,9 @@ class User:
             emit("error", f"Failed to start interval: {str(e)}", to=client_id)
             return
         self.activeInterval = str(data[0])
-        emit("start", {"userID": userID, "interval_id": self.activeInterval, "start_time": data[4].strftime('%A %d %B %Y %H:%M:%S %Z')}, room=room, skip_sid=client_id)
+        emit("start", {"project_id": projectID, "user_id": userID, "interval_id": self.activeInterval, "start_time": data[4].strftime('%A %d %B %Y %H:%M:%S %Z')}, room=room, skip_sid=client_id)
+        print({a : str(clients[a]) for a in clients})
+        print(roomUsers)
 
     def stopInterval(self, client_id, establishConnection, emit):
         userID = self.userID
@@ -86,7 +87,7 @@ class User:
                         data = cursor.fetchone() or [""] * 6
                 self.activeInterval = None
                 emit("stop", {
-                    "userID": userID, 
+                    "user_id": userID, 
                     "interval_id": intervalID, 
                     "start_time": data[4].strftime('%A %d %B %Y %H:%M:%S %Z'), 
                     "end_time" : data[5].strftime('%A %d %B %Y %H:%M:%S %Z'),
@@ -111,9 +112,10 @@ class User:
         except Exception as e:
             emit("error", f"Failed to modify interval: {str(e)}", to=client_id)
             return
-        emit("edit", {"userID": userID, "interval_id": interval_id, "interval_name": interval_name, "projectID": projectID}, room=room, skip_sid=client_id)
+        emit("edit", {"user_id": userID, "interval_id": interval_id, "interval_name": interval_name, "projectID": projectID}, room=room, skip_sid=client_id)
 
-
+    def __str__(self):
+        return '{' + f"userID: {self.userID}, room: {self.room}, activeInterval: {self.activeInterval}, intervals: {self.intervals}, timeJoined: {self.timeJoined}" + '}'
 
 def onConnect(client_id):
     clients[client_id] = User()
@@ -137,7 +139,11 @@ def onDisconnect(client_id, establishConnection, emit):
     del clients[client_id]
 
 def onJoin(client_id, data, join_room, emit):
-    clients[client_id].joinRoom(client_id, data, join_room, emit)
+    room = data["room"]
+    if room not in roomUsers:
+        emit("error", f"Room {room} does not exist", to=client_id)
+    else:
+        clients[client_id].joinRoom(client_id, data, join_room, emit)
     
 def onLeave(client_id, leave_room, establishConnection, emit):
     clients[client_id].leaveRoom(client_id, leave_room, establishConnection, emit)
@@ -161,4 +167,4 @@ def hostRoom(client_id, data, join_room, emit):
     clients[client_id].timeJoined = datetime.datetime.now(datetime.UTC).strftime('%A %d %B %Y %H:%M:%S %Z')
     roomUsers[room] = {client_id}
     join_room(room)
-    emit("host", room, to=client_id)
+    emit("join", room, to=client_id)

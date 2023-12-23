@@ -14,6 +14,7 @@ END_INTERVAL = "UPDATE intervals SET end_time = (%s) WHERE interval_id = (%s) RE
 EDIT_INTERVAL = "UPDATE intervals SET name = (%s), project_id = (%s), start_time = (%s), end_time = (%s) WHERE interval_id = (%s);"
 GET_ALL_INACTIVE_INTERVALS_BY_USER = "SELECT * FROM intervals WHERE user_id = %s AND end_time IS NOT NULL ORDER BY start_time DESC;"
 GET_ALL_ACTIVE_INTERVALS_BY_USER = "SELECT * FROM intervals WHERE user_id = %s AND end_time IS NULL ORDER BY start_time;"
+FETCH_MULTIPLE_INTERVAL_INFO = "SELECT interval_id, user_id, project_id, name, start_time, end_time FROM intervals WHERE interval_id IN %s;"
 DELETE_INTERVAL = "DELETE FROM intervals WHERE interval_id = (%s);"
 EDIT_SETTINGS = "UPDATE users SET username = %s, profile_picture = (%s), timezone = (%s) WHERE id = (%s) RETURNING id;"
 # endregion
@@ -88,7 +89,6 @@ def getUser(userId, establishConnection):
             with connection.cursor() as cursor:
                 cursor.execute(FETCH_USER_INFO, (userId,))
                 data = cursor.fetchone()
-                print(data)
                 user = {"id": str(userId), "username" : data[0], "email" : data[1], "timezone" : data[2], "profile_picture" : data[3]}
                 
                 cursor.execute(GET_ALL_INACTIVE_INTERVALS_BY_USER, (userId,))
@@ -152,7 +152,6 @@ def createUser(establishConnection):
     email = data["email"]
     timezone = data["timezone"]
     pfp = data["profile_picture"]
-    print(pfp)
     try:
         with connection:
             with connection.cursor() as cursor:
@@ -304,4 +303,28 @@ def deleteInterval(intervalId, establishConnection):
     except Exception as e:
         return {"error": f"Failed to delete interval: {str(e)}"}, 500
     return jsonify(result)
+
+def getIntervalsInfo(interval_ids, establishConnection):
+    """
+    Fetch information for multiple intervals from database
+
+    @returns {json}: a list of objects with the following attributes:
+        "interval_id": (str) id of interval
+        "name": (str) interval name
+        "end_time": (str) String representing a timestamp in %A %d %B %Y %H:%M:%S %Z fomat
+        "start_time": (str) String representing a timestamp in %A %d %B %Y %H:%M:%S %Z fomat
+        "project_id": (str) id of project
+        "user_id": (str) user id
+    """
+    connection = establishConnection()
+    try:
+        with connection:
+            with connection.cursor() as cursor:
+                ids = interval_ids.split(", ")
+                cursor.execute(FETCH_MULTIPLE_INTERVAL_INFO, (tuple(ids),))
+                results = cursor.fetchall()
+                interval_objects = [{"interval_id": str(row[0]), "user_id": str(row[1]), "project_id": row[2], "name": row[3], "start_time": row[4], "end_time": row[5]} for row in results]
+    except Exception as e:
+        return {"error": f"Failed to get intervals, {str(e)}"}, 500
+    return jsonify({x["interval_id"]: x for x in interval_objects})
 # endregion

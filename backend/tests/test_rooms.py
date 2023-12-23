@@ -6,20 +6,21 @@ def test_host_room(app):
     response = client.get_received()
     assert len(response) == 1, "Invalid number of messages received"
     data = response[0]
-    assert data["name"] == "host" and data["args"][0], "invalid host data"
+    assert data["name"] == "join" and data["args"][0], "invalid host data"
 
 def test_join_leave_room(app):
     client1 = app[1]
     client2 = app[2]
-    client1.emit('join', {"room": "Test", 'ID': "11002331"})
+    client1.emit('host', {'ID': "11002331"})
     response1 = client1.get_received()
     response2 = client2.get_received()
     assert len(response1) == 1, "Invalid number of messages received"
     assert len(response2) == 0, "Invalid number of messages received"
-    client2.emit('join', {"room": "Test", 'ID': "11002330"})
+    code = response1[0]['args'][0]
+    client2.emit('join', {"room": code, 'ID': "11002330"})
     response1 = client1.get_received()
     response2 = client2.get_received()
-    assert len(response1) == len(response2) == 1, "Invalid number of messages received"
+    assert len(response1) == 1 and len(response2) == 2, "Invalid number of messages received"
     assert response1[0]['args'][0]["userID"] == "11002330", "Client2 joining room failed to notify client1"
     client1.emit('leave')
     response2 = client2.get_received()
@@ -30,8 +31,9 @@ def test_start_stop_interval(app):
     try:
         client1 = app[1]
         client2 = app[2]
-        client1.emit('join', {"room": "Test", 'ID': "928024115890290689"})
-        client2.emit('join', {"room": "Test", 'ID': "11002330"})
+        client1.emit('host', {'ID': "928024115890290689"})
+        code = client1.get_received()[0]['args'][0]
+        client2.emit('join', {"room": code, 'ID': "11002330"})
         response1 = client1.get_received()
         response2 = client2.get_received()
         client1.emit('start_interval', {"name": "Test Interval", "project_id": None})
@@ -86,12 +88,56 @@ def test_fetching_multiple_user_data(app):
         for i in ids:
             assert client.delete("/api/user/" + i).status_code == 200
 
+def test_fetching_multiple_interval_data(app):
+    try:
+        ids = []
+        client = app[0].test_client()
+        response = client.post("/api/user", json={
+            "username" : "Test1",
+            "email" : "test1@gmail.com",
+            "timezone" : "America/Los_Angeles",
+            "profile_picture" : None
+        })
+        userID = response.get_json().get("id")
+        response = client.post("/api/interval", json={
+            "name" : "Tester",
+            "user_id": userID,
+            "project_id": None
+        })
+        ids.append(response.get_json().get("id"))
+        response = client.post("/api/interval", json={
+            "name" : "Tester",
+            "user_id": userID,
+            "project_id": None
+        })
+        ids.append(response.get_json().get("id"))
+        response = client.post("/api/interval", json={
+            "name" : "Tester",
+            "user_id": userID,
+            "project_id": None
+        })
+        ids.append(response.get_json().get("id"))
+        response = client.post("/api/interval", json={
+            "name" : "Tester",
+            "user_id": userID,
+            "project_id": None
+        })
+        ids.append(response.get_json().get("id"))
+        idString = ", ".join(ids)
+        response = client.get(f"/api/intervals/{idString}")
+        assert len(response.get_json()) == 4, "Invalid response"
+    finally:
+        # clean up
+        for i in ids:
+            assert client.delete("/api/user/" + i).status_code == 200
+
 def test_edit_interval(app):
     try:
         client1 = app[1]
         client2 = app[2]
-        client1.emit('join', {"room": "Test", 'ID': "928024115890290689"})
-        client2.emit('join', {"room": "Test", 'ID': "11002330"})
+        client1.emit('host', {'ID': "928024115890290689"})
+        code = client1.get_received()[0]['args'][0]
+        client2.emit('join', {"room": code, 'ID': "11002330"})
         client1.emit('start_interval', {"name": "Test Interval", "project_id": None})
         response1 = client1.get_received()
         response2 = client2.get_received()

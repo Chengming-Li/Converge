@@ -7,6 +7,7 @@ import Header from '../Components/Header';
 import UserSection from '../Components/UserSection';
 
 const userDataAPI = "http://localhost:5000/api/users"
+const intervalsDataAPI = "http://localhost:5000/api/intervals"
 const userIDs = ["928024115890290689", "928024337585373185", "928024346425458689", "928024359007387649", "928024370164203521", "928024381448749057", "928024391600209921", "928024400232022017", "928024409210814465", "928024417875197953", "928024426321412097", "928025913362939905", "928025921605763073", "928025931312431105", "928025938905333761", "928025946355236865", "928026047797690369", "928026055325384705"]
 const Rooms = () => {
     const [collapsedMenu, setCollapsedMenu] = useState(false);
@@ -47,11 +48,11 @@ const Rooms = () => {
             return;
         });
 
-        newSocket.on('host', (data) => {
+        newSocket.on('join', (data) => {
             setRoom(data);
         });
         newSocket.on("join_room", (data) => {
-            fetch(userDataAPI + "/" + data["userID"]).then((response) => {
+            fetch(userDataAPI + "/" + data["user_id"]).then((response) => {
                 if (!response.ok) {
                     console.log(response.json());
                     throw new Error(response.status);
@@ -70,7 +71,7 @@ const Rooms = () => {
                 setError(error.message);
                 return;
             });
-        })
+        });
         newSocket.on("join_data", (data) => {
             const keysString = Object.keys(data).join(', ');
             if(keysString.length > 0) {
@@ -82,6 +83,7 @@ const Rooms = () => {
                     return response.json();
                 }).then((d) => {
                     const newUsers = [];
+                    const intervals = [];
                     for (const user of d.users) {
                         newUsers.push({
                             id: user.id,
@@ -91,6 +93,33 @@ const Rooms = () => {
                             username: user.username,
                             timeJoined: data[user.id]["timeJoined"]
                         });
+                        if (data[user.id]["active_interval"]) {
+                            intervals.push(data[user.id]["active_interval"]);
+                        }
+                        intervals.push(...data[user.id]["intervals"]);
+                    }
+                    if (intervals.length > 0) {
+                        fetch(intervalsDataAPI + "/" + intervals.join(', ')).then((response) => {
+                            if (!response.ok) {
+                                console.log(response.json());
+                                throw new Error(response.status);
+                            }
+                            return response.json();
+                        }).then((d) => {
+                            for (const user of newUsers) {
+                                const intervalObj = [];
+                                if (user.active_interval) {
+                                    user.active_interval = d[user.active_interval];
+                                }
+                                for (const intervalID of user.intervals) {
+                                    intervalObj.push(d[intervalID]);
+                                }
+                                user.intervals = intervalObj;
+                            }
+                        }).catch((error) => {
+                            setError(error.message);
+                            return;
+                        });
                     }
                     setUsers(oldUsers => newUsers);
                 }).catch((error) => {
@@ -99,15 +128,31 @@ const Rooms = () => {
                 });
             }
             
-        })
+        });
         newSocket.on("leave", (data) => {
             setUsers(users.filter(user => user.id !== data));
-        })
+        });
+        newSocket.on("error", (data) => {
+            console.log(data);
+            setError(data);
+        });
+        newSocket.on("start", (data) => {
+            console.log(data.user_id);
+        });
+        newSocket.on("stop", (data) => {
+            const userID = data.user_id
+            console.log(data);
+            console.log(userID);
+        });
 
         return () => {
             newSocket.disconnect();
         };
     }, []);
+
+    useEffect(() => {
+        console.log(users);
+    }, [users]);
 
     const updateWindowDimensions = () => {
         setWindowWidth(document.documentElement.clientWidth);
@@ -134,7 +179,6 @@ const Rooms = () => {
     const handleJoinRoom = () => {
         if (roomCode) {
             socket.emit('join', {"room": roomCode, 'ID': userID});
-            setRoom(roomCode);
         }
     }
     const handleHostRoom = () => {
@@ -146,11 +190,22 @@ const Rooms = () => {
     }
 
     const startInterval = (name, project_id) => {
-        // socket.emit('message', {'msg': message, 'room': room, 'username': username});
+        if (activeInterval) {
+            // make request
+            activeInterval.name = name;
+        } else {
+            socket.emit('start_interval', {"name": name, "project_id": project_id});
+            const user_id = userID;
+            setActiveInterval({name, user_id, project_id, start_time: new Date()});
+        }
     };
   
     const endInterval = () => {
-        // socket.emit('message', {'msg': message, 'room': room, 'username': username});
+        if (!activeInterval) {
+            return;
+        }
+        socket.emit('stop_interval');
+        setActiveInterval(null);
     }
 
     const backgroundStyle = { 
@@ -181,7 +236,7 @@ const Rooms = () => {
                         setValue={setInputValue}
                     />
                     <div className="Banner" style={{width: `${windowWidth - (collapsedMenu ? 114 : 254) + "px"}`}}>
-                        <p id="Title">FOCUS ROOM</p>
+                        <p id="Title">ROOM</p>
                         <p id="Code">{room}</p>
                     </div>
                     <div className="Users" style={{width: `${windowWidth - (collapsedMenu ? 114 : 254) + "px"}`}}>
