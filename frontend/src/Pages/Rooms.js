@@ -20,8 +20,8 @@ const Rooms = () => {
     const [room, setRoom] = useState('');
     const [socket, setSocket] = useState(null);
 
-    const [thisUser, setThisUser] = useState({});
-    const [userID, setUserID] = useState(userIDs[Math.floor(Math.random() * userIDs.length)]);  // active_interval, id, intervals, profile_picture, timeJoined, username
+    const [thisUser, setThisUser] = useState({}); // active_interval, id, intervals, profile_picture, timeJoined, username
+    const [userID, setUserID] = useState(userIDs[Math.floor(Math.random() * userIDs.length)]);  
     const [users, setUsers] = useState([]);  // active_interval, id, intervals, profile_picture, timeJoined, username
     
     useEffect(() => {
@@ -41,24 +41,13 @@ const Rooms = () => {
                 intervals: [],
                 profile_picture: d.users[0].profile_picture, 
                 timeJoined: new Date(),
-                username: d.users[0].username
+                username: "Me",
+                name: d.users[0].username
             });
         }).catch((error) => {
             setError(error.message);
             return;
         });
-
-        const updateUserActive = (users, user_id, active_interval) => {
-            let foundObject = users.find(obj => obj.id === user_id);
-            foundObject.active_interval = active_interval;
-            return users
-        }
-        const updateUserIntervals = (users, user_id, intervals) => {
-            let foundObject = users.find(obj => obj.id === user_id);
-            foundObject.active_interval = null;
-            foundObject.intervals = intervals;
-            return users
-        }
 
         newSocket.on("error", (data) => {
             console.log(data);
@@ -90,7 +79,7 @@ const Rooms = () => {
         });
         newSocket.on("join_data", (data) => {
             const keysString = Object.keys(data).join(', ');
-            if(keysString.length > 0) {
+            if(keysString.trim().length > 0) {
                 fetch(userDataAPI + "/" + keysString).then((response) => {
                     if (!response.ok) {
                         console.log(response.json());
@@ -99,51 +88,50 @@ const Rooms = () => {
                     return response.json();
                 }).then((d) => {
                     const newUsers = [];
-                    const intervals = [];
+                    const intervalIDs = [];
                     for (const user of d.users) {
                         newUsers.push({
                             id: user.id,
-                            active_interval: data[user.id]["active_interval"],
-                            intervals: data[user.id]["intervals"],
+                            active_intervalID: data[user.id]["active_interval"],
+                            active_interval: null,
                             profile_picture: user.profile_picture, 
                             username: user.username,
-                            timeJoined: data[user.id]["timeJoined"]
+                            timeJoined: data[user.id]["timeJoined"],
+                            intervalIDs: data[user.id]["intervals"],
+                            intervals: []
                         });
                         if (data[user.id]["active_interval"]) {
-                            intervals.push(data[user.id]["active_interval"]);
+                            intervalIDs.push(data[user.id]["active_interval"]);
                         }
-                        intervals.push(...data[user.id]["intervals"]);
+                        intervalIDs.push(...data[user.id]["intervals"]);
                     }
-                    if (intervals.length > 0) {
-                        fetch(intervalsDataAPI + "/" + intervals.join(', ')).then((response) => {
+                    if (intervalIDs.length > 0) {
+                        fetch(intervalsDataAPI + "/" + intervalIDs.join(', ')).then((response) => {
                             if (!response.ok) {
                                 console.log(response.json());
                                 throw new Error(response.status);
                             }
                             return response.json();
-                        }).then((d) => {
+                        }).then((intervalData) => {
                             for (const user of newUsers) {
-                                const intervalObj = [];
-                                if (user.active_interval) {
-                                    user.active_interval = d[user.active_interval];
+                                if (user.active_intervalID) {
+                                    user.active_interval = intervalData[user.active_interval];
                                 }
-                                for (const intervalID of user.intervals) {
-                                    intervalObj.push(d[intervalID]);
+                                for (const intervalID of user.intervalIDs) {
+                                    user.intervals.push(intervalData[intervalID]);
                                 }
-                                user.intervals = intervalObj;
                             }
                         }).catch((error) => {
                             setError(error.message);
                             return;
                         });
                     }
-                    setUsers(oldUsers => newUsers);
+                    setUsers(newUsers);
                 }).catch((error) => {
                     setError(error.message);
                     return;
                 });
             }
-            
         });
         newSocket.on("leave", (data) => {
             setUsers(oldUsers => oldUsers.filter(user => user.id !== data));
@@ -171,9 +159,24 @@ const Rooms = () => {
                     start_time: data.start_time,
                     end_time: data.end_time,
                     user_id: data.user_id,
-                    interval_name: data.interval_name
+                    name: data.name
                 });
                 return [...oldUsers];
+            });
+        });
+        newSocket.on("stop feedback", (data) => {
+            setThisUser(oldUser => {
+                oldUser.intervals = oldUser.intervals.filter(interval => !interval.newInterval);
+                oldUser.intervals.push({
+                    name: data.name, 
+                    user_id: data.user_id, 
+                    project_id: data.project_id, 
+                    start_time: data.start_time, 
+                    end_time: data.end_time,
+                    interval_id: data.interval_id,
+                    newInterval: false
+                });
+                return {...oldUser};
             });
         });
 
@@ -181,10 +184,6 @@ const Rooms = () => {
             newSocket.disconnect();
         };
     }, []);
-
-    useEffect(() => {
-        console.log(users);
-    }, [users]);
 
     const updateWindowDimensions = () => {
         setWindowWidth(document.documentElement.clientWidth);
@@ -237,6 +236,14 @@ const Rooms = () => {
             return;
         }
         socket.emit('stop_interval');
+        thisUser.intervals.push({
+            name: activeInterval.name, 
+            user_id: activeInterval.user_id, 
+            project_id: activeInterval.project_id, 
+            start_time: activeInterval.start_time, 
+            end_time: new Date(),
+            newInterval: true,
+        })
         setActiveInterval(null);
     }
 
@@ -246,6 +253,21 @@ const Rooms = () => {
         backgroundPosition: 'center calc(50% + 10px)',
         height: '100vh',
     };
+
+    const calcTotalTime = (intervals) => {
+        let hours = 0;
+        let minutes = 0;
+        let seconds = 0;
+        for (const interval of intervals) {
+            const st = new Date(interval.start_time)
+            const et = new Date(interval.end_time)
+            const timeDifference = et - st;
+            hours += Math.floor(timeDifference / 3600000);
+            minutes += Math.floor((timeDifference % 3600000) / 60000);
+            seconds += Math.max(Math.floor((timeDifference % 60000) / 1000), 1);
+        }
+        return String(hours).padStart(2, '0') + ":" + String(minutes).padStart(2, '0') + ":" + String(seconds).padStart(2, '0');
+    }
 
     return (
         <div className='App' style={backgroundStyle}>
@@ -272,15 +294,17 @@ const Rooms = () => {
                         <p id="Code">{room}</p>
                     </div>
                     <div className="Users" style={{width: `${windowWidth - (collapsedMenu ? 114 : 254) + "px"}`}}>
-                        {[thisUser, ...users].map((user) => (
-                            <UserSection 
-                                username={user.username}
-                                totalTime={"00:00:00"}
-                                pfp={"/pfp.png"}
-                                intervals={user.intervals}
-                                key={user.id}
-                            />
-                        ))}
+                    <div style={{width: '100%', height: '100%', overflowY: 'auto'}}>
+                            {[thisUser, ...users].map((user) => (
+                                <UserSection 
+                                    username={user.username}
+                                    totalTime={calcTotalTime(user.intervals)}
+                                    pfp={"/pfp.png"}
+                                    intervals={user.intervals}
+                                    key={user.id}
+                                />
+                            ))}
+                        </div>
                     </div>
                 </div> :
                 <div className='RoomsMenu' style={{

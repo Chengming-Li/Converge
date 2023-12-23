@@ -4,7 +4,7 @@ import UserInterval from "./UserInterval"
 
 function UserSection({ username, pfp, totalTime, intervals, resumeInterval }) {
     const [collapsed, setCollapsed] = useState(true);
-
+    
     return (
         <div className="IntervalSection" style={{
             borderTopLeftRadius: "15px", 

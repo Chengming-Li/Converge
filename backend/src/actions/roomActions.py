@@ -69,7 +69,12 @@ class User:
             emit("error", f"Failed to start interval: {str(e)}", to=client_id)
             return
         self.activeInterval = str(data[0])
-        emit("start", {"project_id": projectID, "interval_name": interval_name, "user_id": userID, "interval_id": self.activeInterval, "start_time": data[4].strftime('%A %d %B %Y %H:%M:%S %Z')}, room=room, skip_sid=client_id)
+        emit("start", {
+            "project_id": projectID, 
+            "interval_name": interval_name, 
+            "user_id": userID, 
+            "interval_id": self.activeInterval, 
+            "start_time": data[4].strftime('%A %d %B %Y %H:%M:%S %Z')}, room=room, skip_sid=client_id)
         print({a : str(clients[a]) for a in clients})
         print(roomUsers)
 
@@ -95,6 +100,14 @@ class User:
                     "project_id" : str(data[2]) if data[2] else None, 
                     "name" : data[3]
                     }, room=room, skip_sid=client_id)
+                emit("stop feedback", {
+                    "user_id": userID, 
+                    "interval_id": intervalID, 
+                    "start_time": data[4].strftime('%A %d %B %Y %H:%M:%S %Z'), 
+                    "end_time" : data[5].strftime('%A %d %B %Y %H:%M:%S %Z'),
+                    "project_id" : str(data[2]) if data[2] else None, 
+                    "name" : data[3]
+                    }, to=client_id)
             except Exception as e:
                 emit("error", f"Failed to end interval: {str(e)}", to=client_id)
                 return

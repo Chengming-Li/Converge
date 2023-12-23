@@ -9,18 +9,6 @@ function UserInterval({ info, resumeInterval }) {
     const [menuIsOpen, setMenuIsOpen] = useState(false);
     const dropdownRef = useRef(null);
 
-    // extracts and formats time from Date object
-    function getTime(currentDate) {
-        if(!currentDate) {
-            return null;
-        }
-        return currentDate.toLocaleTimeString('en-US', {
-            hour: '2-digit',
-            minute: '2-digit',
-            hour12: true,
-        });
-    }
-
     function calculateTimeDifference() {
         const et = new Date(endTime);
         const st = new Date(startTime)
@@ -34,7 +22,7 @@ function UserInterval({ info, resumeInterval }) {
     
         const hours = Math.floor(timeDifference / 3600000);
         const minutes  = Math.floor((timeDifference % 3600000) / 60000);
-        const seconds  = Math.floor((timeDifference % 60000) / 1000);
+        const seconds  = Math.max(Math.floor((timeDifference % 60000) / 1000), 1);
         
         const formattedHours = String(hours).padStart(2, '0');
         const formattedMinutes = String(minutes).padStart(2, '0');
