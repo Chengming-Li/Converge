@@ -24,6 +24,7 @@ const Rooms = () => {
     const [userID, setUserID] = useState(userIDs[Math.floor(Math.random() * userIDs.length)]);  
     const [users, setUsers] = useState([]);  // active_interval, id, intervals, profile_picture, timeJoined, username
     
+
     useEffect(() => {
         const newSocket = io.connect('http://localhost:5000');
         setSocket(newSocket);
@@ -115,7 +116,7 @@ const Rooms = () => {
                         }).then((intervalData) => {
                             for (const user of newUsers) {
                                 if (user.active_intervalID) {
-                                    user.active_interval = intervalData[user.active_interval];
+                                    user.active_interval = intervalData[user.active_intervalID];
                                 }
                                 for (const intervalID of user.intervalIDs) {
                                     user.intervals.push(intervalData[intervalID]);
@@ -126,7 +127,9 @@ const Rooms = () => {
                             return;
                         });
                     }
-                    setUsers(newUsers);
+                    setTimeout(() => {
+                        setUsers(newUsers);
+                    }, 350);
                 }).catch((error) => {
                     setError(error.message);
                     return;
@@ -153,7 +156,7 @@ const Rooms = () => {
             setUsers(oldUsers => {
                 let foundObject = oldUsers.find(obj => obj.id === data.user_id);
                 foundObject.active_interval = null;
-                foundObject.intervals.push({
+                foundObject.intervals.unshift({
                     project_id: data.project_id,
                     interval_id: data.interval_id,
                     start_time: data.start_time,
@@ -167,7 +170,7 @@ const Rooms = () => {
         newSocket.on("stop feedback", (data) => {
             setThisUser(oldUser => {
                 oldUser.intervals = oldUser.intervals.filter(interval => !interval.newInterval);
-                oldUser.intervals.push({
+                oldUser.intervals.unshift({
                     name: data.name, 
                     user_id: data.user_id, 
                     project_id: data.project_id, 
@@ -227,7 +230,8 @@ const Rooms = () => {
         } else {
             socket.emit('start_interval', {"name": name, "project_id": project_id});
             const user_id = userID;
-            setActiveInterval({name, user_id, project_id, start_time: new Date()});
+            const newInterval = {name, user_id, project_id, start_time: new Date()};
+            setActiveInterval(newInterval);
         }
     };
   
@@ -236,7 +240,7 @@ const Rooms = () => {
             return;
         }
         socket.emit('stop_interval');
-        thisUser.intervals.push({
+        thisUser.intervals.unshift({
             name: activeInterval.name, 
             user_id: activeInterval.user_id, 
             project_id: activeInterval.project_id, 
@@ -245,7 +249,12 @@ const Rooms = () => {
             newInterval: true,
         })
         setActiveInterval(null);
-    }
+        thisUser.active_interval = null;
+    };
+
+    const resumeInterval = (interval) => {
+        console.log("resume!")
+    };
 
     const backgroundStyle = { 
         //backgroundImage: 'url("/RoomUI.png")',
@@ -280,15 +289,30 @@ const Rooms = () => {
                     </div>
                     <div className="Users" style={{width: `${windowWidth - (collapsedMenu ? 114 : 254) + "px"}`}}>
                     <div style={{width: '100%', height: '100%', overflowY: 'auto'}}>
-                            {[thisUser, ...users].map((user) => (
-                                <UserSection 
-                                    username={user.username}
-                                    timeJoined={user.timeJoined}
-                                    pfp={"/pfp.png"}
-                                    intervals={user.intervals}
-                                    key={user.id}
-                                />
-                            ))}
+                            {[thisUser, ...users].map((user) => {
+                                if (user.active_interval) {
+                                    return (
+                                        <UserSection 
+                                            username={user.username}
+                                            activeInterval={user.active_interval}
+                                            pfp={"/pfp.png"}
+                                            intervals={user.intervals}
+                                            key={user.id}
+                                            resumeInterval={user === thisUser ? resumeInterval : null}
+                                        />
+                                    )
+                                }
+                                return (
+                                    <UserSection 
+                                        username={user.username}
+                                        userInfo={user}
+                                        pfp={"/pfp.png"}
+                                        intervals={user.intervals}
+                                        key={user.id}
+                                        resumeInterval={user === thisUser ? resumeInterval : null}
+                                    />
+                                )
+                            })}
                         </div>
                     </div>
                 </div> :

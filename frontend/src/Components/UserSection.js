@@ -1,14 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import '../Styles/Components.css';
 import UserInterval from "./UserInterval"
+import UserActiveInterval from "./UserActiveInterval"
 
-function UserSection({ username, pfp, timeJoined, intervals, resumeInterval }) {
+function UserSection({ username, pfp, intervals, activeInterval, resumeInterval }) {
 
-    const [collapsed, setCollapsed] = useState(true);
+    const [collapsed, setCollapsed] = useState(false);
     const [totalTime, setTotalTime] = useState("00:00:00");
-
-    console.log(timeJoined);
-
     useEffect(() => {
         const calcTotalTime = () => {
             let hours = 0;
@@ -24,27 +22,27 @@ function UserSection({ username, pfp, timeJoined, intervals, resumeInterval }) {
                     seconds += Math.floor((timeDifference % 60000) / 1000);
                 }
             }
-            return setTotalTime(String(hours).padStart(2, '0') + ":" + String(minutes).padStart(2, '0') + ":" + String(seconds).padStart(2, '0'));
+            setTotalTime(String(hours).padStart(2, '0') + ":" + String(minutes).padStart(2, '0') + ":" + String(seconds).padStart(2, '0'));
         }
         const intervalId = setInterval(calcTotalTime, 500);
         calcTotalTime();
         return () => clearInterval(intervalId);
-    }, []);
+    });
     
     return (
         <div className="IntervalSection" style={{
             borderTopLeftRadius: "15px", 
             borderTopRightRadius: "15px", 
-            borderBottomRightRadius: `${collapsed ? 15 : 0}px`, 
-            borderBottomLeftRadius: `${collapsed ? 15 : 0}px`, 
+            borderBottomRightRadius: `${collapsed || !intervals || intervals.length === 0 ? 15 : 0}px`, 
+            borderBottomLeftRadius: `${collapsed || !intervals || intervals.length === 0 ? 15 : 0}px`, 
             backgroundColor: "#34464f",
             marginBottom: "6px"
         }}>
             <div id='Head' style={{
                 borderTopLeftRadius: "15px", 
                 borderTopRightRadius: "15px", 
-                borderBottomRightRadius: `${collapsed ? 15 : 0}px`, 
-                borderBottomLeftRadius: `${collapsed ? 15 : 0}px`, 
+                borderBottomRightRadius: `${collapsed || !intervals || intervals.length === 0 ? 15 : 0}px`, 
+                borderBottomLeftRadius: `${collapsed || !intervals || intervals.length === 0 ? 15 : 0}px`, 
                 height: "61px", 
                 backgroundColor: "#34464f"
             }}>
@@ -52,7 +50,7 @@ function UserSection({ username, pfp, timeJoined, intervals, resumeInterval }) {
                 <img id="pfp" src={pfp} alt="pfp" />
                 <span id='time' style={{top:"19px"}}>{totalTime}</span>
                 <button id="collapse" style={{height: "61px", backgroundColor: "#34464f"}} onClick={() => {
-                    if(intervals.length > 0) {
+                    if(intervals.length > 0 || activeInterval) {
                         setCollapsed(!collapsed);
                     }
                 }}>
@@ -60,7 +58,12 @@ function UserSection({ username, pfp, timeJoined, intervals, resumeInterval }) {
                 </button>
             </div>
             {
-                !collapsed && 
+                !collapsed && activeInterval && (
+                    <UserActiveInterval info={activeInterval}/>
+                )
+            }
+            {
+                !collapsed &&
                 intervals.map((interval, index) => (
                     <UserInterval key={interval.interval_id} info={interval} resumeInterval={resumeInterval} />
                 ))
