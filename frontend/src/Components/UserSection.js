@@ -8,6 +8,8 @@ function UserSection({ username, pfp, intervals, activeInterval, resumeInterval,
     const [collapsed, setCollapsed] = useState(false);
     const [totalTime, setTotalTime] = useState("00:00:00");
 
+    console.log(activeInterval);
+
     useEffect(() => {
         const calcTotalTime = () => {
             let hours = 0;

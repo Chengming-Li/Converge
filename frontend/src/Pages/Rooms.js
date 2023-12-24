@@ -182,6 +182,14 @@ const Rooms = () => {
                 return {...oldUser};
             });
         });
+        newSocket.on("edit", (data) => {
+            setUsers(oldUsers => {
+                let foundObject = oldUsers.find(obj => obj.id === data.user_id);
+                foundObject.active_interval.name = data.interval_name;
+                foundObject.active_interval.project_id = data.projectID;
+                return [...oldUsers];
+            });
+        });
 
         return () => {
             newSocket.disconnect();
@@ -226,6 +234,7 @@ const Rooms = () => {
     const startInterval = (name, project_id) => {
         if (activeInterval) {
             // make request
+            socket.emit('edit_interval', {"name": name, "project_id": project_id});
             activeInterval.name = name;
         } else {
             socket.emit('start_interval', {"name": name, "project_id": project_id});

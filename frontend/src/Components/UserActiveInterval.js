@@ -8,6 +8,9 @@ function UserActiveInterval({ info }) {
 
     useEffect(() => {
         function calculateTimeDifference() {
+            if (info.name !== intervalName) {
+                setIntervalName(info.name);
+            }
             const et = new Date();
             const st = new Date(startTime)
             if(et < st) {
