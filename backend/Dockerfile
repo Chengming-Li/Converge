@@ -16,4 +16,4 @@ EXPOSE 5000
 
 RUN cd src
 
-CMD ["flask", "run", "--host=0.0.0.0"]
+CMD ["python", "-u", "src/app.py"]
