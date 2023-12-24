@@ -6,6 +6,7 @@ import Header from '../Components/Header';
 import Section from '../Components/Section';
 import moment from "moment-timezone";
 import { SHA256 } from 'crypto-js';
+import Loading from '../Components/Loading';
 
 const userID = "928024115890290689"
 const userDataAPI = "http://localhost:5000/api/user/"
@@ -277,11 +278,9 @@ const Home = () => {
         separateSections();
     }, [inactiveIntervals]);
 
-    return loading ? 
-    (
-      <h1 style={{textAlign: "center"}}>LOADING</h1>
-    ) : (
+    return (
         <div className='App'>
+            {loading && <Loading />}
             {error !== null && <div style={{position: "absolute", textAlign: 'center', top: "35px", left: "calc(50vw - 100px)", backgroundColor: 'red', width: "200px", height: "87px", zIndex: 101}}>
                 <p>Error: {error}</p>
                 <button onClick={() => {setError(null)}} style={{position: "absolute", width: "50px", bottom: "10px", left: "calc(50% - 25px)"}}>Ok</button>

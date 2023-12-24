@@ -75,8 +75,6 @@ class User:
             "user_id": userID, 
             "interval_id": self.activeInterval, 
             "start_time": data[4].strftime('%A %d %B %Y %H:%M:%S %Z')}, room=room, skip_sid=client_id)
-        print({a : str(clients[a]) for a in clients})
-        print(roomUsers)
 
     def stopInterval(self, client_id, establishConnection, emit):
         userID = self.userID
@@ -113,6 +111,7 @@ class User:
                 return
 
     def editInterval(self, client_id, data, establishConnection, emit):
+        print("edit: ", data)
         userID = self.userID
         room = self.room
         connection = establishConnection()
