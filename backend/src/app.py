@@ -1,13 +1,14 @@
-from flask import Flask, render_template
+from flask import Flask, request
 from flask_cors import CORS
-from flask_socketio import SocketIO, send, join_room, leave_room
+from flask_socketio import SocketIO, emit, join_room, leave_room
 import os
 from dotenv import load_dotenv
 import psycopg2
 
 import sys
-sys.path.append('/backend/src/')
-from src.actions import clearTable, createUser, getUser, getTable, deleteTable, deleteUser, startInterval, endInterval, editInterval, deleteInterval, editSettings
+sys.path.append('/backend/src/actions')
+from dbActions import clearTable, createUser, getUser, getUsersInfo, getTable, deleteTable, deleteUser, startInterval, endInterval, editInterval, deleteInterval, editSettings, getIntervalsInfo
+from roomActions import onConnect, onDisconnect, onJoin, onLeave, startRoomInterval, stopRoomInterval, editActiveInterval, hostRoom
 
 def create_app(test_config=None):
     load_dotenv()
@@ -24,7 +25,9 @@ def create_app(test_config=None):
 
     # remove when deploying
     CORS(app, resources={r"/api/*": {"origins": "http://localhost:3000"}}, supports_credentials=True)
+    CORS(app, resources={r"/test/*": {"origins": "http://localhost:3000"}}, supports_credentials=True)
 
+    #region interval API
     @app.get('/api')
     def defaultApiCall():
         return {"text": "Hello, world!"}
@@ -36,6 +39,14 @@ def create_app(test_config=None):
     @app.get('/api/user/<int:user_id>')
     def get_user_profile(user_id):
         return getUser(user_id, establishConnection)
+    
+    @app.get('/api/users/<string:user_ids>')
+    def get_users_profile(user_ids):
+        return getUsersInfo(user_ids, establishConnection)
+    
+    @app.get('/api/intervals/<string:interval_ids>')
+    def get_intervals(interval_ids):
+        return getIntervalsInfo(interval_ids, establishConnection)
     
     @app.get('/api/table/<string:tableName>')
     def fetch_table(tableName):
@@ -72,8 +83,54 @@ def create_app(test_config=None):
     @app.delete('/api/clear/table/<string:tableName>')
     def clear_table(tableName):
         return clearTable(tableName, establishConnection, os.getenv("DEV_PASSWORD"))
+    #endregion
+
+    #region rooms API
+    socketio = SocketIO(app, cors_allowed_origins="*")
+
+    @socketio.on('connect')
+    def handle_connect():
+        client = request.sid
+        onConnect(client)
+
+    @socketio.on('disconnect')
+    def handle_disconnect():
+        client = request.sid
+        onDisconnect(client, establishConnection, emit)
+
+    @socketio.on('join')
+    def handle_join(data):
+        client = request.sid
+        onJoin(client, data, join_room, emit)
+
+    @socketio.on('leave')
+    def handle_leave():
+        client = request.sid
+        onLeave(client, leave_room, establishConnection, emit)
     
-    return app
+    @socketio.on('start_interval')
+    def handle_start_interval(data):
+        client = request.sid
+        startRoomInterval(client, data, establishConnection, emit)
+        
+    @socketio.on('stop_interval')
+    def handle_stop_interval():
+        client = request.sid
+        stopRoomInterval(client, establishConnection, emit)
+
+    @socketio.on('edit_interval')
+    def handle_active_interval(data):
+        client = request.sid
+        editActiveInterval(client, data, establishConnection, emit)
+        
+    @socketio.on('host')
+    def handle_host_room(data):
+        client = request.sid
+        hostRoom(client, data, join_room, emit)
+    #endregion
+        
+    return app, socketio
 
 if __name__ == '__main__':
-    create_app(None).run(host="0.0.0.0", port=5000, debug=True)
+    app, socketio = create_app(None)
+    socketio.run(app, host="0.0.0.0", port=5000, debug=True, allow_unsafe_werkzeug=True)

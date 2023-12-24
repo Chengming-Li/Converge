@@ -1,18 +1,20 @@
 import os
 from dotenv import load_dotenv
-from src.app import create_app
+from ..src.app import create_app
 
 import pytest
 
 @pytest.fixture
 def app():
     load_dotenv()
-    app = create_app({
+    app, socketio = create_app({
         "DATABASE": os.getenv("TEST_DATABASE_URL")
     })
 
-    yield app
+    socket1 = socketio.test_client(app, flask_test_client=app.test_client())
+    socket2 = socketio.test_client(app, flask_test_client=app.test_client())
 
-@pytest.fixture()
-def client(app):
-    return app.test_client()
+    yield app, socket1, socket2
+
+    socket1.disconnect()
+    socket2.disconnect()
