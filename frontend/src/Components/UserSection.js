@@ -3,10 +3,11 @@ import '../Styles/Components.css';
 import UserInterval from "./UserInterval"
 import UserActiveInterval from "./UserActiveInterval"
 
-function UserSection({ username, pfp, intervals, activeInterval, resumeInterval }) {
+function UserSection({ username, pfp, intervals, activeInterval, resumeInterval, userActive }) {
 
     const [collapsed, setCollapsed] = useState(false);
     const [totalTime, setTotalTime] = useState("00:00:00");
+
     useEffect(() => {
         const calcTotalTime = () => {
             let hours = 0;
@@ -21,6 +22,22 @@ function UserSection({ username, pfp, intervals, activeInterval, resumeInterval 
                     minutes += Math.floor((timeDifference % 3600000) / 60000);
                     seconds += Math.floor((timeDifference % 60000) / 1000);
                 }
+            }
+            if (activeInterval) {
+                const st = new Date(activeInterval.start_time);
+                const et = new Date();
+                const timeDifference = et - st;
+                hours += Math.floor(timeDifference / 3600000);
+                minutes += Math.floor((timeDifference % 3600000) / 60000);
+                seconds += Math.floor((timeDifference % 60000) / 1000);
+            }
+            if (userActive) {
+                const st = new Date(userActive.start_time);
+                const et = new Date();
+                const timeDifference = et - st;
+                hours += Math.floor(timeDifference / 3600000);
+                minutes += Math.floor((timeDifference % 3600000) / 60000);
+                seconds += Math.floor((timeDifference % 60000) / 1000);
             }
             setTotalTime(String(hours).padStart(2, '0') + ":" + String(minutes).padStart(2, '0') + ":" + String(seconds).padStart(2, '0'));
         }
@@ -63,7 +80,7 @@ function UserSection({ username, pfp, intervals, activeInterval, resumeInterval 
                 )
             }
             {
-                !collapsed &&
+                !collapsed && intervals &&
                 intervals.map((interval, index) => (
                     <UserInterval key={interval.interval_id} info={interval} resumeInterval={resumeInterval} />
                 ))

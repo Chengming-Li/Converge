@@ -147,7 +147,7 @@ const Rooms = () => {
                     interval_id: data.interval_id,
                     start_time: data.start_time,
                     user_id: data.user_id,
-                    interval_name: data.interval_name
+                    name: data.interval_name
                 };
                 return [...oldUsers];
             });
@@ -289,30 +289,17 @@ const Rooms = () => {
                     </div>
                     <div className="Users" style={{width: `${windowWidth - (collapsedMenu ? 114 : 254) + "px"}`}}>
                     <div style={{width: '100%', height: '100%', overflowY: 'auto'}}>
-                            {[thisUser, ...users].map((user) => {
-                                if (user.active_interval) {
-                                    return (
-                                        <UserSection 
-                                            username={user.username}
-                                            activeInterval={user.active_interval}
-                                            pfp={"/pfp.png"}
-                                            intervals={user.intervals}
-                                            key={user.id}
-                                            resumeInterval={user === thisUser ? resumeInterval : null}
-                                        />
-                                    )
-                                }
-                                return (
-                                    <UserSection 
-                                        username={user.username}
-                                        userInfo={user}
-                                        pfp={"/pfp.png"}
-                                        intervals={user.intervals}
-                                        key={user.id}
-                                        resumeInterval={user === thisUser ? resumeInterval : null}
-                                    />
-                                )
-                            })}
+                        {[thisUser, ...users].map((user) => (
+                            <UserSection 
+                                username={user.username}
+                                activeInterval={user.active_interval}
+                                pfp={"/pfp.png"}
+                                intervals={user.intervals}
+                                key={user.id}
+                                resumeInterval={user === thisUser ? resumeInterval : null}
+                                userActive={user === thisUser ? activeInterval : null}
+                            />
+                        ))}
                         </div>
                     </div>
                 </div> :
