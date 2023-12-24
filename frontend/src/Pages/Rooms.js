@@ -239,6 +239,7 @@ const Rooms = () => {
         setUsers([]);
         setActiveInterval(null);
         setRoom("");
+        setInputValue("");
     }
 
     const startInterval = (name, project_id) => {
@@ -322,7 +323,7 @@ const Rooms = () => {
                             ))}
                         </div>
                     </div>
-                    <button className='Leave' onClick={handleLeaveRoom} style={{right: `${(windowWidth - (collapsedMenu ? 368 : 508))/2 + "px"}`}}>
+                    <button className='Leave' onClick={handleLeaveRoom} style={{right: `${(windowWidth - (collapsedMenu ? 188 : 323))/2 + "px"}`}}>
                         Leave
                     </button>
                 </div> :

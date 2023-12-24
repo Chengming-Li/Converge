@@ -134,13 +134,12 @@ p {
     background-color: red;
     position: absolute;
     height: 60px;
-    width: 10%;
-    bottom: 13px;
+    width: 130px;
+    bottom: 15px;
     font-size: 20px;
     font-weight: 500;
     border-top-right-radius: 10px;
     border-top-left-radius: 10px;
     border-bottom-right-radius: 10px;
     border-bottom-left-radius: 10px;
-    transform: translateX(-50%);
 }
