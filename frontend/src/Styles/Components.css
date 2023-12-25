@@ -403,3 +403,29 @@ input {
         width: calc(100% - 80px);
     }
 }
+
+.error {
+    background-color: #c21807;
+    height: 30px;
+    min-width: 200px;
+    margin-bottom: 5px;
+    padding-top: 5px;
+    text-align: left;
+}
+.error button {
+    background-color: #c21807;
+    z-index: 100;
+    position: relative;
+    font-weight: 500;
+    padding-right: 7px;
+    padding-left: 7px;
+}
+.error button {
+    border: none;
+}
+.error button:hover {
+    cursor: pointer;
+}
+.error span {
+    padding-right: 7px;
+}

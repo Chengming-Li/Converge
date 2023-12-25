@@ -6,6 +6,7 @@ import Sidebar from '../Components/Sidebar';
 import Header from '../Components/Header';
 import UserSection from '../Components/UserSection';
 import Loading from '../Components/Loading';
+import Error from '../Components/Error';
 
 const userDataAPI = "http://localhost:5000/api/users"
 const intervalsDataAPI = "http://localhost:5000/api/intervals"
@@ -15,7 +16,7 @@ const Rooms = () => {
     const [windowWidth, setWindowWidth] = useState(document.documentElement.clientWidth);
     const [windowHeight, setWIndowHeight] = useState(document.documentElement.clientHeight);
     const [activeInterval, setActiveInterval] = useState(null);
-    const [error, setError] = useState(null);
+    const [errors, setErrors] = useState([]);
     const [inputValue, setInputValue] = useState("");
     const [roomCode, setRoomCode] = useState('');
     const [room, setRoom] = useState('');
@@ -49,13 +50,13 @@ const Rooms = () => {
                 name: d.users[0].username
             });
         }).catch((error) => {
-            setError(error.message);
+            setErrors(oldErrors => [...oldErrors, error.message]);
             return;
         });
 
         newSocket.on("error", (data) => {
             console.log(data);
-            setError(data);
+            setErrors(oldErrors => [...oldErrors, data]);
         });
         newSocket.on('join', (data) => {
             setRoom(data);
@@ -78,7 +79,7 @@ const Rooms = () => {
                     timeJoined: data["timeJoined"]
                 }])
             }).catch((error) => {
-                setError(error.message);
+                setErrors(oldErrors => [...oldErrors, error.message]);
                 return;
             });
         });
@@ -128,7 +129,7 @@ const Rooms = () => {
                                 }
                             }
                         }).catch((error) => {
-                            setError(error.message);
+                            setErrors(oldErrors => [...oldErrors, error.message]);
                             return;
                         });
                     }
@@ -137,7 +138,7 @@ const Rooms = () => {
                         setLoading(false);
                     }, 350);
                 }).catch((error) => {
-                    setError(error.message);
+                    setErrors(oldErrors => [...oldErrors, error.message]);
                     return;
                 });
             }
@@ -286,10 +287,10 @@ const Rooms = () => {
     return (
         <div className='App' style={backgroundStyle}>
             {loading && <Loading />}
-            {error !== null && <div style={{position: "absolute", textAlign: 'center', top: "35px", left: "calc(50vw - 100px)", backgroundColor: 'red', width: "200px", height: "87px", zIndex: 101}}>
-                <p>Error: {error}</p>
-                <button onClick={() => {setError(null)}} style={{position: "absolute", width: "50px", bottom: "10px", left: "calc(50% - 25px)"}}>Ok</button>
-            </div>}
+            <Error 
+                messages={errors}
+                setMessages={setErrors}
+            />
             <Header ToggleMenu={() => {setCollapsedMenu(!collapsedMenu)}}/>
             <Sidebar collapsed={collapsedMenu}/>
             {

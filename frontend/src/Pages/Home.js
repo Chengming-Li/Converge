@@ -4,6 +4,7 @@ import Input from '../Components/Input';
 import Sidebar from '../Components/Sidebar';
 import Header from '../Components/Header';
 import Section from '../Components/Section';
+import Error from '../Components/Error';
 import moment from "moment-timezone";
 import { SHA256 } from 'crypto-js';
 import Loading from '../Components/Loading';
@@ -19,7 +20,7 @@ const Home = () => {
     const [userInfo, setUserInfo] = useState(null);
     const [activeInterval, setActiveInterval] = useState(null);
     const [inactiveIntervals, setInactiveIntervals] = useState([]);
-    const [error, setError] = useState(null);
+    const [errors, setErrors] = useState([]);
     const [loading, setLoading] = useState(true);
     const [sections, setSections] = useState(null);
     const [inputValue, setInputValue] = useState("");
@@ -38,7 +39,7 @@ const Home = () => {
             setInputValue(data.activeInterval ? data.activeInterval.name : "")
             setLoading(false);
         }).catch((error) => {
-            setError(error.message);
+            setErrors(oldErrors => [...oldErrors, error.message]);
             setLoading(false);
         });
     }, []);
@@ -58,7 +59,7 @@ const Home = () => {
                 }
                 return response.json();
             }).catch((error) => {
-                setError(error.message);
+                setErrors(oldErrors => [...oldErrors, error.message]);
             });
             activeInterval.name = name;
         } else {
@@ -86,7 +87,7 @@ const Home = () => {
                 setActiveInterval({name, user_id, project_id, interval_id, start_time, end_time})
             }).catch((error) => {
                 setActiveInterval(null);
-                setError(error.message);
+                setErrors(oldErrors => [...oldErrors, error.message]);
             });
         }
     };
@@ -124,7 +125,7 @@ const Home = () => {
             setActiveInterval(prevActive);
             setInputValue(prevActive.name);
             setInactiveIntervals(inactiveIntervals.filter((item, index) => item !== endedInterval));
-            setError(error.message);
+            setErrors(oldErrors => [...oldErrors, error.message]);
             return;
         });
     }
@@ -147,7 +148,7 @@ const Home = () => {
             return response.json();
         }).catch((error) => {
             setInactiveIntervals([removedInterval, ...inactiveIntervals]);
-            setError(error.message);
+            setErrors(oldErrors => [...oldErrors, error.message]);
         });
     } 
   
@@ -190,7 +191,7 @@ const Home = () => {
             inactiveIntervals[indexToEdit].project_id = copy.project_id;
             inactiveIntervals[indexToEdit].start_time = copy.start_time;
             inactiveIntervals[indexToEdit].end_time = copy.end_time;  
-            setError(error.message);
+            setErrors(oldErrors => [...oldErrors, error.message]);
         });
     }
   
@@ -281,10 +282,10 @@ const Home = () => {
     return (
         <div className='App'>
             {loading && <Loading />}
-            {error !== null && <div style={{position: "absolute", textAlign: 'center', top: "35px", left: "calc(50vw - 100px)", backgroundColor: 'red', width: "200px", height: "87px", zIndex: 101}}>
-                <p>Error: {error}</p>
-                <button onClick={() => {setError(null)}} style={{position: "absolute", width: "50px", bottom: "10px", left: "calc(50% - 25px)"}}>Ok</button>
-            </div>}
+            <Error 
+                messages={errors}
+                setMessages={setErrors}
+            />
             <Header ToggleMenu={() => {setCollapsedMenu(!collapsedMenu)}}/>
             <Sidebar collapsed={collapsedMenu}/>
             <Input 
