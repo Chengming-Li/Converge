@@ -25,9 +25,9 @@ const Rooms = () => {
     const [loading, setLoading] = useState(false);
 
     const [thisUser, setThisUser] = useState({}); // active_interval, id, intervals, profile_picture, timeJoined, username
-    const [userID, setUserID] = useState(userIDs[Math.floor(Math.random() * userIDs.length)]);  
+    const [userID, setUserID] = useState(userIDs[Math.floor(Math.random() * userIDs.length)]);
     const [users, setUsers] = useState([]);  // active_interval, id, intervals, profile_picture, timeJoined, username
-    
+
 
     useEffect(() => {
         const newSocket = io.connect('http://localhost:5000');
@@ -44,7 +44,7 @@ const Rooms = () => {
                 active_interval: null,
                 id: userID,
                 intervals: [],
-                profile_picture: d.users[0].profile_picture, 
+                profile_picture: d.users[0].profile_picture,
                 timeJoined: new Date(),
                 username: "Me",
                 name: d.users[0].username
@@ -71,8 +71,8 @@ const Rooms = () => {
                 return response.json();
             }).then((d) => {
                 setUsers(oldUsers => [...oldUsers, {
-                    id: d.users[0].id, 
-                    profile_picture: d.users[0].profile_picture, 
+                    id: d.users[0].id,
+                    profile_picture: d.users[0].profile_picture,
                     username: d.users[0].username,
                     active_interval: null,
                     intervals: [],
@@ -86,7 +86,7 @@ const Rooms = () => {
         newSocket.on("join_data", (data) => {
             setLoading(true);
             const keysString = Object.keys(data).join(', ');
-            if(keysString.trim().length > 0) {
+            if (keysString.trim().length > 0) {
                 fetch(userDataAPI + "/" + keysString).then((response) => {
                     if (!response.ok) {
                         console.log(response.json());
@@ -101,7 +101,7 @@ const Rooms = () => {
                             id: user.id,
                             active_intervalID: data[user.id]["active_interval"],
                             active_interval: null,
-                            profile_picture: user.profile_picture, 
+                            profile_picture: user.profile_picture,
                             username: user.username,
                             timeJoined: data[user.id]["timeJoined"],
                             intervalIDs: data[user.id]["intervals"],
@@ -178,15 +178,15 @@ const Rooms = () => {
             setThisUser(oldUser => {
                 oldUser.intervals = oldUser.intervals.filter(interval => !interval.newInterval);
                 oldUser.intervals.unshift({
-                    name: data.name, 
-                    user_id: data.user_id, 
-                    project_id: data.project_id, 
-                    start_time: data.start_time, 
+                    name: data.name,
+                    user_id: data.user_id,
+                    project_id: data.project_id,
+                    start_time: data.start_time,
                     end_time: data.end_time,
                     interval_id: data.interval_id,
                     newInterval: false
                 });
-                return {...oldUser};
+                return { ...oldUser };
             });
         });
         newSocket.on("edit", (data) => {
@@ -228,11 +228,11 @@ const Rooms = () => {
     const handleJoinRoom = () => {
         if (roomCode) {
             setLoading(true);
-            socket.emit('join', {"room": roomCode, 'ID': userID});
+            socket.emit('join', { "room": roomCode, 'ID': userID });
         }
     }
     const handleHostRoom = () => {
-        socket.emit('host', {'ID': userID});
+        socket.emit('host', { 'ID': userID });
         setLoading(true);
     }
     const handleLeaveRoom = () => {
@@ -246,26 +246,26 @@ const Rooms = () => {
     const startInterval = (name, project_id) => {
         if (activeInterval) {
             // make request
-            socket.emit('edit_interval', {"name": name, "project_id": project_id});
+            socket.emit('edit_interval', { "name": name, "project_id": project_id });
             activeInterval.name = name;
         } else {
-            socket.emit('start_interval', {"name": name, "project_id": project_id});
+            socket.emit('start_interval', { "name": name, "project_id": project_id });
             const user_id = userID;
-            const newInterval = {name, user_id, project_id, start_time: new Date()};
+            const newInterval = { name, user_id, project_id, start_time: new Date() };
             setActiveInterval(newInterval);
         }
     };
-  
+
     const endInterval = () => {
         if (!activeInterval) {
             return;
         }
         socket.emit('stop_interval');
         thisUser.intervals.unshift({
-            name: activeInterval.name, 
-            user_id: activeInterval.user_id, 
-            project_id: activeInterval.project_id, 
-            start_time: activeInterval.start_time, 
+            name: activeInterval.name,
+            user_id: activeInterval.user_id,
+            project_id: activeInterval.project_id,
+            start_time: activeInterval.start_time,
             end_time: new Date(),
             newInterval: true,
         })
@@ -277,7 +277,7 @@ const Rooms = () => {
         console.log("resume!")
     };
 
-    const backgroundStyle = { 
+    const backgroundStyle = {
         //backgroundImage: 'url("/RoomUI.png")',
         backgroundSize: 'cover',
         backgroundPosition: 'center calc(50% + 10px)',
@@ -287,65 +287,65 @@ const Rooms = () => {
     return (
         <div className='App' style={backgroundStyle}>
             {loading && <Loading />}
-            <Error 
+            <Error
                 messages={errors}
                 setMessages={setErrors}
             />
-            <Header ToggleMenu={() => {setCollapsedMenu(!collapsedMenu)}}/>
-            <Sidebar collapsed={collapsedMenu}/>
+            <Header ToggleMenu={() => { setCollapsedMenu(!collapsedMenu) }} />
+            <Sidebar collapsed={collapsedMenu} username={"Username"} />
             {
                 room ?
-                <div>
-                    <Input 
-                        activeInterval={activeInterval} 
-                        addInterval={startInterval} 
-                        endInterval={endInterval} 
-                        inputWidth = {windowWidth - (collapsedMenu ? 58 : 198) + "px"}
-                        addProject = {() => {console.log("Added Project")}}
-                        value={inputValue}
-                        setValue={setInputValue}
-                    />
-                    <div className="Banner" style={{width: `${windowWidth - (collapsedMenu ? 114 : 254) + "px"}`}}>
-                        <p id="Title">ROOM</p>
-                        <p id="Code">{room}</p>
-                    </div>
-                    <div className="Users" style={{width: `${windowWidth - (collapsedMenu ? 114 : 254) + "px"}`}}>
-                        <div style={{width: '100%', height: '100%', overflowY: 'auto'}}>
-                            {[thisUser, ...users].map((user) => (
-                                <UserSection 
-                                    username={user.username}
-                                    activeInterval={user.active_interval}
-                                    pfp={"/pfp.png"}
-                                    intervals={user.intervals}
-                                    key={user.id}
-                                    resumeInterval={user === thisUser ? resumeInterval : null}
-                                    userActive={user === thisUser ? activeInterval : null}
-                                />
-                            ))}
+                    <div>
+                        <Input
+                            activeInterval={activeInterval}
+                            addInterval={startInterval}
+                            endInterval={endInterval}
+                            inputWidth={windowWidth - (collapsedMenu ? 58 : 198) + "px"}
+                            addProject={() => { console.log("Added Project") }}
+                            value={inputValue}
+                            setValue={setInputValue}
+                        />
+                        <div className="Banner" style={{ width: `${windowWidth - (collapsedMenu ? 114 : 254) + "px"}` }}>
+                            <p id="Title">ROOM</p>
+                            <p id="Code">{room}</p>
                         </div>
+                        <div className="Users" style={{ width: `${windowWidth - (collapsedMenu ? 114 : 254) + "px"}` }}>
+                            <div style={{ width: '100%', height: '100%', overflowY: 'auto' }}>
+                                {[thisUser, ...users].map((user) => (
+                                    <UserSection
+                                        username={user.username}
+                                        activeInterval={user.active_interval}
+                                        pfp={"/pfp.png"}
+                                        intervals={user.intervals}
+                                        key={user.id}
+                                        resumeInterval={user === thisUser ? resumeInterval : null}
+                                        userActive={user === thisUser ? activeInterval : null}
+                                    />
+                                ))}
+                            </div>
+                        </div>
+                        <button className='Leave' onClick={handleLeaveRoom} style={{ right: `${(windowWidth - (collapsedMenu ? 188 : 323)) / 2 + "px"}` }}>
+                            Leave
+                        </button>
+                    </div> :
+                    <div className='RoomsMenu' style={{
+                        width: `${Math.min(windowWidth - (collapsedMenu ? 114 : 254), 370)}px`,
+                        top: `${Math.max(0.53 * windowHeight, 300)}px`,
+                        right: `${-20 + (windowWidth - (collapsedMenu ? 58 : 198) - Math.min(windowWidth - (collapsedMenu ? 114 : 254), 370)) / 2}px`,
+                    }}>
+                        <p id='Title'>Rooms</p>
+                        <input
+                            type="text"
+                            value={roomCode}
+                            onChange={handleRoomCodeInput}
+                            onKeyDown={handleRoomKeyPress}
+                            placeholder="Enter Room Code"
+                        />
+                        <button id="JoinButton" onClick={handleJoinRoom}>Join</button>
+                        <button id="HostButton" onClick={handleHostRoom}>Host</button>
                     </div>
-                    <button className='Leave' onClick={handleLeaveRoom} style={{right: `${(windowWidth - (collapsedMenu ? 188 : 323))/2 + "px"}`}}>
-                        Leave
-                    </button>
-                </div> :
-                <div className='RoomsMenu' style={{
-                    width: `${Math.min(windowWidth - (collapsedMenu ? 114 : 254), 370)}px`,
-                    top: `${Math.max(0.53 * windowHeight, 300)}px`,
-                    right: `${-20 + (windowWidth - (collapsedMenu ? 58 : 198) - Math.min(windowWidth - (collapsedMenu ? 114 : 254), 370))/2}px`,
-                }}>
-                    <p id='Title'>Rooms</p>
-                    <input
-                        type="text"
-                        value={roomCode}
-                        onChange={handleRoomCodeInput}
-                        onKeyDown={handleRoomKeyPress}
-                        placeholder="Enter Room Code"
-                    />
-                    <button id="JoinButton" onClick={handleJoinRoom}>Join</button>
-                    <button id="HostButton" onClick={handleHostRoom}>Host</button>
-                </div>
             }
-        </div> 
+        </div>
     );
 }
 
