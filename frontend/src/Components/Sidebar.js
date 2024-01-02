@@ -5,10 +5,10 @@ import SidebarButton from './SidebarButton';
 function Sidebar({ collapsed, username }) {
     return (
         <div className={`Sidebar${collapsed ? 'Collapsed' : ''}`}>
-            <SidebarButton Text={"TIME TRACKER"} IconSrc={"/Cheese.png"} Logic={() => { console.log("Cheese") }} />
-            <SidebarButton Text={"ROOMS"} IconSrc={"/Cheese.png"} Logic={() => { console.log("Cheese") }} />
-            <SidebarButton Text={"REPORTS"} IconSrc={"/Cheese.png"} Logic={() => { console.log("Cheese") }} />
-            <SidebarButton Text={"SETTINGS"} IconSrc={"/Cheese.png"} Logic={() => { console.log("Cheese") }} />
+            <SidebarButton Text={"TIME TRACKER"} IconSrc={"/Cheese.png"} route={"/"} />
+            <SidebarButton Text={"ROOMS"} IconSrc={"/Cheese.png"} route={"/rooms"} />
+            <SidebarButton Text={"REPORTS"} IconSrc={"/Cheese.png"} route={"/"} />
+            <SidebarButton Text={"SETTINGS"} IconSrc={"/Cheese.png"} route={"/"} />
             <div className="Profile">
                 <button className="Profile" onClick={() => { console.log("Profile: " + username) }}>
                     <img src={'/pfp.png'} alt="pfp" style={{ left: `${(collapsed ? "50%" : "7px")}` }} />

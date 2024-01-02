@@ -1,12 +1,15 @@
 import '../Styles/Components.css';
 import React from 'react';
+import { Link } from 'react-router-dom';
 
-function SidebarButton({ Text, IconSrc, Logic }) {
+function SidebarButton({ Text, IconSrc, route }) {
     return (
-        <button onClick={Logic}>
-            <img src={IconSrc} alt="Icon"/>
-            <span>{Text}</span>
-        </button>
+        <Link to={route}>
+            <button>
+                <img src={IconSrc} alt="Icon" />
+                <span>{Text}</span>
+            </button>
+        </Link>
     );
 }
 
