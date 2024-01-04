@@ -273,8 +273,16 @@ const Rooms = () => {
         thisUser.active_interval = null;
     };
 
-    const resumeInterval = (interval) => {
-        console.log("resume!")
+    const resumeInterval = (name, project_id) => {
+        if (activeInterval) {
+            // make request
+            endInterval();
+        }
+        socket.emit('start_interval', { "name": name, "project_id": project_id });
+        const user_id = userID;
+        const newInterval = { name, user_id, project_id, start_time: new Date() };
+        setActiveInterval(newInterval);
+        setInputValue(name);
     };
 
     const backgroundStyle = {
