@@ -12,8 +12,7 @@ CREATE_INTERVALS_TABLE = "CREATE TABLE IF NOT EXISTS intervals (interval_id SERI
 START_INTERVAL = "INSERT INTO intervals (user_id, project_id, name, start_time) VALUES (%s, %s, %s, %s) RETURNING *;"
 END_INTERVAL = "UPDATE intervals SET end_time = (%s) WHERE interval_id = (%s) RETURNING *;"
 EDIT_INTERVAL = "UPDATE intervals SET name = (%s), project_id = (%s), start_time = (%s), end_time = (%s) WHERE interval_id = (%s);"
-GET_ALL_INACTIVE_INTERVALS_BY_USER = "SELECT * FROM intervals WHERE user_id = %s AND end_time IS NOT NULL ORDER BY start_time DESC;"
-GET_ALL_ACTIVE_INTERVALS_BY_USER = "SELECT * FROM intervals WHERE user_id = %s AND end_time IS NULL ORDER BY start_time;"
+GET_ALL_INTERVALS_BY_USER = "SELECT * FROM intervals WHERE user_id = %s ORDER BY start_time DESC;"
 FETCH_MULTIPLE_INTERVAL_INFO = "SELECT interval_id, user_id, project_id, name, start_time, end_time FROM intervals WHERE interval_id IN %s;"
 DELETE_INTERVAL = "DELETE FROM intervals WHERE interval_id = (%s);"
 EDIT_SETTINGS = "UPDATE users SET username = %s, profile_picture = (%s), timezone = (%s) WHERE id = (%s) RETURNING id;"
@@ -21,6 +20,7 @@ CREATE_PROJECTS_TABLE = "CREATE TABLE IF NOT EXISTS projects (project_id SERIAL 
 CREATE_PROJECT = "INSERT INTO projects (user_id, name) VALUES (%s, %s) RETURNING project_id;"
 DELETE_PROJECT = "DELETE FROM projects WHERE project_id = (%s);"
 EDIT_PROJECT = "UPDATE projects SET name = (%s) WHERE project_id = (%s);"
+GET_ALL_PROJECTS_BY_USER = "SELECT * FROM projects WHERE user_id = %s ORDER BY name DESC;"
 # endregion
 
 # API Functions
@@ -95,29 +95,31 @@ def getUser(userId, establishConnection):
                 data = cursor.fetchone()
                 user = {"id": str(userId), "username" : data[0], "email" : data[1], "timezone" : data[2], "profile_picture" : data[3]}
                 
-                cursor.execute(GET_ALL_INACTIVE_INTERVALS_BY_USER, (userId,))
+                cursor.execute(GET_ALL_INTERVALS_BY_USER, (userId,))
                 data = cursor.fetchall()
                 inactive = [dict(zip([column[0] for column in cursor.description], row)) for row in data] if data else []
-                for item in inactive:
+                active = None
+                i = 0
+                while i < len(inactive):
+                    item = inactive[i]
                     item['interval_id'] = str(item['interval_id'])
                     item['user_id'] = str(item['user_id'])
                     item['project_id'] = str(item['project_id']) if item['project_id'] else None
                     startTime = item['start_time']
                     item['start_time'] = startTime.strftime('%A %d %B %Y %H:%M:%S %Z') if startTime else None
                     endTime = item['end_time']
-                    item['end_time'] = endTime.strftime('%A %d %B %Y %H:%M:%S %Z') if endTime else None
+                    if not endTime:
+                        active = inactive.pop(i)
+                    else:
+                        item['end_time'] = endTime.strftime('%A %d %B %Y %H:%M:%S %Z')
+                        i += 1
 
-                cursor.execute(GET_ALL_ACTIVE_INTERVALS_BY_USER, (userId,))
-                data = cursor.fetchone()
-                active = dict(zip([column[0] for column in cursor.description], data)) if data else None
-                if active:
-                    active['interval_id'] = str(active['interval_id'])
-                    active['user_id'] = str(active['user_id'])
-                    active['project_id'] = str(active['project_id']) if active['project_id'] else None
-                    active['start_time'] = active['start_time'].strftime('%A %d %B %Y %H:%M:%S %Z')
+                cursor.execute(GET_ALL_PROJECTS_BY_USER, (userId,))
+                data = cursor.fetchall()
+                projects = [{"project_id": str(project[0]), "user_id": str(project[1]), "name": project[2]} for project in data]
     except Exception as e:
         return {"error": f"Failed to get user: {str(e)}"}, 500
-    return jsonify({"userInfo" : user, "intervals" : inactive, "activeInterval" : active})
+    return jsonify({"userInfo" : user, "intervals" : inactive, "activeInterval" : active, "projects" : projects})
 
 def getUsersInfo(user_ids, establishConnection):
     """

@@ -130,24 +130,32 @@ def test_interval(app):
         assert responseJson.get("user_id", False) == userID, "incorrect user ID"
         assert responseJson["end_time"] and isValidTime(responseJson["end_time"], 5), "invalid or incorrect end_time in response JSON"
         
+        projectResponse = client.post("/api/project", json={
+            "name" : "Test",
+            "user_id": userID,
+        })
+        projectID = projectResponse.get_json()["id"]
+
         start_time = "Tuesday 21 November 2023 13:38:38 UTC"
         end_time = "Wednesday 06 November 2024 00:00:00 UTC"
         intervalResponse = client.put(f"/api/interval/{intervalID}", json={
             "name" : "Test 1",
-            "project_id": None,
+            "project_id": projectID,
             "start_time": start_time,
             "end_time": end_time
         })
         assert intervalResponse.status_code == 200, f"Expected status code 200, but got {intervalResponse.status_code}"
         
-        response = client.get(f"http://localhost:5000/api/user/{userID}")
+        response = client.get(f"/api/user/{userID}")
         assert response.status_code == 200, f"Expected status code 200, but got {intervalResponse.status_code}"
         responseJson = response.get_json()
         assert len(responseJson.get("intervals", [])) == 1, "incorrect intervals"
         interval = responseJson["intervals"][0]
         assert interval["name"] == "Test 1", "incorrect name"
         assert interval["start_time"] == start_time and interval["end_time"] == end_time, "incorrect times"
-        assert interval["project_id"] == None, "incorrect project ID"
+        assert interval["project_id"] == projectID, "incorrect project ID"
+        project = responseJson["projects"][0]
+        assert len(responseJson["intervals"]) == 1 and project["project_id"] == projectID and project["user_id"] == userID and project["name"] == "Test", "Incorrect project retrieved"
     finally:
         # clean up
         assert client.delete("/api/user/" + userID).status_code == 200

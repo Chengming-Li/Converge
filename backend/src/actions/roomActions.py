@@ -111,7 +111,6 @@ class User:
                 return
 
     def editInterval(self, client_id, data, establishConnection, emit):
-        print("edit: ", data)
         userID = self.userID
         room = self.room
         connection = establishConnection()
