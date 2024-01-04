@@ -31,7 +31,15 @@ def test_start_stop_interval(app):
     try:
         client1 = app[1]
         client2 = app[2]
-        client1.emit('host', {'ID': "928024115890290689"})
+        client = app[0].test_client()
+        userID = client.post("/api/user", json={
+            "username" : "Test",
+            "email" : "test@gmail.com",
+            "timezone" : "America/Los_Angeles",
+            "profile_picture" : None
+        }).get_json().get("id", None)
+        assert userID != None, "Failed to create new User"
+        client1.emit('host', {'ID': userID})
         code = client1.get_received()[0]['args'][0]
         client2.emit('join', {"room": code, 'ID': "11002330"})
         response1 = client1.get_received()
@@ -43,16 +51,16 @@ def test_start_stop_interval(app):
         assert len(response2) == 1, "Invalid number of messages received"
         data = response2[0]['args'][0]
         intervalID = data["interval_id"]
-        assert response2[0]["name"] == "start" and data["user_id"] == "928024115890290689" and intervalID, "Client2 was not notified of client1's interval"
+        assert response2[0]["name"] == "start" and data["user_id"] == userID and intervalID, "Client2 was not notified of client1's interval"
         client1.emit('stop_interval')
         response1 = client1.get_received()
         response2 = client2.get_received()
         assert len(response1) == 1 and response1[0]["name"] == "stop feedback", "Interval failed to stop"
         assert len(response2) == 1, "Invalid number of messages received"
         data = response2[0]['args'][0]
-        assert response2[0]["name"] == "stop" and data["user_id"] == "928024115890290689" and data["interval_id"] == intervalID and data["start_time"] and data["end_time"] and data["name"], "Client2 was not notified of client1's interval"
+        assert response2[0]["name"] == "stop" and data["user_id"] == userID and data["interval_id"] == intervalID and data["start_time"] and data["end_time"] and data["name"], "Client2 was not notified of client1's interval"
     finally:
-        client = app[0].test_client()
+        assert client.delete("/api/user/" + userID).status_code == 200
         assert client.delete("/api/interval/" + data["interval_id"]).status_code == 200
 
 def test_fetching_multiple_user_data(app):
@@ -128,14 +136,23 @@ def test_fetching_multiple_interval_data(app):
         assert len(response.get_json()) == 4, "Invalid response"
     finally:
         # clean up
+        assert client.delete("/api/user/" + userID).status_code == 200
         for i in ids:
-            assert client.delete("/api/user/" + i).status_code == 200
+            assert client.delete("/api/interval/" + i).status_code == 200
 
 def test_edit_interval(app):
     try:
         client1 = app[1]
         client2 = app[2]
-        client1.emit('host', {'ID': "928024115890290689"})
+        client = app[0].test_client()
+        userID = client.post("/api/user", json={
+            "username" : "Test",
+            "email" : "test@gmail.com",
+            "timezone" : "America/Los_Angeles",
+            "profile_picture" : None
+        }).get_json().get("id", None)
+        assert userID != None, "Failed to create new User"
+        client1.emit('host', {'ID': userID})
         code = client1.get_received()[0]['args'][0]
         client2.emit('join', {"room": code, 'ID': "11002330"})
         client1.emit('start_interval', {"name": "Test Interval", "project_id": None})
@@ -147,8 +164,7 @@ def test_edit_interval(app):
         assert len(response1) == 0, "Failed to edit interval"
         assert len(response2) == 1, "Invalid number of messages received"
         data = response2[0]['args'][0]
-        assert response2[0]["name"] == "edit" and data["user_id"] == "928024115890290689" and data["interval_name"] == "Test Interval2", "Client2 was not notified of client1's interval"
+        assert response2[0]["name"] == "edit" and data["user_id"] == userID and data["interval_name"] == "Test Interval2", "Client2 was not notified of client1's interval"
     finally:
-        client = app[0].test_client()
+        assert client.delete("/api/user/" + userID).status_code == 200
         assert client.delete("/api/interval/" + data["interval_id"]).status_code == 200
-

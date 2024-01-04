@@ -8,6 +8,7 @@ function Sidebar({ collapsed, username }) {
             <SidebarButton Text={"TIME TRACKER"} IconSrc={"/Cheese.png"} route={"/"} />
             <SidebarButton Text={"ROOMS"} IconSrc={"/Cheese.png"} route={"/rooms"} />
             <SidebarButton Text={"REPORTS"} IconSrc={"/Cheese.png"} route={"/"} />
+            <SidebarButton Text={"PROJECTS"} IconSrc={"/Cheese.png"} route={"/"} />
             <SidebarButton Text={"SETTINGS"} IconSrc={"/Cheese.png"} route={"/"} />
             <div className="Profile">
                 <button className="Profile" onClick={() => { console.log("Profile: " + username) }}>

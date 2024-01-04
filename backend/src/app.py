@@ -7,7 +7,7 @@ import psycopg2
 
 import sys
 sys.path.append('/backend/src/actions')
-from dbActions import clearTable, createUser, getUser, getUsersInfo, getTable, deleteTable, deleteUser, startInterval, endInterval, editInterval, deleteInterval, editSettings, getIntervalsInfo
+from dbActions import clearTable, createUser, getUser, getUsersInfo, getTable, deleteTable, deleteUser, startInterval, endInterval, editInterval, deleteInterval, editSettings, getIntervalsInfo, createProject, deleteProject, editProject
 from roomActions import onConnect, onDisconnect, onJoin, onLeave, startRoomInterval, stopRoomInterval, editActiveInterval, hostRoom
 
 def create_app(test_config=None):
@@ -75,6 +75,18 @@ def create_app(test_config=None):
     @app.put('/api/user/settings/<int:user_id>')
     def edit_user_settings(user_id):
         return editSettings(user_id, establishConnection)
+
+    @app.post('/api/project')
+    def create_project():
+        return createProject(establishConnection)
+    
+    @app.put('/api/project/<int:project_id>')
+    def edit_project(project_id):
+        return editProject(project_id, establishConnection)
+    
+    @app.delete('/api/project/<int:project_id>')
+    def delete_project(project_id):
+        return deleteProject(project_id, establishConnection)
 
     # THIS IS ONLY FOR DEVELOPMENT
     @app.delete('/api/delete/table/<string:tableName>')
