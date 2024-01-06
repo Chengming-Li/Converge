@@ -3,7 +3,7 @@ import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import '../Styles/Components.css';
 
-function Interval({ info, deleteInterval, editInterval, rerender, resumeInterval }) {
+function Interval({ info, deleteInterval, editInterval, rerender, resumeInterval, projects }) {
   // extracts and formats time from Date object
   function getTime(currentDate) {
     if (!currentDate) {
@@ -150,7 +150,7 @@ function Interval({ info, deleteInterval, editInterval, rerender, resumeInterval
 
   return (
     <div className='Interval'>
-      <button id="Project" onClick={() => { console.log(info.project) }}>{"• " + info.project}</button>
+      <button id="Project" onClick={() => { console.log(info.project_id) }}>{"• " + (info.project_id ? info.project_id : "No Project")}</button>
       <input className="IntervalName" value={intervalName} onChange={handleNameChange} onKeyDown={handleKeyPress} onBlur={changeName}></input>
 
       <input ref={startTimeRef} className="StartTime" value={startInput} onChange={handleStartChange} onKeyDown={handleKeyPress} onBlur={() => { updateTime(startInput, startTime, setStartTime, setStartInput) }}></input>

@@ -20,7 +20,7 @@ CREATE_PROJECTS_TABLE = "CREATE TABLE IF NOT EXISTS projects (project_id SERIAL 
 CREATE_PROJECT = "INSERT INTO projects (user_id, name, color) VALUES (%s, %s, %s) RETURNING project_id;"
 DELETE_PROJECT = "DELETE FROM projects WHERE project_id = (%s);"
 EDIT_PROJECT = "UPDATE projects SET name = (%s), color = (%s) WHERE project_id = (%s);"
-GET_ALL_PROJECTS_BY_USER = "SELECT * FROM projects WHERE user_id = %s ORDER BY name DESC;"
+GET_ALL_PROJECTS_BY_USER = "SELECT * FROM projects WHERE user_id = %s ORDER BY name ASC;"
 # endregion
 
 # API Functions

@@ -1,8 +1,31 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import '../Styles/Components.css';
+import ProjectsDropdown from '../Components/ProjectsDropdown';
 
-function Input({ activeInterval, addInterval, endInterval, inputWidth, projects, addProject, value, setValue }) {
-  const [time, setTime] = useState(activeInterval ? activeInterval.start_time : "00:00:00")
+function Input({ activeInterval, addInterval, endInterval, inputWidth, activeProjectID, projects, value, setValue }) {
+  const [time, setTime] = useState(activeInterval ? activeInterval.start_time : "00:00:00");
+  const [dropdown, setDropdown] = useState(false);
+  const [project, setProject] = useState({
+    color: "white",
+    project_id: null,
+    name: "No Project"
+  });
+  const dropdownRef = useRef(null);
+  const projectRef = useRef(null);
+  const [projectButtonWidth, setProjectButtonWidth] = useState(0);
+
+  // closes projects dropdown if clicked off
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setDropdown(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
 
   const handleInputChange = (event) => {
     if (event.target.value.length <= 280) {
@@ -12,7 +35,7 @@ function Input({ activeInterval, addInterval, endInterval, inputWidth, projects,
 
   const handleKeyPress = (e) => {
     if (e.key === 'Enter') {
-      addInterval(value, null);
+      addInterval(value, project.project_id);
       e.target.blur();
     }
   };
@@ -21,10 +44,27 @@ function Input({ activeInterval, addInterval, endInterval, inputWidth, projects,
     if (activeInterval) {
       endInterval();
       setValue("");
+      setProject({
+        color: "white",
+        project_id: null,
+        name: "No Project"
+      });
     } else {
-      addInterval(value, null);
+      addInterval(value, project.project_id);
     }
   }
+
+  const selectProject = (p) => {
+    setProject(p);
+    if (activeInterval) {
+      addInterval(value, p.project_id);
+    }
+    setDropdown(false);
+  }
+
+  useEffect(() => {
+    setProjectButtonWidth(projectRef.current.offsetWidth);
+  }, [project]);
 
   useEffect(() => {
     const calculateTimeElapsed = () => {
@@ -45,6 +85,9 @@ function Input({ activeInterval, addInterval, endInterval, inputWidth, projects,
     };
     const intervalId = setInterval(calculateTimeElapsed, 1000);
     calculateTimeElapsed();
+    if (activeInterval && projects && activeInterval.project_id) {
+      setProject(projects.find(project => project.project_id === activeInterval.project_id));
+    }
     return () => clearInterval(intervalId);
   }, [activeInterval]);
 
@@ -56,10 +99,19 @@ function Input({ activeInterval, addInterval, endInterval, inputWidth, projects,
         onChange={handleInputChange}
         onKeyDown={handleKeyPress}
         placeholder="What are you working on?"
+        style={{ width: `calc(100% - 280px - ${projectButtonWidth}px)` }}
       />
-      <button id="Project" onClick={addProject}>
-        <img src={"/Cheese.png"} alt="Icon" />
+      <button id="Project" onClick={() => { setDropdown(!dropdown) }} ref={projectRef}>
+        <span style={{ color: project.color }}>{"• " + project.name}</span>
       </button>
+      {dropdown &&
+        <div ref={dropdownRef}>
+          <ProjectsDropdown
+            projects={projects}
+            selectProject={selectProject}
+          />
+        </div>
+      }
       <p>{time}</p>
       <button id="Start" onClick={handleButtonPress}>{activeInterval ? "STOP" : "START"}</button>
     </div>

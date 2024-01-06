@@ -42,7 +42,6 @@ input {
 }
 
 .Input input {
-    width: calc(100% - 325px);
     position: absolute;
     height: 40px;
     top: 9px;
@@ -70,8 +69,9 @@ input {
 .Input #Project {
     position: absolute;
     height: 100%;
-    right: 240px;
+    right: 235px;
     background-color: #1D272C;
+    font-size: 18px;
 }
 
 .Input img {
@@ -317,9 +317,11 @@ input {
     font-weight: 400;
     text-align: left;
     font-size: 18px;
-    color: red;
     background-color: #1d272c;
     width: 120px;
+    overflow: hidden;
+    white-space: nowrap;
+    background-color: red;
 }
 
 .StartTime {
@@ -419,7 +421,7 @@ input {
     background-color: #263238;
 }
 
-@media (max-width: 800px) {
+@media (max-width: 810px) {
 
     /* Styles to hide elements when screen width is 600px or less */
     .StartTime {
@@ -487,8 +489,8 @@ input {
 
 .projects {
     position: absolute;
-    top: 109px;
-    right: calc(min(119px, 10%) - 49px);
+    right: calc(min(119px, 10%) - 20px);
+    top: 59px;
     background-color: #12191D;
     width: 301px;
     height: 350px;
@@ -497,7 +499,7 @@ input {
 
 .projects button {
     position: relative;
-    top: 20px;
+    top: 25px;
     width: 100%;
     height: 30px;
     background-color: #12191D;

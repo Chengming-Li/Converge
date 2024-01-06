@@ -65,6 +65,7 @@ const Home = () => {
                 setErrors(oldErrors => [...oldErrors, error.message]);
             });
             activeInterval.name = name;
+            activeInterval.project_id = project_id;
         } else {
             const user_id = userInfo.id
             // sets ActiveInterval so there's no delay, incorrect information will be updated after response
@@ -288,11 +289,7 @@ const Home = () => {
 
     return (
         <div className='App'>
-            <ProjectsDropdown projects={[
-                { color: "red", name: "hi", project_id: "1" },
-                { color: "green", name: "hi", project_id: "2" },
-                { color: "blue", name: "hi", project_id: "3" },
-            ]} />
+
             {loading && <Loading />}
             <Error
                 messages={errors}
@@ -305,7 +302,6 @@ const Home = () => {
                 addInterval={startInterval}
                 endInterval={endInterval}
                 inputWidth={windowWidth - (collapsedMenu ? 58 : 198) + "px"}
-                addProject={addProject}
                 projects={projects}
                 value={inputValue}
                 setValue={setInputValue}
