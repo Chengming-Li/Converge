@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import '../Styles/Components.css';
 
-function Input({ activeInterval, addInterval, endInterval, inputWidth, addProject, value, setValue }) {
+function Input({ activeInterval, addInterval, endInterval, inputWidth, projects, addProject, value, setValue }) {
   const [time, setTime] = useState(activeInterval ? activeInterval.start_time : "00:00:00")
 
   const handleInputChange = (event) => {
@@ -25,15 +25,15 @@ function Input({ activeInterval, addInterval, endInterval, inputWidth, addProjec
       addInterval(value, null);
     }
   }
-  
+
   useEffect(() => {
     const calculateTimeElapsed = () => {
-      if(activeInterval) {
+      if (activeInterval) {
         const timeDifference = new Date() - new Date(activeInterval.start_time);
         const hours = Math.floor(timeDifference / 3600000);
-        const minutes  = Math.floor((timeDifference % 3600000) / 60000);
-        const seconds  = Math.floor((timeDifference % 60000) / 1000);
-        
+        const minutes = Math.floor((timeDifference % 3600000) / 60000);
+        const seconds = Math.floor((timeDifference % 60000) / 1000);
+
         const formattedHours = String(hours).padStart(2, '0');
         const formattedMinutes = String(minutes).padStart(2, '0');
         const formattedSeconds = String(seconds).padStart(2, '0');
@@ -49,7 +49,7 @@ function Input({ activeInterval, addInterval, endInterval, inputWidth, addProjec
   }, [activeInterval]);
 
   return (
-    <div className='Input' style={{width: `${inputWidth}`}}>
+    <div className='Input' style={{ width: `${inputWidth}` }}>
       <input
         type="text"
         value={value}
@@ -58,7 +58,7 @@ function Input({ activeInterval, addInterval, endInterval, inputWidth, addProjec
         placeholder="What are you working on?"
       />
       <button id="Project" onClick={addProject}>
-        <img src={"/Cheese.png"} alt="Icon"/>
+        <img src={"/Cheese.png"} alt="Icon" />
       </button>
       <p>{time}</p>
       <button id="Start" onClick={handleButtonPress}>{activeInterval ? "STOP" : "START"}</button>

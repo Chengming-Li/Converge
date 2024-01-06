@@ -8,6 +8,7 @@ import Error from '../Components/Error';
 import moment from "moment-timezone";
 import { SHA256 } from 'crypto-js';
 import Loading from '../Components/Loading';
+import ProjectsDropdown from '../Components/ProjectsDropdown';
 
 const userID = "931452152733499393"
 const userDataAPI = "http://localhost:5000/api/user/"
@@ -24,6 +25,7 @@ const Home = () => {
     const [loading, setLoading] = useState(true);
     const [sections, setSections] = useState(null);
     const [inputValue, setInputValue] = useState("");
+    const [projects, setProjects] = useState([]);
 
     useEffect(() => {
         fetch(userDataAPI + userID).then((response) => {
@@ -36,6 +38,7 @@ const Home = () => {
             setUserInfo(data.userInfo);
             setInactiveIntervals(data.intervals);
             setActiveInterval(data.activeInterval);
+            setProjects(data.projects);
             setInputValue(data.activeInterval ? data.activeInterval.name : "")
             setLoading(false);
         }).catch((error) => {
@@ -279,8 +282,17 @@ const Home = () => {
         separateSections();
     }, [inactiveIntervals]);
 
+    const addProject = () => {
+        console.log("Added Project");
+    }
+
     return (
         <div className='App'>
+            <ProjectsDropdown projects={[
+                { color: "red", name: "hi", project_id: "1" },
+                { color: "green", name: "hi", project_id: "2" },
+                { color: "blue", name: "hi", project_id: "3" },
+            ]} />
             {loading && <Loading />}
             <Error
                 messages={errors}
@@ -293,7 +305,8 @@ const Home = () => {
                 addInterval={startInterval}
                 endInterval={endInterval}
                 inputWidth={windowWidth - (collapsedMenu ? 58 : 198) + "px"}
-                addProject={() => { console.log("Added Project") }}
+                addProject={addProject}
+                projects={projects}
                 value={inputValue}
                 setValue={setInputValue}
             />

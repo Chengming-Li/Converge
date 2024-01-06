@@ -16,10 +16,10 @@ GET_ALL_INTERVALS_BY_USER = "SELECT * FROM intervals WHERE user_id = %s ORDER BY
 FETCH_MULTIPLE_INTERVAL_INFO = "SELECT interval_id, user_id, project_id, name, start_time, end_time FROM intervals WHERE interval_id IN %s;"
 DELETE_INTERVAL = "DELETE FROM intervals WHERE interval_id = (%s);"
 EDIT_SETTINGS = "UPDATE users SET username = %s, profile_picture = (%s), timezone = (%s) WHERE id = (%s) RETURNING id;"
-CREATE_PROJECTS_TABLE = "CREATE TABLE IF NOT EXISTS projects (project_id SERIAL PRIMARY KEY, user_id INT, name TEXT, FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE);"
-CREATE_PROJECT = "INSERT INTO projects (user_id, name) VALUES (%s, %s) RETURNING project_id;"
+CREATE_PROJECTS_TABLE = "CREATE TABLE IF NOT EXISTS projects (project_id SERIAL PRIMARY KEY, user_id INT, name TEXT, color TEXT, FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE);"
+CREATE_PROJECT = "INSERT INTO projects (user_id, name, color) VALUES (%s, %s, %s) RETURNING project_id;"
 DELETE_PROJECT = "DELETE FROM projects WHERE project_id = (%s);"
-EDIT_PROJECT = "UPDATE projects SET name = (%s) WHERE project_id = (%s);"
+EDIT_PROJECT = "UPDATE projects SET name = (%s), color = (%s) WHERE project_id = (%s);"
 GET_ALL_PROJECTS_BY_USER = "SELECT * FROM projects WHERE user_id = %s ORDER BY name DESC;"
 # endregion
 
@@ -116,7 +116,7 @@ def getUser(userId, establishConnection):
 
                 cursor.execute(GET_ALL_PROJECTS_BY_USER, (userId,))
                 data = cursor.fetchall()
-                projects = [{"project_id": str(project[0]), "user_id": str(project[1]), "name": project[2]} for project in data]
+                projects = [{"project_id": str(project[0]), "user_id": str(project[1]), "name": project[2], "color": project[3]} for project in data]
     except Exception as e:
         return {"error": f"Failed to get user: {str(e)}"}, 500
     return jsonify({"userInfo" : user, "intervals" : inactive, "activeInterval" : active, "projects" : projects})
@@ -348,13 +348,14 @@ def createProject(establishConnection):
     connection = establishConnection()
     data = request.get_json()
     name = data["name"]
+    color = data["color"]
     userID = int(data["user_id"])
     try:
         with connection:
             with connection.cursor() as cursor:
                 cursor.execute(CREATE_PROJECTS_TABLE)
                 connection.commit()
-                cursor.execute(CREATE_PROJECT, (userID, name))
+                cursor.execute(CREATE_PROJECT, (userID, name, color))
                 project_id = cursor.fetchone()[0]
     except Exception as e:
         return {"error": f"Failed to start the interval: {str(e)}"}, 500
@@ -383,19 +384,21 @@ def editProject(project_id, establishConnection):
     Edits project with project_id
     Json Body:
         "name" : (str)
+        "color" : (str)
     
     @param {int} project_id: the ID of the project
 
-    @returns {json}: a dictionary containing the keys "id" and "name"
+    @returns {json}: a dictionary containing the keys "id", "name", and "color"
     """
     connection = establishConnection()
     data = request.get_json()
     name = data["name"]
+    color = data["color"]
     try:
         with connection:
             with connection.cursor() as cursor:
-                cursor.execute(EDIT_PROJECT, (name, project_id))
+                cursor.execute(EDIT_PROJECT, (name, color, project_id))
     except Exception as e:
         return {"error": f"Failed to edit interval: {str(e)}"}, 500
-    return jsonify({"id": str(project_id), "name": name}), 200
+    return jsonify({"id": str(project_id), "name": name, "color": color}), 200
 # endregion

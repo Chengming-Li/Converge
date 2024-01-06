@@ -6,7 +6,7 @@ import '../Styles/Components.css';
 function Interval({ info, deleteInterval, editInterval, rerender, resumeInterval }) {
   // extracts and formats time from Date object
   function getTime(currentDate) {
-    if(!currentDate) {
+    if (!currentDate) {
       return null;
     }
     return currentDate.toLocaleTimeString('en-US', {
@@ -45,9 +45,9 @@ function Interval({ info, deleteInterval, editInterval, rerender, resumeInterval
     const timeRegexNoAMPM = /^(0?[0-9]|1[0-9]|2[0-3]):[0-5][0-9]$/i; // military time format
     let temp;
     newTime = newTime.trim().toLowerCase();
-    if(timeRegex.test(newTime) || timeRegexNoAMPM.test(newTime)) {
+    if (timeRegex.test(newTime) || timeRegexNoAMPM.test(newTime)) {
       temp = new Date(`01/01/2023 ${newTime}`);
-    } else if(timeRegexNoSpace.test(newTime.toLowerCase())) {
+    } else if (timeRegexNoSpace.test(newTime.toLowerCase())) {
       const tempTime = newTime.slice(0, 5) + " " + newTime.slice(5);
       temp = new Date(`01/01/2023 ${tempTime}`);
       console.log(temp);
@@ -62,7 +62,7 @@ function Interval({ info, deleteInterval, editInterval, rerender, resumeInterval
     updateInput(getTime(st));
     setDateChanged(true);
   }
-  
+
   const handleKeyPress = (e) => {
     if (e.key === 'Enter') {
       e.target.blur();
@@ -77,7 +77,7 @@ function Interval({ info, deleteInterval, editInterval, rerender, resumeInterval
 
   const changeName = () => {
     setFinalIntervalName(intervalName);
-  } 
+  }
 
   const handleDateChange = (date) => {
     const et = new Date(endTime);
@@ -91,7 +91,7 @@ function Interval({ info, deleteInterval, editInterval, rerender, resumeInterval
     setShowDatePicker(false);
     setDateChanged(true);
   };
-  
+
   // closes date picker and options menu if clicked off
   useEffect(() => {
     const handleEditClickOutside = (event) => {
@@ -120,7 +120,7 @@ function Interval({ info, deleteInterval, editInterval, rerender, resumeInterval
       return;
     }
     editInterval(info.interval_id, finalIntervalName, projectId, startTime, endTime);
-    if(dateChanged) {
+    if (dateChanged) {
       rerender();
       setDateChanged(false);
     }
@@ -129,7 +129,7 @@ function Interval({ info, deleteInterval, editInterval, rerender, resumeInterval
   function calculateTimeDifference() {
     const et = new Date(endTime);
     const st = new Date(startTime)
-    if(et < st) {
+    if (et < st) {
       et.setDate(et.getDate() + 1);
     } else if ((et - st) > (24 * 60 * 60 * 1000)) {
       et.setDate(et.getDate() - 1);
@@ -138,9 +138,9 @@ function Interval({ info, deleteInterval, editInterval, rerender, resumeInterval
     const timeDifference = et - st;
 
     const hours = Math.floor(timeDifference / 3600000);
-    const minutes  = Math.floor((timeDifference % 3600000) / 60000);
-    const seconds  = Math.floor((timeDifference % 60000) / 1000);
-    
+    const minutes = Math.floor((timeDifference % 3600000) / 60000);
+    const seconds = Math.floor((timeDifference % 60000) / 1000);
+
     const formattedHours = String(hours).padStart(2, '0');
     const formattedMinutes = String(minutes).padStart(2, '0');
     const formattedSeconds = String(seconds).padStart(2, '0');
@@ -150,16 +150,16 @@ function Interval({ info, deleteInterval, editInterval, rerender, resumeInterval
 
   return (
     <div className='Interval'>
-      <button id="Project" onClick={() => {console.log(info.project)}}>{"• "+info.project}</button>
+      <button id="Project" onClick={() => { console.log(info.project) }}>{"• " + info.project}</button>
       <input className="IntervalName" value={intervalName} onChange={handleNameChange} onKeyDown={handleKeyPress} onBlur={changeName}></input>
-      
-      <input ref={startTimeRef} className="StartTime" value={startInput} onChange={handleStartChange} onKeyDown={handleKeyPress} onBlur={() => {updateTime(startInput, startTime, setStartTime, setStartInput)}}></input>
-      <p id="Mid" style={{position: "absolute", marginTop: "15px", right: "292px", fontWeight: "100", fontSize: "30px"}}>-</p>
-      <input ref={endTimeRef} className="EndTime" value={endInput} onChange={handleEndChange} onKeyDown={handleKeyPress} onBlur={() => {updateTime(endInput, endTime, setEndTime, setEndInput)}}></input>
+
+      <input ref={startTimeRef} className="StartTime" value={startInput} onChange={handleStartChange} onKeyDown={handleKeyPress} onBlur={() => { updateTime(startInput, startTime, setStartTime, setStartInput) }}></input>
+      <p id="Mid" style={{ position: "absolute", marginTop: "15px", right: "292px", fontWeight: "100", fontSize: "30px" }}>-</p>
+      <input ref={endTimeRef} className="EndTime" value={endInput} onChange={handleEndChange} onKeyDown={handleKeyPress} onBlur={() => { updateTime(endInput, endTime, setEndTime, setEndInput) }}></input>
 
       <button id="Date" onClick={() => setShowDatePicker(!showDatePicker)}><img src={'/calendar.png'} alt="date" /></button>
       {showDatePicker && (
-        <div ref={datepickerRef} style={{position: "absolute", top: "50px", right: "50px", zIndex: 100}}>
+        <div ref={datepickerRef} style={{ position: "absolute", top: "50px", right: "50px", zIndex: 99 }}>
           <DatePicker
             wrapperClassName="datePicker"
             selected={startTime}
@@ -176,14 +176,14 @@ function Interval({ info, deleteInterval, editInterval, rerender, resumeInterval
         </div>
       )}
 
-      <p id = "TimeElapsed" style={{position: "absolute", top: "4px", right: "49px", fontWeight: "100", fontSize: "20px"}}>{calculateTimeDifference(startTime, endTime)}</p>
-      <button id="Edit" onClick={() => {setMenuIsOpen(!menuIsOpen)}}><img src={'/options.png'} alt="edit" /></button>
+      <p id="TimeElapsed" style={{ position: "absolute", top: "4px", right: "49px", fontWeight: "100", fontSize: "20px" }}>{calculateTimeDifference(startTime, endTime)}</p>
+      <button id="Edit" onClick={() => { setMenuIsOpen(!menuIsOpen) }}><img src={'/options.png'} alt="edit" /></button>
       {menuIsOpen && (
         <div className="EditMenu" ref={dropdownRef}>
-          <button id='resume' onClick={() => {resumeInterval(intervalName, projectId)}}>
+          <button id='resume' onClick={() => { resumeInterval(intervalName, projectId) }}>
             Resume
           </button>
-          <button id='delete' onClick={() => {deleteInterval(info.interval_id)}}>
+          <button id='delete' onClick={() => { deleteInterval(info.interval_id) }}>
             Delete
           </button>
         </div>

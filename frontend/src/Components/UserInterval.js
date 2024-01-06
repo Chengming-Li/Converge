@@ -45,8 +45,8 @@ function UserInterval({ info, resumeInterval }) {
 
     return (
         <div className='Interval'>
-            <p className="IntervalName" style={{ top: "-7px" }}>{intervalName}</p>
-            <p id="Project" style={{ top: "22px" }}>{"• " + info.project}</p>
+            <p className="IntervalName" style={{ top: !resumeInterval ? "3px" : "-7px" }}>{intervalName}</p>
+            {resumeInterval && <p id="Project" style={{ top: "22px" }}>{"• " + info.project}</p>}
             <p id="TimeElapsed" style={{ position: "absolute", top: "4px", right: "49px", fontWeight: "100", fontSize: "20px" }}>{calculateTimeDifference(startTime, endTime)}</p>
             {resumeInterval && <button id="Edit" onClick={() => { setMenuIsOpen(!menuIsOpen) }}><img src={'/options.png'} alt="edit" /></button>}
             {menuIsOpen && (

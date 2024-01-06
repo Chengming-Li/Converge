@@ -484,3 +484,29 @@ input {
 .error span {
     padding-right: 7px;
 }
+
+.projects {
+    position: absolute;
+    top: 109px;
+    right: calc(min(119px, 10%) - 49px);
+    background-color: #12191D;
+    width: 301px;
+    height: 350px;
+    z-index: 99;
+}
+
+.projects button {
+    position: relative;
+    top: 20px;
+    width: 100%;
+    height: 30px;
+    background-color: #12191D;
+    text-align: left;
+    padding-left: 15px;
+    padding-right: 15px;
+    margin-top: 1px;
+}
+
+.projects button:hover {
+    background-color: #263238;
+}
