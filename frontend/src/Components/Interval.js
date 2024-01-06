@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import '../Styles/Components.css';
+import ProjectsDropdown from '../Components/ProjectsDropdown';
 
 function Interval({ info, deleteInterval, editInterval, rerender, resumeInterval, projects }) {
   // extracts and formats time from Date object
@@ -22,7 +23,13 @@ function Interval({ info, deleteInterval, editInterval, rerender, resumeInterval
   const [endInput, setEndInput] = useState(getTime(endTime));
   const [intervalName, setIntervalName] = useState(info.name);
   const [finalIntervalName, setFinalIntervalName] = useState(info.name);
-  const [projectId, setProjectId] = useState(info.project_id);
+  const [project, setProject] = useState(info.project_id ? projects.find(project => project.project_id === info.project_id) :
+    {
+      color: "white",
+      project_id: null,
+      name: "No Project"
+    }
+  );
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [menuIsOpen, setMenuIsOpen] = useState(false);
   const dropdownRef = useRef(null);
@@ -34,6 +41,8 @@ function Interval({ info, deleteInterval, editInterval, rerender, resumeInterval
   const [dateChanged, setDateChanged] = useState(false);
   const intervalRef = useRef(null);
   const [intervalWidth, setIntervalWidth] = useState(0);
+  const [projectDropdown, setProjectDropdown] = useState(false);
+  const projectDropdownRef = useRef(null);
 
   const handleStartChange = (event) => {
     setStartInput(event.target.value);
@@ -114,11 +123,19 @@ function Interval({ info, deleteInterval, editInterval, rerender, resumeInterval
     }
     window.addEventListener('resize', changeIntervalSize);
     changeIntervalSize();
-    console.log(projects);
+
+    const handleClickOutside = (event) => {
+      if (projectDropdownRef.current && !projectDropdownRef.current.contains(event.target)) {
+        setProjectDropdown(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+
     return () => {
       document.removeEventListener('mousedown', handleEditClickOutside);
       document.removeEventListener('mousedown', handleDateClickOutside);
       window.removeEventListener('resize', changeIntervalSize);
+      document.removeEventListener('mousedown', handleClickOutside);
     };
   }, []);
 
@@ -129,12 +146,12 @@ function Interval({ info, deleteInterval, editInterval, rerender, resumeInterval
       isInitialRender.current = false;
       return;
     }
-    editInterval(info.interval_id, finalIntervalName, projectId, startTime, endTime);
+    editInterval(info.interval_id, finalIntervalName, project.project_id, startTime, endTime);
     if (dateChanged) {
       rerender();
       setDateChanged(false);
     }
-  }, [rerender, editInterval, info.interval_id, finalIntervalName, projectId, startTime, endTime])
+  }, [rerender, editInterval, info.interval_id, finalIntervalName, project, startTime, endTime])
 
   function calculateTimeDifference() {
     const et = new Date(endTime);
@@ -161,8 +178,11 @@ function Interval({ info, deleteInterval, editInterval, rerender, resumeInterval
   return (
     <div className='Interval' ref={intervalRef}>
       <button id="Project"
-        style={{ maxWidth: `${intervalWidth - 450 + (intervalWidth < 556 ? 220 : 0) + (intervalWidth < 347 ? 150 : 0)}px` }}
-        onClick={() => { console.log(info.project_id) }}>{"• " + info.interval_id}</button>
+        style={{
+          maxWidth: `${intervalWidth - 450 + (intervalWidth < 556 ? 220 : 0) + (intervalWidth < 347 ? 150 : 0)}px`,
+          color: project.color
+        }}
+        onClick={() => { setProjectDropdown(true) }}>{"• " + (project ? project.name : "No Project")}</button>
       <input className="IntervalName" value={intervalName} onChange={handleNameChange} onKeyDown={handleKeyPress} onBlur={changeName}></input>
 
       <input ref={startTimeRef} className="StartTime" value={startInput} onChange={handleStartChange} onKeyDown={handleKeyPress} onBlur={() => { updateTime(startInput, startTime, setStartTime, setStartInput) }}></input>
@@ -192,7 +212,7 @@ function Interval({ info, deleteInterval, editInterval, rerender, resumeInterval
       <button id="Edit" onClick={() => { setMenuIsOpen(!menuIsOpen) }}><img src={'/options.png'} alt="edit" /></button>
       {menuIsOpen && (
         <div className="EditMenu" ref={dropdownRef}>
-          <button id='resume' onClick={() => { resumeInterval(intervalName, projectId) }}>
+          <button id='resume' onClick={() => { resumeInterval(intervalName, project.project_id) }}>
             Resume
           </button>
           <button id='delete' onClick={() => { deleteInterval(info.interval_id) }}>
@@ -200,6 +220,16 @@ function Interval({ info, deleteInterval, editInterval, rerender, resumeInterval
           </button>
         </div>
       )}
+      {projectDropdown &&
+        <div ref={projectDropdownRef}>
+          <ProjectsDropdown
+            projects={projects}
+            selectProject={(a) => { setProject(a); setProjectDropdown(false); }}
+            left={"0px"}
+            width={"100%"}
+          />
+        </div>
+      }
     </div>
   );
 }

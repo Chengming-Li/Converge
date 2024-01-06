@@ -2,14 +2,9 @@ import React, { useState, useEffect, useRef } from 'react';
 import '../Styles/Components.css';
 import ProjectsDropdown from '../Components/ProjectsDropdown';
 
-function Input({ activeInterval, addInterval, endInterval, inputWidth, projects, value, setValue }) {
+function Input({ activeInterval, addInterval, endInterval, inputWidth, projects, project, setProject, value, setValue }) {
   const [time, setTime] = useState(activeInterval ? activeInterval.start_time : "00:00:00");
   const [dropdown, setDropdown] = useState(false);
-  const [project, setProject] = useState({
-    color: "white",
-    project_id: null,
-    name: "No Project"
-  });
   const dropdownRef = useRef(null);
   const projectRef = useRef(null);
   const [projectButtonWidth, setProjectButtonWidth] = useState(0);

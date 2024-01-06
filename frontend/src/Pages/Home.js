@@ -26,6 +26,11 @@ const Home = () => {
     const [sections, setSections] = useState(null);
     const [inputValue, setInputValue] = useState("");
     const [projects, setProjects] = useState([]);
+    const [activeProject, setActiveProject] = useState({
+        color: "white",
+        project_id: null,
+        name: "No Project"
+    });
 
     useEffect(() => {
         fetch(userDataAPI + userID).then((response) => {
@@ -262,7 +267,7 @@ const Home = () => {
                     deleteInterval={deleteInterval}
                     editInterval={editInterval}
                     rerender={separateSections}
-                    resumeInterval={(name, project_id) => { setInputValue(name); startInterval(name, project_id) }}
+                    resumeInterval={(name, project_id) => { setInputValue(name); setActiveProject(projects.find(project => project.project_id === project_id)); startInterval(name, project_id) }}
                     projects={projects}
                     key={SHA256(relativizeDates(intervals[0].start_time) + intervals.map(obj => obj.interval_id).join('')).toString()}
                 />
@@ -306,6 +311,8 @@ const Home = () => {
                 projects={projects}
                 value={inputValue}
                 setValue={setInputValue}
+                project={activeProject}
+                setProject={setActiveProject}
             />
             <div className="TimeSections" style={{ width: `${windowWidth - (collapsedMenu ? 114 : 254) + "px"}` }}>
                 <div style={
