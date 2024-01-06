@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import '../Styles/Components.css';
 import ProjectsDropdown from '../Components/ProjectsDropdown';
 
-function Input({ activeInterval, addInterval, endInterval, inputWidth, activeProjectID, projects, value, setValue }) {
+function Input({ activeInterval, addInterval, endInterval, inputWidth, projects, value, setValue }) {
   const [time, setTime] = useState(activeInterval ? activeInterval.start_time : "00:00:00");
   const [dropdown, setDropdown] = useState(false);
   const [project, setProject] = useState({
@@ -64,7 +64,7 @@ function Input({ activeInterval, addInterval, endInterval, inputWidth, activePro
 
   useEffect(() => {
     setProjectButtonWidth(projectRef.current.offsetWidth);
-  }, [project]);
+  }, [project, inputWidth]);
 
   useEffect(() => {
     const calculateTimeElapsed = () => {
@@ -99,10 +99,10 @@ function Input({ activeInterval, addInterval, endInterval, inputWidth, activePro
         onChange={handleInputChange}
         onKeyDown={handleKeyPress}
         placeholder="What are you working on?"
-        style={{ width: `calc(100% - 280px - ${projectButtonWidth}px)` }}
+        style={{ width: `calc(100% - 270px - ${projectButtonWidth}px)` }}
       />
       <button id="Project" onClick={() => { setDropdown(!dropdown) }} ref={projectRef}>
-        <span style={{ color: project.color }}>{"• " + project.name}</span>
+        <span style={{ color: project.color }}>{parseInt(inputWidth, 10) > 500 ? "• " + project.name : "•"}</span>
       </button>
       {dropdown &&
         <div ref={dropdownRef}>

@@ -263,6 +263,7 @@ const Home = () => {
                     editInterval={editInterval}
                     rerender={separateSections}
                     resumeInterval={(name, project_id) => { setInputValue(name); startInterval(name, project_id) }}
+                    projects={projects}
                     key={SHA256(relativizeDates(intervals[0].start_time) + intervals.map(obj => obj.interval_id).join('')).toString()}
                 />
             ))
