@@ -41,6 +41,38 @@ def test_create_user(app):
         # clean up
         assert client.delete("/api/user/" + responseJson['id']).status_code == 200
 
+def test_project(app):
+    try:
+        client = app[0].test_client()
+        userID = client.post("/api/user", json={
+            "username" : "Test",
+            "email" : "test@gmail.com",
+            "timezone" : "America/Los_Angeles",
+            "profile_picture" : None
+        }).get_json()['id']
+        projectResponse = client.post("/api/project", json={
+            "name" : "Test",
+            "user_id": userID,
+	        "color" : "Green"
+        })
+        assert projectResponse.status_code == 201, f"Expected status code 201, but got {projectResponse.status_code}"
+        projectID = projectResponse.get_json().get("id", False)
+        assert projectID, "invalid or missing id in response JSON"
+
+        projectResponse = client.put(f"/api/project/{projectID}", json={
+            "name" : "Test 1",
+	        "color" : "Green"
+        })
+        assert projectResponse.status_code == 200, f"Expected status code 200, but got {projectResponse.status_code}"
+        projectData = projectResponse.get_json()
+        assert projectData["id"] == projectID, f"Incorrect project"
+        assert projectData["name"] == "Test 1", f"Incorrect name"
+    finally:
+        # clean up
+        assert client.delete("/api/user/" + userID).status_code == 200
+        if projectID:
+            assert client.delete("/api/project/" + projectID).status_code == 200
+
 def test_edit_user(app):
     try:
         client = app[0].test_client()
@@ -59,7 +91,7 @@ def test_edit_user(app):
             "timezone" : "UTC",
             "profile_picture": encoded_image
         })
-        assert response.status_code == 201, f"Expected status code 201, but got {response.status_code}"
+        assert response.status_code == 200, f"Expected status code 200, but got {response.status_code}"
         responseJson = response.get_json()
         assert responseJson.get("id", False) == userID, "incorrect ID"
         response = client.get(f"/api/user/{userID}")
@@ -92,7 +124,7 @@ def test_interval(app):
         
         intervalID = responseJson["id"]
         intervalResponse = client.put(f"/api/interval/end/{intervalID}")
-        assert intervalResponse.status_code == 201, f"Expected status code 201, but got {intervalResponse.status_code}"
+        assert intervalResponse.status_code == 200, f"Expected status code 200, but got {intervalResponse.status_code}"
         responseJson = intervalResponse.get_json()
         assert responseJson.get("interval_id", False) == intervalID, "incorrect interval ID"
         assert responseJson.get("name", False) == "Test", "incorrect interval name"
@@ -100,24 +132,33 @@ def test_interval(app):
         assert responseJson.get("user_id", False) == userID, "incorrect user ID"
         assert responseJson["end_time"] and isValidTime(responseJson["end_time"], 5), "invalid or incorrect end_time in response JSON"
         
+        projectResponse = client.post("/api/project", json={
+            "name" : "Test",
+            "user_id": userID,
+	        "color" : "Green"
+        })
+        projectID = projectResponse.get_json()["id"]
+
         start_time = "Tuesday 21 November 2023 13:38:38 UTC"
         end_time = "Wednesday 06 November 2024 00:00:00 UTC"
         intervalResponse = client.put(f"/api/interval/{intervalID}", json={
             "name" : "Test 1",
-            "project_id": None,
+            "project_id": projectID,
             "start_time": start_time,
             "end_time": end_time
         })
-        assert intervalResponse.status_code == 201, f"Expected status code 201, but got {intervalResponse.status_code}"
+        assert intervalResponse.status_code == 200, f"Expected status code 200, but got {intervalResponse.status_code}"
         
-        response = client.get(f"http://localhost:5000/api/user/{userID}")
+        response = client.get(f"/api/user/{userID}")
         assert response.status_code == 200, f"Expected status code 200, but got {intervalResponse.status_code}"
         responseJson = response.get_json()
         assert len(responseJson.get("intervals", [])) == 1, "incorrect intervals"
         interval = responseJson["intervals"][0]
         assert interval["name"] == "Test 1", "incorrect name"
         assert interval["start_time"] == start_time and interval["end_time"] == end_time, "incorrect times"
-        assert interval["project_id"] == None, "incorrect project ID"
+        assert interval["project_id"] == projectID, "incorrect project ID"
+        project = responseJson["projects"][0]
+        assert len(responseJson["intervals"]) == 1 and project["project_id"] == projectID and project["user_id"] == userID and project["name"] == "Test", "Incorrect project retrieved"
     finally:
         # clean up
         assert client.delete("/api/user/" + userID).status_code == 200

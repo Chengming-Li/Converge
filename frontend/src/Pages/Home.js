@@ -8,8 +8,9 @@ import Error from '../Components/Error';
 import moment from "moment-timezone";
 import { SHA256 } from 'crypto-js';
 import Loading from '../Components/Loading';
+import ProjectsDropdown from '../Components/ProjectsDropdown';
 
-const userID = "928024115890290689"
+const userID = "931452152733499393"
 const userDataAPI = "http://localhost:5000/api/user/"
 const intervalAPI = "http://localhost:5000/api/interval"
 const endIntervalAPI = "http://localhost:5000/api/interval/end/"
@@ -24,6 +25,12 @@ const Home = () => {
     const [loading, setLoading] = useState(true);
     const [sections, setSections] = useState(null);
     const [inputValue, setInputValue] = useState("");
+    const [projects, setProjects] = useState([]);
+    const [activeProject, setActiveProject] = useState({
+        color: "white",
+        project_id: null,
+        name: "No Project"
+    });
 
     useEffect(() => {
         fetch(userDataAPI + userID).then((response) => {
@@ -36,6 +43,7 @@ const Home = () => {
             setUserInfo(data.userInfo);
             setInactiveIntervals(data.intervals);
             setActiveInterval(data.activeInterval);
+            setProjects(data.projects);
             setInputValue(data.activeInterval ? data.activeInterval.name : "")
             setLoading(false);
         }).catch((error) => {
@@ -62,6 +70,7 @@ const Home = () => {
                 setErrors(oldErrors => [...oldErrors, error.message]);
             });
             activeInterval.name = name;
+            activeInterval.project_id = project_id;
         } else {
             const user_id = userInfo.id
             // sets ActiveInterval so there's no delay, incorrect information will be updated after response
@@ -258,7 +267,8 @@ const Home = () => {
                     deleteInterval={deleteInterval}
                     editInterval={editInterval}
                     rerender={separateSections}
-                    resumeInterval={(name, project_id) => { setInputValue(name); startInterval(name, project_id) }}
+                    resumeInterval={(name, project_id) => { setInputValue(name); setActiveProject(projects.find(project => project.project_id === project_id)); startInterval(name, project_id) }}
+                    projects={projects}
                     key={SHA256(relativizeDates(intervals[0].start_time) + intervals.map(obj => obj.interval_id).join('')).toString()}
                 />
             ))
@@ -279,8 +289,13 @@ const Home = () => {
         separateSections();
     }, [inactiveIntervals]);
 
+    const addProject = () => {
+        console.log("Added Project");
+    }
+
     return (
         <div className='App'>
+
             {loading && <Loading />}
             <Error
                 messages={errors}
@@ -293,9 +308,11 @@ const Home = () => {
                 addInterval={startInterval}
                 endInterval={endInterval}
                 inputWidth={windowWidth - (collapsedMenu ? 58 : 198) + "px"}
-                addProject={() => { console.log("Added Project") }}
+                projects={projects}
                 value={inputValue}
                 setValue={setInputValue}
+                project={activeProject}
+                setProject={setActiveProject}
             />
             <div className="TimeSections" style={{ width: `${windowWidth - (collapsedMenu ? 114 : 254) + "px"}` }}>
                 <div style={
