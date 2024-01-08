@@ -7,9 +7,11 @@ import Header from '../Components/Header';
 import UserSection from '../Components/UserSection';
 import Loading from '../Components/Loading';
 import Error from '../Components/Error';
+import { SHA256 } from 'crypto-js';
 
 const userDataAPI = "http://localhost:5000/api/users"
 const intervalsDataAPI = "http://localhost:5000/api/intervals"
+const userProjectsAPI = "http://localhost:5000/api/project/user/"
 const userIDs = ['931452152733499393', '931452154371997697', '931452155465498625', '931452156469051393', '931452157793697793', '931452158884216833', '931452159999836161', '931452161115717633', '931452162258567169', '931452163353673729', '931452164350607361', '931452165503909889', '931452166532726785', '931452167671545857', '931452168718286849', '931452170105716737', '931452171239555073', '931452172333613057', '931452173868564481', '931452175060271105']
 const Rooms = () => {
     const [collapsedMenu, setCollapsedMenu] = useState(false);
@@ -28,6 +30,12 @@ const Rooms = () => {
     const [userID, setUserID] = useState(userIDs[Math.floor(Math.random() * userIDs.length)]);
     const [users, setUsers] = useState([]);  // active_interval, id, intervals, profile_picture, timeJoined, username
 
+    const [projects, setProjects] = useState([]);
+    const [activeProject, setActiveProject] = useState({
+        color: "white",
+        project_id: null,
+        name: "No Project"
+    });
 
     useEffect(() => {
         const newSocket = io.connect('http://localhost:5000');
@@ -53,6 +61,19 @@ const Rooms = () => {
             setErrors(oldErrors => [...oldErrors, error.message]);
             return;
         });
+
+        fetch(userProjectsAPI + "/" + userID).then((response) => {
+            if (!response.ok) {
+                console.log(response.json());
+                throw new Error(response.status);
+            }
+            return response.json();
+        }).then((d) => {
+            setProjects(d);
+        }).catch((error) => {
+            setErrors(oldErrors => [...oldErrors, error.message]);
+            return;
+        })
 
         newSocket.on("error", (data) => {
             console.log(data);
@@ -273,6 +294,10 @@ const Rooms = () => {
         thisUser.active_interval = null;
     };
 
+    const changeProject = (interval_id, project_id) => {
+        socket.emit('change_project', { "interval_id": interval_id, "project_id": project_id });
+    }
+
     const resumeInterval = (name, project_id) => {
         if (activeInterval) {
             // make request
@@ -292,6 +317,13 @@ const Rooms = () => {
         height: '100vh',
     };
 
+    useEffect(() => {
+        if (activeInterval) {
+            activeInterval.project_id = activeProject.project_id;
+        }
+        setActiveInterval(oldActive => activeInterval);
+    }, [activeProject]);
+
     return (
         <div className='App' style={backgroundStyle}>
             {loading && <Loading />}
@@ -309,9 +341,11 @@ const Rooms = () => {
                             addInterval={startInterval}
                             endInterval={endInterval}
                             inputWidth={windowWidth - (collapsedMenu ? 58 : 198) + "px"}
-                            addProject={() => { console.log("Added Project") }}
                             value={inputValue}
                             setValue={setInputValue}
+                            project={activeProject}
+                            setProject={setActiveProject}
+                            projects={projects}
                         />
                         <div className="Banner" style={{ width: `${windowWidth - (collapsedMenu ? 114 : 254) + "px"}` }}>
                             <p id="Title">ROOM</p>
@@ -325,9 +359,12 @@ const Rooms = () => {
                                         activeInterval={user.active_interval}
                                         pfp={"/pfp.png"}
                                         intervals={user.intervals}
-                                        key={user.id}
+                                        key={SHA256(user.id + user.timeJoined)}
                                         resumeInterval={user === thisUser ? resumeInterval : null}
                                         userActive={user === thisUser ? activeInterval : null}
+                                        projects={user === thisUser ? projects : null}
+                                        windowWidth={windowWidth}
+                                        editInterval={changeProject}
                                     />
                                 ))}
                             </div>

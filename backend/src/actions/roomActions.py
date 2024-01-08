@@ -6,6 +6,7 @@ CREATE_INTERVALS_TABLE = "CREATE TABLE IF NOT EXISTS intervals (interval_id SERI
 START_INTERVAL = "INSERT INTO intervals (user_id, project_id, name, start_time) VALUES (%s, %s, %s, %s) RETURNING *;"
 END_INTERVAL = "UPDATE intervals SET end_time = (%s) WHERE interval_id = (%s) RETURNING *;"
 EDIT_INTERVAL = "UPDATE intervals SET name = (%s), project_id = (%s) WHERE interval_id = (%s);"
+CHANGE_PROJECT = "UPDATE intervals SET project_id = (%s) WHERE interval_id = (%s);"
 
 # keys: client session ID
 # values: dictionary with keys for UserID, Room, activeInterval, intervals, and timeJoined
@@ -180,3 +181,15 @@ def hostRoom(client_id, data, join_room, emit):
     roomUsers[room] = {client_id}
     join_room(room)
     emit("join", room, to=client_id)
+
+def changeProject(data, establishConnection):
+    connection = establishConnection()
+    interval_id = data["interval_id"]
+    projectID = data["project_id"]
+    try:
+        with connection:
+            with connection.cursor() as cursor:
+                cursor.execute(CHANGE_PROJECT, (projectID, interval_id,))
+                print("Done")
+    except Exception as e:
+        return

@@ -53,13 +53,15 @@ def test_project(app):
         projectResponse = client.post("/api/project", json={
             "name" : "Test",
             "user_id": userID,
+	        "color" : "Green"
         })
         assert projectResponse.status_code == 201, f"Expected status code 201, but got {projectResponse.status_code}"
         projectID = projectResponse.get_json().get("id", False)
         assert projectID, "invalid or missing id in response JSON"
 
         projectResponse = client.put(f"/api/project/{projectID}", json={
-            "name" : "Test 1"
+            "name" : "Test 1",
+	        "color" : "Green"
         })
         assert projectResponse.status_code == 200, f"Expected status code 200, but got {projectResponse.status_code}"
         projectData = projectResponse.get_json()
@@ -133,6 +135,7 @@ def test_interval(app):
         projectResponse = client.post("/api/project", json={
             "name" : "Test",
             "user_id": userID,
+	        "color" : "Green"
         })
         projectID = projectResponse.get_json()["id"]
 

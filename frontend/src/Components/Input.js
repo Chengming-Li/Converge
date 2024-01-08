@@ -97,7 +97,7 @@ function Input({ activeInterval, addInterval, endInterval, inputWidth, projects,
         style={{ width: `calc(100% - 270px - ${projectButtonWidth}px)` }}
       />
       <button id="Project" onClick={() => { setDropdown(!dropdown) }} ref={projectRef}>
-        <span style={{ color: project.color }}>{parseInt(inputWidth, 10) > 500 ? "• " + project.name : "•"}</span>
+        <span style={{ whiteSpace: "nowrap", textOverflow: "ellipsis", display: 'inline-block', color: project.color, maxWidth: `150px`, overflow: "hidden" }}>{parseInt(inputWidth, 10) > 500 ? "• " + project.name : "•"}</span>
       </button>
       {dropdown &&
         <div ref={dropdownRef}>

@@ -1,10 +1,10 @@
-import React, { useState }from 'react';
+import React, { useState } from 'react';
 import '../Styles/Components.css';
 
-function Error({messages, setMessages}) {
+function Error({ messages, setMessages }) {
 
     return (
-        <div style={{position: "absolute", width: "auto", height: "auto", right: "10px", bottom: "2px"}}>
+        <div style={{ position: "absolute", width: "auto", height: "auto", right: "10px", bottom: "2px" }}>
             {
                 messages.map((error, index) => [
                     <div className='error' key={error}>
@@ -17,13 +17,6 @@ function Error({messages, setMessages}) {
             }
         </div>
     )
-    /*
-    {
-                messages.messages.map((error, index) => [
-                    <p key={index}>{error}</p>
-                ])
-            }
-    */
 }
 
 export default Error;

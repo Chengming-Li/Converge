@@ -7,8 +7,8 @@ import psycopg2
 
 import sys
 sys.path.append('/backend/src/actions')
-from dbActions import clearTable, createUser, getUser, getUsersInfo, getTable, deleteTable, deleteUser, startInterval, endInterval, editInterval, deleteInterval, editSettings, getIntervalsInfo, createProject, deleteProject, editProject
-from roomActions import onConnect, onDisconnect, onJoin, onLeave, startRoomInterval, stopRoomInterval, editActiveInterval, hostRoom
+from dbActions import clearTable, createUser, getUser, getUsersInfo, getTable, deleteTable, deleteUser, startInterval, endInterval, editInterval, deleteInterval, editSettings, getIntervalsInfo, createProject, deleteProject, editProject, getProjects
+from roomActions import onConnect, onDisconnect, onJoin, onLeave, startRoomInterval, stopRoomInterval, editActiveInterval, hostRoom, changeProject
 
 def create_app(test_config=None):
     load_dotenv()
@@ -87,6 +87,10 @@ def create_app(test_config=None):
     @app.delete('/api/project/<int:project_id>')
     def delete_project(project_id):
         return deleteProject(project_id, establishConnection)
+    
+    @app.get('/api/project/user/<int:user_id>')
+    def get_projects(user_id):
+        return getProjects(user_id, establishConnection)
 
     # THIS IS ONLY FOR DEVELOPMENT
     @app.delete('/api/delete/table/<string:tableName>')
@@ -139,6 +143,10 @@ def create_app(test_config=None):
     def handle_host_room(data):
         client = request.sid
         hostRoom(client, data, join_room, emit)
+        
+    @socketio.on('change_project')
+    def handle_change_project(data):
+        changeProject(data, establishConnection)
     #endregion
         
     return app, socketio

@@ -86,6 +86,7 @@ def getUser(userId, establishConnection):
         "userInfo" points to a dict with keys "email", "id", "timezone", "profile_picture", and "username"
         "intervals" points to a list of dictionaries, each with the keys "end_time", "start_time", "interval_id", "name", "project_id", and "user_id"
         "activeInterval" points to the current interval that hasn't been ended, with the keys "end_time", "start_time", "interval_id", "name", "project_id", and "user_id", or null if none exists
+        "projects" points to a list of objects with the keys "project_id", "user_id", "name", and "color"
     """
     connection = establishConnection()
     try:
@@ -360,6 +361,25 @@ def createProject(establishConnection):
     except Exception as e:
         return {"error": f"Failed to start the interval: {str(e)}"}, 500
     return jsonify({"id": str(project_id)}), 201
+
+def getProjects(userId, establishConnection):
+    """
+    Fetch all projects made by user from database
+
+    @param {int} userId: the ID of the user
+
+    @returns {json}: a list of project objects
+    """
+    connection = establishConnection()
+    try:
+        with connection:
+            with connection.cursor() as cursor:
+                cursor.execute(GET_ALL_PROJECTS_BY_USER, (userId,))
+                data = cursor.fetchall()
+                projects = [{"project_id": str(project[0]), "user_id": str(project[1]), "name": project[2], "color": project[3]} for project in data]
+    except Exception as e:
+        return {"error": f"Failed to get user: {str(e)}"}, 500
+    return jsonify(projects)
 
 def deleteProject(project_id, establishConnection):
     """

@@ -2,13 +2,12 @@ import React, { useState, useEffect } from 'react';
 import '../Styles/Components.css';
 import UserInterval from "./UserInterval"
 import UserActiveInterval from "./UserActiveInterval"
+import { SHA256 } from 'crypto-js';
 
-function UserSection({ username, pfp, intervals, activeInterval, resumeInterval, userActive }) {
+function UserSection({ username, pfp, intervals, activeInterval, resumeInterval, userActive, projects, windowWidth, editInterval }) {
 
     const [collapsed, setCollapsed] = useState(false);
     const [totalTime, setTotalTime] = useState("00:00:00");
-
-    console.log(activeInterval);
 
     useEffect(() => {
         const calcTotalTime = () => {
@@ -47,29 +46,29 @@ function UserSection({ username, pfp, intervals, activeInterval, resumeInterval,
         calcTotalTime();
         return () => clearInterval(intervalId);
     });
-    
+
     return (
         <div className="IntervalSection" style={{
-            borderTopLeftRadius: "15px", 
-            borderTopRightRadius: "15px", 
-            borderBottomRightRadius: `${collapsed || !intervals || intervals.length === 0 ? 15 : 0}px`, 
-            borderBottomLeftRadius: `${collapsed || !intervals || intervals.length === 0 ? 15 : 0}px`, 
+            borderTopLeftRadius: "15px",
+            borderTopRightRadius: "15px",
+            borderBottomRightRadius: `${collapsed || !intervals || intervals.length === 0 ? 15 : 0}px`,
+            borderBottomLeftRadius: `${collapsed || !intervals || intervals.length === 0 ? 15 : 0}px`,
             backgroundColor: "#34464f",
             marginBottom: "6px"
         }}>
             <div id='Head' style={{
-                borderTopLeftRadius: "15px", 
-                borderTopRightRadius: "15px", 
-                borderBottomRightRadius: `${collapsed || !intervals || intervals.length === 0 ? 15 : 0}px`, 
-                borderBottomLeftRadius: `${collapsed || !intervals || intervals.length === 0 ? 15 : 0}px`, 
-                height: "61px", 
+                borderTopLeftRadius: "15px",
+                borderTopRightRadius: "15px",
+                borderBottomRightRadius: `${collapsed || !intervals || intervals.length === 0 ? 15 : 0}px`,
+                borderBottomLeftRadius: `${collapsed || !intervals || intervals.length === 0 ? 15 : 0}px`,
+                height: "61px",
                 backgroundColor: "#34464f"
             }}>
                 <span id='username'>{username}</span>
                 <img id="pfp" src={pfp} alt="pfp" />
-                <span id='time' style={{top:"19px"}}>{totalTime}</span>
-                <button id="collapse" style={{height: "61px", backgroundColor: "#34464f"}} onClick={() => {
-                    if(intervals.length > 0 || activeInterval) {
+                <span id='time' style={{ top: "19px" }}>{totalTime}</span>
+                <button id="collapse" style={{ height: "61px", backgroundColor: "#34464f" }} onClick={() => {
+                    if (intervals.length > 0 || activeInterval) {
                         setCollapsed(!collapsed);
                     }
                 }}>
@@ -78,13 +77,19 @@ function UserSection({ username, pfp, intervals, activeInterval, resumeInterval,
             </div>
             {
                 !collapsed && activeInterval && (
-                    <UserActiveInterval info={activeInterval}/>
+                    <UserActiveInterval info={activeInterval} />
                 )
             }
             {
                 !collapsed && intervals &&
                 intervals.map((interval, index) => (
-                    <UserInterval key={interval.interval_id} info={interval} resumeInterval={resumeInterval} />
+                    <UserInterval key={SHA256(interval.interval_id + interval.name + interval.start_time + interval.end_time + interval.project_id)}
+                        info={interval}
+                        resumeInterval={resumeInterval}
+                        projects={projects}
+                        windowWidth={windowWidth}
+                        editInterval={editInterval}
+                    />
                 ))
             }
         </div>
