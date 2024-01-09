@@ -1,4 +1,48 @@
 # Run "docker exec -it focus-backend-1 pytest" in terminal to test
+from datetime import datetime
+def isValidTime(date_string, maxDifference):
+    """
+    Check if the time elapsed exceeds the max alloted time
+    """
+    try:
+        parsed_date = datetime.strptime(date_string, '%A %d %B %Y %H:%M:%S %Z')
+        current_time = datetime.now()
+        time_diff = current_time - parsed_date
+        minutes = abs(time_diff.total_seconds() / 60)
+        if minutes <= maxDifference:
+            return True
+        else:
+            return False
+    except ValueError:
+        return False
+def create_user(client, username, email, timezone, profile_picture):
+    response = client.post("/api/user", json={
+        "username" : username,
+        "email" : email,
+        "timezone" : timezone,
+        "profile_picture" : profile_picture
+    })
+    responseJson = response.get_json()
+    try:
+        assert response.status_code == 201, f"Expected status code 201, but got {response.status_code}"
+        assert responseJson.get("username", None) == username, f"invalid username returned, got {responseJson.get('username', 'Username Missing')}"
+        assert responseJson.get("email", None) == email, f"invalid email returned, got {responseJson.get('email', 'Email Missing')}"
+        assert responseJson.get("timezone", None) == timezone, f"invalid timezone returned, got {responseJson.get('timezone', 'Timezone Missing')}"
+        assert responseJson.get("profile_picture", None) == profile_picture, f"invalid profile_picture returned, got {responseJson.get('profile_picture', 'Profile_picture Missing')}"
+    finally:
+        return responseJson
+def start_interval(client, name, user_id, project_id):
+    response = client.post("/api/interval", json={
+        "name" : name,
+        "user_id": user_id,
+        "project_id": project_id
+    })
+    responseJson = response.get_json()
+    try:
+        assert response.status_code == 201, f"Expected status code 201, but got {response.status_code}"
+        assert responseJson.get("start_time", False) and isValidTime(responseJson["start_time"], 5), "invalid or incorrect start_time in response JSON"
+    finally:
+        return responseJson
 
 def test_host_room(app):
     client = app[1]
@@ -32,12 +76,7 @@ def test_start_stop_interval(app):
         client1 = app[1]
         client2 = app[2]
         client = app[0].test_client()
-        userID = client.post("/api/user", json={
-            "username" : "Test",
-            "email" : "test@gmail.com",
-            "timezone" : "America/Los_Angeles",
-            "profile_picture" : None
-        }).get_json().get("id", None)
+        userID = create_user(client, "Test", "test@gmail.com", "America/Los_Angeles", None).get("id", None)
         assert userID != None, "Failed to create new User"
         client1.emit('host', {'ID': userID})
         code = client1.get_received()[0]['args'][0]
@@ -67,27 +106,9 @@ def test_fetching_multiple_user_data(app):
     try:
         ids = []
         client = app[0].test_client()
-        response = client.post("/api/user", json={
-            "username" : "Test1",
-            "email" : "test1@gmail.com",
-            "timezone" : "America/Los_Angeles",
-            "profile_picture" : None
-        })
-        ids.append(response.get_json().get("id"))
-        response = client.post("/api/user", json={
-            "username" : "Test2",
-            "email" : "test2@gmail.com",
-            "timezone" : "America/Los_Angeles",
-            "profile_picture" : None
-        })
-        ids.append(response.get_json().get("id"))
-        response = client.post("/api/user", json={
-            "username" : "Test3",
-            "email" : "test3@gmail.com",
-            "timezone" : "America/Los_Angeles",
-            "profile_picture" : None
-        })
-        ids.append(response.get_json().get("id"))
+        ids.append(create_user(client, "Test1", "test1@gmail.com", "America/Los_Angeles", None).get("id"))
+        ids.append(create_user(client, "Test2", "test2@gmail.com", "America/Los_Angeles", None).get("id"))
+        ids.append(create_user(client, "Test3", "test3@gmail.com", "America/Los_Angeles", None).get("id"))
         idString = ", ".join(ids)
         response = client.get(f"/api/users/{idString}")
         assert len(response.get_json()["users"]) == 3, "Invalid response"
@@ -100,37 +121,11 @@ def test_fetching_multiple_interval_data(app):
     try:
         ids = []
         client = app[0].test_client()
-        response = client.post("/api/user", json={
-            "username" : "Test1",
-            "email" : "test1@gmail.com",
-            "timezone" : "America/Los_Angeles",
-            "profile_picture" : None
-        })
-        userID = response.get_json().get("id")
-        response = client.post("/api/interval", json={
-            "name" : "Tester",
-            "user_id": userID,
-            "project_id": None
-        })
-        ids.append(response.get_json().get("id"))
-        response = client.post("/api/interval", json={
-            "name" : "Tester",
-            "user_id": userID,
-            "project_id": None
-        })
-        ids.append(response.get_json().get("id"))
-        response = client.post("/api/interval", json={
-            "name" : "Tester",
-            "user_id": userID,
-            "project_id": None
-        })
-        ids.append(response.get_json().get("id"))
-        response = client.post("/api/interval", json={
-            "name" : "Tester",
-            "user_id": userID,
-            "project_id": None
-        })
-        ids.append(response.get_json().get("id"))
+        userID = create_user(client, "Test1", "test1@gmail.com", "America/Los_Angeles", None).get("id")
+        ids.append(start_interval(client, "Tester", userID, None).get("id"))
+        ids.append(start_interval(client, "Tester", userID, None).get("id"))
+        ids.append(start_interval(client, "Tester", userID, None).get("id"))
+        ids.append(start_interval(client, "Tester", userID, None).get("id"))
         idString = ", ".join(ids)
         response = client.get(f"/api/intervals/{idString}")
         assert len(response.get_json()) == 4, "Invalid response"
@@ -145,12 +140,7 @@ def test_edit_interval(app):
         client1 = app[1]
         client2 = app[2]
         client = app[0].test_client()
-        userID = client.post("/api/user", json={
-            "username" : "Test",
-            "email" : "test@gmail.com",
-            "timezone" : "America/Los_Angeles",
-            "profile_picture" : None
-        }).get_json().get("id", None)
+        userID = create_user(client, "Test", "test@gmail.com", "America/Los_Angeles", None).get("id", None)
         assert userID != None, "Failed to create new User"
         client1.emit('host', {'ID': userID})
         code = client1.get_received()[0]['args'][0]

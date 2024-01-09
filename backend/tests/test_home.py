@@ -17,7 +17,6 @@ def isValidTime(date_string, maxDifference):
             return False
     except ValueError:
         return False
-
 def create_user(client, username, email, timezone, profile_picture):
     response = client.post("/api/user", json={
         "username" : username,
@@ -34,7 +33,6 @@ def create_user(client, username, email, timezone, profile_picture):
         assert responseJson.get("profile_picture", None) == profile_picture, f"invalid profile_picture returned, got {responseJson.get('profile_picture', 'Profile_picture Missing')}"
     finally:
         return responseJson
-
 def edit_user(client, user_id, username, timezone, profile_picture):
     response = client.put(f"/api/user/settings/{user_id}", json={
         "username" : username,
@@ -47,7 +45,6 @@ def edit_user(client, user_id, username, timezone, profile_picture):
         assert responseJson.get("id", None) == user_id, f"invalid id returned, got {responseJson.get('id', 'ID Missing')}"
     finally:
         return responseJson
-
 def get_user(client, user_id):
     response = client.get(f"/api/user/{user_id}")
     responseJson = response.get_json()
@@ -55,7 +52,6 @@ def get_user(client, user_id):
         assert response.status_code == 200, f"Expected status code 200, but got {response.status_code}"
     finally:
         return responseJson
-
 def create_project(client, name, user_id, color):
     response = client.post("/api/project", json={
         "name" : name,
@@ -67,7 +63,6 @@ def create_project(client, name, user_id, color):
         assert response.status_code == 201, f"Expected status code 201, but got {response.status_code}"
     finally:
         return responseJson
-    
 def edit_project(client, projectID, name, color):
     response = client.put(f"/api/project/{projectID}", json={
         "name" : name,
@@ -81,7 +76,6 @@ def edit_project(client, projectID, name, color):
         assert responseJson.get("color", None) == color, f"invalid color returned, got {responseJson.get('color', 'Color Missing')}"
     finally:
         return responseJson
-
 def start_interval(client, name, user_id, project_id):
     response = client.post("/api/interval", json={
         "name" : name,
@@ -94,7 +88,6 @@ def start_interval(client, name, user_id, project_id):
         assert responseJson.get("start_time", False) and isValidTime(responseJson["start_time"], 5), "invalid or incorrect start_time in response JSON"
     finally:
         return responseJson
-
 def end_interval(client, interval_id, name, user_id, project_id):
     response = client.put(f"/api/interval/end/{interval_id}")
     responseJson = response.get_json()
@@ -108,8 +101,7 @@ def end_interval(client, interval_id, name, user_id, project_id):
         assert responseJson["end_time"] and isValidTime(responseJson["end_time"], 5), "invalid or incorrect end_time in response JSON"
         
     finally:
-        return responseJson
-    
+        return responseJson 
 def edit_interval(client, interval_id, name, project_id, start_time, end_time):
     response = client.put(f"/api/interval/{interval_id}", json={
         "name" : name,
