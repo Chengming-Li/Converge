@@ -212,10 +212,10 @@ function Interval({ info, deleteInterval, editInterval, rerender, resumeInterval
       <button id="Edit" onClick={() => { setMenuIsOpen(!menuIsOpen) }}><img src={'/options.png'} alt="edit" /></button>
       {menuIsOpen && (
         <div className="EditMenu" ref={dropdownRef}>
-          <button id='resume' onClick={() => { resumeInterval(intervalName, project.project_id) }}>
+          <button id='resume' onClick={() => { resumeInterval(intervalName, project.project_id); setMenuIsOpen(false); }}>
             Resume
           </button>
-          <button id='delete' onClick={() => { deleteInterval(info.interval_id) }}>
+          <button id='delete' onClick={() => { deleteInterval(info.interval_id); setMenuIsOpen(false); }}>
             Delete
           </button>
         </div>

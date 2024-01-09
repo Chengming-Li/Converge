@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 
 import Home from './Pages/Home';
 import Rooms from './Pages/Rooms';
+import Projects from './Pages/Projects';
 
 function App() {
   return (
@@ -10,6 +11,7 @@ function App() {
       <Routes>
         <Route index element={<Home />} />
         <Route path='/rooms' element={<Rooms />} />
+        <Route path='/projects' element={<Projects />} />
         <Route path='*' element={<Navigate to="/" />} />
       </Routes>
     </BrowserRouter>
