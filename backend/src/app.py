@@ -7,7 +7,9 @@ import psycopg2
 
 import sys
 sys.path.append('/backend/src/actions')
-from dbActions import clearTable, createUser, getUser, getUsersInfo, getTable, deleteTable, deleteUser, startInterval, endInterval, editInterval, deleteInterval, editSettings, getIntervalsInfo, createProject, deleteProject, editProject, getProjects
+from userActions import clearTable, createUser, getUser, getUsersInfo, getTable, deleteTable, deleteUser, editSettings
+from intervalActions import createIntervalTable, startInterval, endInterval, editInterval, deleteInterval, getIntervalsInfo
+from projectActions import createProject, deleteProject, editProject, getProjects
 from roomActions import onConnect, onDisconnect, onJoin, onLeave, startRoomInterval, stopRoomInterval, editActiveInterval, hostRoom, changeProject
 
 def create_app(test_config=None):
@@ -44,6 +46,10 @@ def create_app(test_config=None):
     def get_users_profile(user_ids):
         return getUsersInfo(user_ids, establishConnection)
     
+    @app.post('/api/intervals')
+    def create_intervals_table():
+        return createIntervalTable(establishConnection)
+
     @app.get('/api/intervals/<string:interval_ids>')
     def get_intervals(interval_ids):
         return getIntervalsInfo(interval_ids, establishConnection)
