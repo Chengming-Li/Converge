@@ -171,7 +171,7 @@ const Projects = () => {
             />
             <Header ToggleMenu={() => { setCollapsedMenu(!collapsedMenu) }} />
             <Sidebar collapsed={collapsedMenu} username={"Username"} />
-            <div className="TimeSections" style={{ width: `${windowWidth - (collapsedMenu ? 114 : 254) + "px"}` }}>
+            <div className="TimeSections" style={{ top: "65px", width: `${windowWidth - (collapsedMenu ? 114 : 254) + "px"}` }}>
                 <div className='ProjectDisplay' style={{ marginBottom: "-2px", backgroundColor: "#171919", height: "70px" }}>
                     <button id="colorButton" onClick={() => { setShowPicker(!showPicker) }} style={{ position: "absolute", width: "40px", backgroundColor: color, color: color, height: "40px", borderRadius: "50%" }}>Hi</button>
                     <input

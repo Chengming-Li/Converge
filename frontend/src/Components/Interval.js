@@ -45,10 +45,10 @@ function Interval({ info, deleteInterval, editInterval, rerender, resumeInterval
   const projectDropdownRef = useRef(null);
 
   const handleStartChange = (event) => {
-    setStartInput(event.target.value);
+    setStartInput(event.target.value.replace(/[^a-zA-Z0-9\s]/g, ''));
   };
   const handleEndChange = (event) => {
-    setEndInput(event.target.value);
+    setEndInput(event.target.value.replace(/[^a-zA-Z0-9\s]/g, ''));
   };
 
   function updateTime(newTime, currentTime, updateFunction, updateInput) {
@@ -83,7 +83,7 @@ function Interval({ info, deleteInterval, editInterval, rerender, resumeInterval
 
   const handleNameChange = (event) => {
     if (event.target.value.length <= 280) {
-      setIntervalName(event.target.value);
+      setIntervalName(event.target.value.replace(/[^a-zA-Z0-9\s]/g, ''));
     }
   };
 

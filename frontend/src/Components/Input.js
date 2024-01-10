@@ -24,7 +24,7 @@ function Input({ activeInterval, addInterval, endInterval, inputWidth, projects,
 
   const handleInputChange = (event) => {
     if (event.target.value.length <= 280) {
-      setValue(event.target.value);
+      setValue(event.target.value.replace(/[^a-zA-Z0-9\s]/g, ''));
     }
   };
 
