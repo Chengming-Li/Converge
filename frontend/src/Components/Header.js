@@ -3,7 +3,7 @@ import '../Styles/Components.css';
 
 function Header({ ToggleMenu }) {
     return (
-        <div className='Header'>
+        <div className='Header' style={{ userSelect: "none" }}>
             <button className="Menu" onClick={ToggleMenu}>
                 <img src={'/menu.png'} alt="Icon" />
             </button>

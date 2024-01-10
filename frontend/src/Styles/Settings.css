@@ -1,0 +1,49 @@
+.UserProfile {
+    position: absolute;
+    background-color: #1d272c;
+    top: 130px;
+    border-radius: 15px;
+    height: 450px;
+}
+
+.UserProfile #pfp {
+    position: absolute;
+    height: 150px;
+    width: 150px;
+    left: 4.5%;
+    top: 20px;
+    border-radius: 50%;
+    background-color: #0b0e0f;
+    z-index: 99;
+    opacity: 0%;
+}
+
+.UserProfile #pfp:hover {
+    opacity: 80%;
+}
+
+.UserProfile #saveChanges {
+    height: 45px;
+    border-radius: 2px;
+    color: white;
+    background-color: #03A9F4;
+    position: absolute;
+    right: max(4%, 20px);
+    bottom: 25px;
+    width: 110px;
+}
+
+.UserProfile #discardChanges {
+    height: 45px;
+    border-radius: 2px;
+    color: white;
+    background-color: #1d272c;
+    position: absolute;
+    right: calc(max(4%, 20px) + 120px);
+    bottom: 25px;
+    width: 60px;
+}
+
+.UserProfile #discardChanges:hover {
+    text-decoration: underline;
+}

@@ -5,15 +5,13 @@ import ColorPicker from './ColorPicker';
 function ProjectDisplay({ info, intervals, screenWidth, editProject, createProject, deleteProject }) {
     const calcTotalTime = (intervals) => {
         let hours = 0;
-        let minutes = 0;
         for (const interval of intervals) {
             const st = new Date(interval.start_time)
             const et = new Date(interval.end_time)
             const timeDifference = et - st;
             hours += Math.floor(timeDifference / 3600000);
-            minutes += Math.floor((timeDifference % 3600000) / 60000);
         }
-        return String(hours).padStart(2, '0') + "h" + String(minutes).padStart(2, '0') + "m";
+        return String(hours) + "h";
     }
     const [menuIsOpen, setMenuIsOpen] = useState(false);
     const [name, setName] = useState(info.name);
@@ -77,7 +75,7 @@ function ProjectDisplay({ info, intervals, screenWidth, editProject, createProje
 
     return (
         <div className='ProjectDisplay'>
-            <button id="colorButton" onClick={() => { setShowPicker(!showPicker) }} style={{ position: "absolute", width: "40px", backgroundColor: color, color: color, height: "40px", borderRadius: "50%" }}>Hi</button>
+            <button id="colorButton" onClick={() => { setShowPicker(!showPicker) }} style={{ userSelect: "none", position: "absolute", width: "40px", backgroundColor: color, color: color, height: "40px", borderRadius: "50%" }}>Hi</button>
             <input className="ProjectName" value={value} onChange={handleNameChange} onKeyDown={handleKeyPress} onBlur={changeName} style={{
                 color: color,
                 width: `${screenWidth > 570 ? screenWidth - 455 : screenWidth - 370}px`

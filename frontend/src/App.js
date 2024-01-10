@@ -4,6 +4,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import Home from './Pages/Home';
 import Rooms from './Pages/Rooms';
 import Projects from './Pages/Projects';
+import Settings from './Pages/Settings';
 
 function App() {
   return (
@@ -12,6 +13,7 @@ function App() {
         <Route index element={<Home />} />
         <Route path='/rooms' element={<Rooms />} />
         <Route path='/projects' element={<Projects />} />
+        <Route path='/settings' element={<Settings />} />
         <Route path='*' element={<Navigate to="/" />} />
       </Routes>
     </BrowserRouter>

@@ -108,6 +108,30 @@ def getUser(userId, establishConnection):
         return {"error": f"Failed to get user: {str(e)}"}, 500
     return jsonify({"userInfo" : user, "intervals" : inactive, "activeInterval" : active, "projects" : projects})
 
+def getUserSettings(userId, establishConnection):
+    """
+    Fetch user's settings from database
+
+    @param {int} userId: the ID of the user
+
+    @returns {json}: a dictionary with these keys:
+        "id": (str) user's id
+        "username": (str) user's username
+        "email": (str) user's email
+        "timezone": (str) user's selected timezone
+        "profile_picture": (str) image encoded into base64 format
+    """
+    connection = establishConnection()
+    try:
+        with connection:
+            with connection.cursor() as cursor:
+                cursor.execute(FETCH_USER_INFO, (userId,))
+                data = cursor.fetchone()
+                user = {"id": str(userId), "username" : data[0], "email" : data[1], "timezone" : data[2], "profile_picture" : data[3]}
+    except Exception as e:
+        return {"error": f"Failed to get user: {str(e)}"}, 500
+    return jsonify(user)
+
 def getUsersInfo(user_ids, establishConnection):
     """
     Fetch information for multiple users from database
@@ -180,6 +204,7 @@ def editSettings(userId, establishConnection):
     Json Body:
         "timezone" : (str) timezone of user
         "username" : (str) username of user
+        "profile_picture" : (str) image encoded into base64 format
         
     @returns {json}: a dictionary containing the key "id"
     """

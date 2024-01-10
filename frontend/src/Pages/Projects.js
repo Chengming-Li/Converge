@@ -23,6 +23,7 @@ const Projects = () => {
     const [showPicker, setShowPicker] = useState(false);
     const colorPickerRef = useRef(null);
     const [name, setName] = useState("");
+    const [userInfo, setUserInfo] = useState(null);
 
     const handleKeyPress = (e) => {
         if (e.key === 'Enter') {
@@ -46,11 +47,24 @@ const Projects = () => {
         }).then((data) => {
             setProjects(data.projects);
             setInactiveIntervals(data.intervals);
+            setUserInfo(data.userInfo);
             setLoading(false);
         }).catch((error) => {
             setErrors(oldErrors => [...oldErrors, error.message]);
             setLoading(false);
         });
+
+
+        const handleColorClickOutside = (event) => {
+            if (colorPickerRef.current && !colorPickerRef.current.contains(event.target)) {
+                setShowPicker(false);
+            }
+        }
+        document.addEventListener('mousedown', handleColorClickOutside);
+
+        return () => {
+            document.removeEventListener('mousedown', handleColorClickOutside);
+        };
     }, []);
 
     const updateWindowWidth = () => {
@@ -119,6 +133,10 @@ const Projects = () => {
         if (!name) {
             return;
         }
+        if (projects.some(project => project.name === name)) {
+            setErrors(oldErrors => [...oldErrors, "A project with that name already exists!"]);
+            return;
+        }
         setColor("#d92b2b");
         setName("");
         setProjects(
@@ -170,10 +188,10 @@ const Projects = () => {
                 setMessages={setErrors}
             />
             <Header ToggleMenu={() => { setCollapsedMenu(!collapsedMenu) }} />
-            <Sidebar collapsed={collapsedMenu} username={"Username"} />
-            <div className="TimeSections" style={{ top: "65px", width: `${windowWidth - (collapsedMenu ? 114 : 254) + "px"}` }}>
-                <div className='ProjectDisplay' style={{ marginBottom: "-2px", backgroundColor: "#171919", height: "70px" }}>
-                    <button id="colorButton" onClick={() => { setShowPicker(!showPicker) }} style={{ position: "absolute", width: "40px", backgroundColor: color, color: color, height: "40px", borderRadius: "50%" }}>Hi</button>
+            <Sidebar collapsed={collapsedMenu} username={userInfo ? userInfo.username : "No User"} />
+            <div className="TimeSections" style={{ top: "85px", width: `${windowWidth - (collapsedMenu ? 114 : 254) + "px"}` }}>
+                <div className='ProjectDisplay' style={{ marginBottom: "-2px", backgroundColor: "#171919", height: "70px", borderTopLeftRadius: "15px", borderTopRightRadius: "15px", borderBottomLeftRadius: projects.length == 0 ? "15px" : "0px", borderBottomRightRadius: projects.length == 0 ? "15px" : "0px" }}>
+                    <button id="colorButton" onClick={() => { setShowPicker(!showPicker) }} style={{ userSelect: "none", position: "absolute", width: "40px", backgroundColor: color, color: color, height: "40px", borderRadius: "50%" }}>Hi</button>
                     <input
                         className="ProjectName"
                         placeholder="New Project"
@@ -182,10 +200,11 @@ const Projects = () => {
                         onKeyDown={handleKeyPress}
                         style={{
                             width: `${windowWidth - 410}px`,
-                            backgroundColor: "#171919"
+                            backgroundColor: "#171919",
+                            height: "40px"
                         }}
                     ></input>
-                    <button id="add" style={{ position: "absolute", right: "17px", top: "7px", width: "55px", height: "55px" }} onClick={() => createProject(userID, name, color)}>
+                    <button id="add" style={{ userSelect: "none", position: "absolute", right: "17px", top: "7px", width: "55px", height: "55px" }} onClick={() => createProject(userID, name, color)}>
                         <img src={'/add.png'} alt="Add Project" style={{ position: "absolute", left: "0px", top: "0px", backgroundColor: "#171919", height: "100%" }} />
                     </button>
                 </div>
