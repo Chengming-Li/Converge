@@ -45,10 +45,10 @@ function Interval({ info, deleteInterval, editInterval, rerender, resumeInterval
   const projectDropdownRef = useRef(null);
 
   const handleStartChange = (event) => {
-    setStartInput(event.target.value.replace(/[^a-zA-Z0-9\s]/g, ''));
+    setStartInput(event.target.value);
   };
   const handleEndChange = (event) => {
-    setEndInput(event.target.value.replace(/[^a-zA-Z0-9\s]/g, ''));
+    setEndInput(event.target.value);
   };
 
   function updateTime(newTime, currentTime, updateFunction, updateInput) {

@@ -72,7 +72,7 @@ function UserSection({ username, pfp, intervals, activeInterval, resumeInterval,
                         setCollapsed(!collapsed);
                     }
                 }}>
-                    <img src={'/Cheese.png'} alt="collapse" />
+                    <img src={'/dropdown.png'} alt="collapse" />
                 </button>
             </div>
             {

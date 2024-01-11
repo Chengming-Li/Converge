@@ -2,7 +2,7 @@ from flask import request, jsonify
 
 CREATE_PROJECTS_TABLE = "CREATE TABLE IF NOT EXISTS projects (project_id SERIAL PRIMARY KEY, user_id INT, name TEXT, color TEXT, FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE);"
 CREATE_PROJECT = "INSERT INTO projects (user_id, name, color) VALUES (%s, %s, %s) RETURNING project_id;"
-DELETE_PROJECT = "DELETE FROM projects WHERE project_id = (%s);"
+DELETE_PROJECT = "UPDATE intervals SET project_id = NULL WHERE project_id = (%s); DELETE FROM projects WHERE project_id = (%s);"
 EDIT_PROJECT = "UPDATE projects SET name = (%s), color = (%s) WHERE project_id = (%s);"
 GET_ALL_PROJECTS_BY_USER = "SELECT * FROM projects WHERE user_id = %s ORDER BY name ASC;"
 
@@ -63,7 +63,7 @@ def deleteProject(project_id, establishConnection):
     try:
         with connection:
             with connection.cursor() as cursor:
-                cursor.execute(DELETE_PROJECT, (project_id,))
+                cursor.execute(DELETE_PROJECT, (project_id, project_id,))
                 result = [{"id": str(project_id)}]
     except Exception as e:
         return {"error": f"Failed to delete interval: {str(e)}"}, 500

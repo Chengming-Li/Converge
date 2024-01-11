@@ -24,11 +24,12 @@ const Rooms = () => {
     const [room, setRoom] = useState('');
     const [socket, setSocket] = useState(null);
 
-    const [loading, setLoading] = useState(false);
+    const [loading, setLoading] = useState(true);
 
     const [thisUser, setThisUser] = useState({}); // active_interval, id, intervals, profile_picture, timeJoined, username
     const [userID, setUserID] = useState(userIDs[Math.floor(Math.random() * userIDs.length)]);
     const [users, setUsers] = useState([]);  // active_interval, id, intervals, profile_picture, timeJoined, username
+    const [username, setUsername] = useState("");
 
     const [projects, setProjects] = useState([]);
     const [activeProject, setActiveProject] = useState({
@@ -57,6 +58,8 @@ const Rooms = () => {
                 username: "Me",
                 name: d.users[0].username
             });
+            setUsername(d.users[0].username);
+            setLoading(false);
         }).catch((error) => {
             setErrors(oldErrors => [...oldErrors, error.message]);
             return;
@@ -332,7 +335,7 @@ const Rooms = () => {
                 setMessages={setErrors}
             />
             <Header ToggleMenu={() => { setCollapsedMenu(!collapsedMenu) }} />
-            <Sidebar collapsed={collapsedMenu} username={"Username"} />
+            <Sidebar collapsed={collapsedMenu} username={username ? username : "No User"} />
             {
                 room ?
                     <div>

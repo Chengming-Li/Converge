@@ -1,0 +1,115 @@
+p {
+    font-weight: 400;
+    font-family: 'Roboto', sans-serif;
+    text-align: center;
+    font-size: 20px;
+    border: none;
+}
+
+span {
+    font-weight: 400;
+    font-family: 'Roboto', sans-serif;
+    text-align: center;
+    font-size: 20px;
+    border: none;
+}
+
+.UserProfile {
+    position: absolute;
+    background-color: #1d272c;
+    top: 130px;
+    border-radius: 15px;
+    height: 450px;
+    user-select: none;
+}
+
+.UserProfile #pfp {
+    position: absolute;
+    height: 150px;
+    width: 150px;
+    left: 4.5%;
+    top: 20px;
+    border-radius: 50%;
+    background-color: #0b0e0f;
+    color: #0b0e0f;
+    z-index: 99;
+    opacity: 0%;
+}
+
+.UserProfile #pfp:hover {
+    opacity: 50%;
+    cursor: pointer;
+}
+
+.UserProfile #pfp::file-selector-button {
+    opacity: 0%;
+}
+
+.UserProfile #saveChanges {
+    height: 45px;
+    border-radius: 2px;
+    color: white;
+    background-color: #03A9F4;
+    position: absolute;
+    right: max(4%, 20px);
+    bottom: 25px;
+    width: 110px;
+}
+
+.UserProfile #discardChanges {
+    height: 45px;
+    border-radius: 2px;
+    color: white;
+    background-color: #1d272c;
+    position: absolute;
+    right: calc(max(4%, 20px) + 120px);
+    bottom: 25px;
+    width: 60px;
+}
+
+.UserProfile #discardChanges:hover {
+    text-decoration: underline;
+}
+
+.UserProfile #username {
+    position: absolute;
+    top: 80px;
+    left: calc(6% + 150px);
+    width: calc(90.5% - 175px);
+    height: 50px;
+    background-color: #1D272C;
+    color: white;
+    padding-left: 12px;
+    padding-right: 12px;
+    font-weight: 600;
+    font-size: 20px;
+}
+
+.UserProfile #timezone {
+    font-weight: 600;
+    font-size: 20px;
+    position: absolute;
+    top: 190px;
+    border-radius: 5px;
+}
+
+.timezoneMenu {
+    width: 35%;
+    background-color: gray;
+    position: absolute;
+    top: 220px;
+    left: calc(32.5% + 55px);
+    border-bottom-left-radius: 5px;
+    border-bottom-right-radius: 5px;
+    z-index: 99;
+}
+
+.timezoneMenu button {
+    width: 100%;
+    height: 40px;
+    background-color: gray;
+}
+
+.timezoneMenu button:hover {
+    background-color: darkgray;
+}
