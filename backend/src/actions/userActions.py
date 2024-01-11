@@ -206,7 +206,7 @@ def editSettings(userId, establishConnection):
         "username" : (str) username of user
         "profile_picture" : (str) image encoded into base64 format
         
-    @returns {json}: a dictionary containing the key "id"
+    @returns {json}: a dictionary containing the key "id", "timezone", "username", and "profile_picture"
     """
     connection = establishConnection()
     data = request.get_json()
@@ -220,5 +220,5 @@ def editSettings(userId, establishConnection):
                 userId = cursor.fetchone()[0]
     except Exception as e:
         return {"error": f"Failed to edit settings: {str(e)}"}, 500
-    return jsonify({"id": str(userId)}), 200
+    return jsonify({"id": str(userId), "timezone": timezone, "username": username, "profile_picture": pfp}), 200
 # endregion
