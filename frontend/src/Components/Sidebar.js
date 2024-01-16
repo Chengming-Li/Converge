@@ -8,7 +8,7 @@ function Sidebar({ collapsed, username, pfp }) {
         <div className={`Sidebar${collapsed ? 'Collapsed' : ''}`}>
             <SidebarButton Text={"TIME TRACKER"} IconSrc={"/Cheese.png"} route={"/"} />
             <SidebarButton Text={"ROOMS"} IconSrc={"/Cheese.png"} route={"/rooms"} />
-            <SidebarButton Text={"REPORTS"} IconSrc={"/Cheese.png"} route={"/"} />
+            <SidebarButton Text={"REPORTS"} IconSrc={"/Cheese.png"} route={"/reports"} />
             <SidebarButton Text={"PROJECTS"} IconSrc={"/Cheese.png"} route={"/projects"} />
             <SidebarButton Text={"SETTINGS"} IconSrc={"/Cheese.png"} route={"/settings"} />
             <div className="Profile">

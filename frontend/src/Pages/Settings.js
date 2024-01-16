@@ -8,7 +8,7 @@ import Loading from '../Components/Loading';
 const userID = "931452152733499393";
 const userSettingsAPI = "http://localhost:5000//api/user/settings/";
 
-const Projects = () => {
+const Settings = () => {
     const [loading, setLoading] = useState(true);
     const [collapsedMenu, setCollapsedMenu] = useState(false);
     const [timezoneMenuOpen, setTimezoneMenuOpen] = useState(false);
@@ -179,4 +179,4 @@ const Projects = () => {
     );
 }
 
-export default Projects;
+export default Settings;
