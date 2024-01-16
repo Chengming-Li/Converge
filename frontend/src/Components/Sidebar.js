@@ -1,8 +1,9 @@
 import React from 'react';
 import '../Styles/Components.css';
 import SidebarButton from './SidebarButton';
+import { Link } from 'react-router-dom';
 
-function Sidebar({ collapsed, username }) {
+function Sidebar({ collapsed, username, pfp }) {
     return (
         <div className={`Sidebar${collapsed ? 'Collapsed' : ''}`}>
             <SidebarButton Text={"TIME TRACKER"} IconSrc={"/Cheese.png"} route={"/"} />
@@ -11,10 +12,15 @@ function Sidebar({ collapsed, username }) {
             <SidebarButton Text={"PROJECTS"} IconSrc={"/Cheese.png"} route={"/projects"} />
             <SidebarButton Text={"SETTINGS"} IconSrc={"/Cheese.png"} route={"/settings"} />
             <div className="Profile">
-                <button className="Profile" onClick={() => { console.log("Profile: " + username) }}>
-                    <img src={'/pfp.png'} alt="pfp" style={{ left: `${(collapsed ? "50%" : "7px")}` }} />
-                    <span>{username}</span>
-                </button>
+                <Link to={"/settings"}>
+                    <button className="Profile">
+                        <img src={pfp ? pfp : "/pfp.png"} alt="pfp" style={{
+                            left: `${(collapsed ? "50%" : "10px")}`,
+                            borderRadius: "50%",
+                        }} />
+                        <span>{username}</span>
+                    </button>
+                </Link>
             </div>
 
         </div>

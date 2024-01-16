@@ -114,7 +114,7 @@ const Projects = () => {
                 setMessages={setErrors}
             />
             <Header ToggleMenu={() => { setCollapsedMenu(!collapsedMenu) }} />
-            <Sidebar collapsed={collapsedMenu} username={userInfo ? userInfo.username : "No User"} />
+            <Sidebar collapsed={collapsedMenu} username={userInfo ? userInfo.username : "No User"} pfp={userInfo ? userInfo.profile_picture : null} />
             <div className='UserProfile' style={{
                 width: `calc(100% - ${(collapsedMenu ? 250 : 404)}px)`,
                 minWidth: `${(collapsedMenu ? 140 : 0) + 300}px`,
@@ -137,7 +137,6 @@ const Projects = () => {
                     id='username'
                     onKeyDown={handleKeyPress}
                 />
-                <input title="Upload Image" id="pfp" type="file" onChange={handleImageUpload} />
                 <img src={pfp ? pfp : "/pfp.png"} style={{
                     position: "absolute",
                     height: "150px",
@@ -147,6 +146,11 @@ const Projects = () => {
                     borderRadius: "50%",
                     backgroundColor: "#0b0e0f"
                 }} />
+                <div className="H" >
+                    <input title="Upload Image" id="pfp" type="file" accept="image/*" onChange={handleImageUpload} />
+                    <p id='title'>Upload Image</p>
+                </div>
+
                 <span id="timezone" style={{ left: "calc(32.5% - 55px)" }}>Timezone:</span>
                 <button id="timezone" onClick={() => { setTimezoneMenuOpen(true); }} style={{ width: "35%", left: "calc(32.5% + 55px)", top: "185px", height: "35px", backgroundColor: "gray", borderBottomLeftRadius: timezoneMenuOpen ? "0px" : "5px", borderBottomRightRadius: timezoneMenuOpen ? "0px" : "5px" }}>
                     <span>{timezone}</span>

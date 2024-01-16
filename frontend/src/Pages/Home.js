@@ -8,7 +8,6 @@ import Error from '../Components/Error';
 import moment from "moment-timezone";
 import { SHA256 } from 'crypto-js';
 import Loading from '../Components/Loading';
-import ProjectsDropdown from '../Components/ProjectsDropdown';
 
 const userID = "931452152733499393"
 const userDataAPI = "http://localhost:5000/api/user/"
@@ -288,10 +287,6 @@ const Home = () => {
     useEffect(() => {
         separateSections();
     }, [inactiveIntervals]);
-
-    const addProject = () => {
-        console.log("Added Project");
-    }
 
     return (
         <div className='App'>

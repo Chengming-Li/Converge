@@ -36,7 +36,7 @@ function ProjectDisplay({ info, intervals, screenWidth, editProject, createProje
     };
 
     const changeName = () => {
-        if (value.length == 0) {
+        if (value.length === 0) {
             setValue("New Project");
             setName("New Project");
         }

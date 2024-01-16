@@ -239,7 +239,7 @@ const Rooms = () => {
     }, []);
 
     const handleRoomCodeInput = (event) => {
-        if (event.target.value.trim() == event.target.value && event.target.value.length <= 20) {
+        if (event.target.value.trim() === event.target.value && event.target.value.length <= 20) {
             setRoomCode(event.target.value.toUpperCase());
         }
     };

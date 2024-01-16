@@ -23,28 +23,6 @@ span {
     user-select: none;
 }
 
-.UserProfile #pfp {
-    position: absolute;
-    height: 150px;
-    width: 150px;
-    left: 4.5%;
-    top: 20px;
-    border-radius: 50%;
-    background-color: #0b0e0f;
-    color: #0b0e0f;
-    z-index: 99;
-    opacity: 0%;
-}
-
-.UserProfile #pfp:hover {
-    opacity: 50%;
-    cursor: pointer;
-}
-
-.UserProfile #pfp::file-selector-button {
-    opacity: 0%;
-}
-
 .UserProfile #saveChanges {
     height: 45px;
     border-radius: 2px;
@@ -112,4 +90,50 @@ span {
 
 .timezoneMenu button:hover {
     background-color: darkgray;
+}
+
+.H {
+    position: absolute;
+    height: 150px;
+    width: 150px;
+    left: 4.5%;
+    top: 20px;
+    border-radius: 50%;
+    opacity: 0%;
+    background-color: #0b0e0f;
+}
+
+.H:hover {
+    opacity: 70%;
+}
+
+.H #pfp {
+    position: absolute;
+    height: 150px;
+    width: 150px;
+    left: 0%;
+    top: 0%;
+    border-radius: 50%;
+    background-color: #0b0e0f;
+    color: #0b0e0f;
+    z-index: 99;
+    opacity: 0%;
+}
+
+.H #pfp:hover {
+    cursor: pointer;
+}
+
+.H #pfp::file-selector-button {
+    opacity: 0%;
+}
+
+.H #title {
+    position: absolute;
+    color: white;
+    left: 0%;
+    top: 25%;
+    z-index: 100;
+    width: 100%;
+    pointer-events: none;
 }
