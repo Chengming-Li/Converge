@@ -297,7 +297,7 @@ const Home = () => {
                 setMessages={setErrors}
             />
             <Header ToggleMenu={() => { setCollapsedMenu(!collapsedMenu) }} />
-            <Sidebar collapsed={collapsedMenu} username={userInfo ? userInfo.username : "No User"} />
+            <Sidebar collapsed={collapsedMenu} username={userInfo ? userInfo.username : "No User"} pfp={userInfo ? userInfo.profile_picture : null} />
             <Input
                 activeInterval={activeInterval}
                 addInterval={startInterval}
