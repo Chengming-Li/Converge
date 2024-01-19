@@ -167,9 +167,8 @@ const Home = () => {
         } else if ((end_time - start_time) > (24 * 60 * 60 * 1000)) {
             end_time.setDate(end_time.getDate() - 1);
         }
-
-        const st = moment(start_time).tz(userInfo.timezone).utc().format("dddd DD MMMM YYYY HH:mm:ss z");
-        const et = moment(end_time).tz(userInfo.timezone).utc().format("dddd DD MMMM YYYY HH:mm:ss z");
+        const st = moment(start_time).utc().format("dddd DD MMMM YYYY HH:mm:ss z");
+        const et = moment(end_time).utc().format("dddd DD MMMM YYYY HH:mm:ss z");
         const indexToEdit = inactiveIntervals.findIndex((interval) => interval.interval_id === id);
         let copy;
         if (indexToEdit !== -1) {
@@ -269,6 +268,7 @@ const Home = () => {
                     resumeInterval={(name, project_id) => { setInputValue(name); setActiveProject(projects.find(project => project.project_id === project_id)); startInterval(name, project_id) }}
                     projects={projects}
                     key={SHA256(relativizeDates(intervals[0].start_time) + intervals.map(obj => obj.interval_id).join('')).toString()}
+                    timezone={userInfo.timezone}
                 />
             ))
         ))

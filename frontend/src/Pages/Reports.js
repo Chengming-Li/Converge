@@ -14,9 +14,15 @@ const Reports = () => {
     const [errors, setErrors] = useState([]);
     const [userInfo, setUserInfo] = useState(null);
 
-    const [activeInterval, setActiveInterval] = useState(null);
-    const [inactiveIntervals, setInactiveIntervals] = useState([]);
+    const [intervals, setIntervals] = useState([]);
     const [projects, setProjects] = useState([]);
+
+    const getIntervals = (startDate, endDate, project) => {
+        return intervals.filter(interval => {
+            const date = interval.start_time;
+            console.log(new Date((typeof date === "string" ? new Date(date) : date).toLocaleString("en-US", { timeZone: "EST" })));
+        });
+    }
 
     useEffect(() => {
         fetch(userDataAPI + userID).then((response) => {
@@ -27,8 +33,7 @@ const Reports = () => {
             return response.json();
         }).then((data) => {
             setUserInfo(data.userInfo);
-            setInactiveIntervals(data.intervals);
-            setActiveInterval(data.activeInterval);
+            setIntervals(data.intervals);
             setProjects(data.projects);
             setLoading(false);
         }).catch((error) => {
@@ -36,6 +41,11 @@ const Reports = () => {
             setLoading(false);
         });
     }, []);
+
+    console.log(intervals);
+    console.log(projects);
+    const january19_2024 = new Date('2024-01-19');
+    console.log(getIntervals(january19_2024));
 
     return (
         <div className='App'>

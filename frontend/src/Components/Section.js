@@ -3,7 +3,7 @@ import '../Styles/Components.css';
 import Interval from './Interval';
 import { SHA256 } from 'crypto-js';
 
-function Section({ title, totalTime, intervals, deleteInterval, editInterval, rerender, resumeInterval, projects }) {
+function Section({ title, totalTime, intervals, deleteInterval, editInterval, rerender, resumeInterval, projects, timezone }) {
     const [collapsed, setCollapsed] = useState(false);
 
     return (
@@ -17,7 +17,7 @@ function Section({ title, totalTime, intervals, deleteInterval, editInterval, re
             </div>
             {!collapsed &&
                 intervals.map((interval, index) => (
-                    <Interval key={SHA256(interval.interval_id + interval.name + interval.start_time + interval.end_time + interval.project_id)} info={interval} deleteInterval={deleteInterval} editInterval={editInterval} rerender={rerender} resumeInterval={resumeInterval} projects={projects} />
+                    <Interval key={SHA256(interval.interval_id + interval.name + interval.start_time + interval.end_time + interval.project_id)} info={interval} deleteInterval={deleteInterval} editInterval={editInterval} rerender={rerender} resumeInterval={resumeInterval} projects={projects} timezone={timezone} />
                 ))
             }
         </div>

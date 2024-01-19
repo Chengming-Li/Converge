@@ -4,7 +4,7 @@ import 'react-datepicker/dist/react-datepicker.css';
 import '../Styles/Components.css';
 import ProjectsDropdown from '../Components/ProjectsDropdown';
 
-function Interval({ info, deleteInterval, editInterval, rerender, resumeInterval, projects }) {
+function Interval({ info, deleteInterval, editInterval, rerender, resumeInterval, projects, timezone }) {
   // extracts and formats time from Date object
   function getTime(currentDate) {
     if (!currentDate) {
@@ -14,6 +14,7 @@ function Interval({ info, deleteInterval, editInterval, rerender, resumeInterval
       hour: '2-digit',
       minute: '2-digit',
       hour12: true,
+      timeZone: timezone
     });
   }
 
@@ -58,10 +59,10 @@ function Interval({ info, deleteInterval, editInterval, rerender, resumeInterval
     let temp;
     newTime = newTime.trim().toLowerCase();
     if (timeRegex.test(newTime) || timeRegexNoAMPM.test(newTime)) {
-      temp = new Date(`01/01/2023 ${newTime}`);
+      temp = new Date(`01/01/2023 ${newTime + " " + timezone}`);
     } else if (timeRegexNoSpace.test(newTime.toLowerCase())) {
       const tempTime = newTime.slice(0, 5) + " " + newTime.slice(5);
-      temp = new Date(`01/01/2023 ${tempTime}`);
+      temp = new Date(`01/01/2023 ${tempTime + " " + timezone}`);
       console.log(temp);
     } else {
       updateInput(getTime(currentTime));
