@@ -5,6 +5,9 @@ import Header from '../Components/Header';
 import Error from '../Components/Error';
 import Loading from '../Components/Loading';
 
+import { DateRangePicker } from 'react-date-range';
+import 'react-date-range/dist/styles.css';
+
 const userID = "931452152733499393";
 const userDataAPI = "http://localhost:5000/api/user/"
 
@@ -13,15 +16,23 @@ const Reports = () => {
     const [collapsedMenu, setCollapsedMenu] = useState(false);
     const [errors, setErrors] = useState([]);
     const [userInfo, setUserInfo] = useState(null);
-
+	
+	const [selectionRange, setSelectionRange] = useState({
+		startDate: new Date(),
+		endDate: new Date(),
+		key: 'selection',
+	});
     const [intervals, setIntervals] = useState([]);
     const [projects, setProjects] = useState([]);
 
     const getIntervals = (startDate, endDate, project) => {
-        return intervals.filter(interval => {
-            const date = interval.start_time;
-            console.log(new Date((typeof date === "string" ? new Date(date) : date).toLocaleString("en-US", { timeZone: "EST" })));
-        });
+        if (!userInfo) {
+            return;
+        }
+        startDate = new Date(startDate + " 00:00 " + userInfo.timezone);
+        endDate = new Date(endDate + " 00:00 " + userInfo.timezone);
+        console.log(endDate);
+        return intervals.filter(interval => new Date(interval.start_time) >= startDate).filter(interval => new Date(interval.start_time) < endDate);
     }
 
     useEffect(() => {
@@ -42,10 +53,18 @@ const Reports = () => {
         });
     }, []);
 
-    console.log(intervals);
-    console.log(projects);
-    const january19_2024 = new Date('2024-01-19');
-    console.log(getIntervals(january19_2024));
+	const customStyles = {
+    	calendar: {
+      		color: 'red',
+    	},
+   		ranges: {
+      		background: 'blue',
+    	},
+	};
+
+	const handleSelect = (ranges) => {
+		setSelectionRange(ranges.selection);	
+	}
 
     return (
         <div className='App'>
@@ -56,6 +75,13 @@ const Reports = () => {
             />
             <Header ToggleMenu={() => { setCollapsedMenu(!collapsedMenu) }} />
             <Sidebar collapsed={collapsedMenu} username={userInfo ? userInfo.username : "No User"} pfp={userInfo ? userInfo.profile_picture : null} />
+            <DateRangePicker
+                ranges={[selectionRange]}
+                onChange={handleSelect}
+				rangeColors={["purple"]}
+				className="dateRange"
+				styles={customStyles}
+            />
         </div>
     );
 }
