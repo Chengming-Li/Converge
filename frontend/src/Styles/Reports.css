@@ -1,3 +1,19 @@
+.dayMenuButton {
+	position: absolute;
+	transform: TranslateX(-50%);
+	top: 70px;
+	background-color: #12191D;
+	height: 50px;
+	width: 230px;
+	border-radius: 5px;
+	font-size: 15px;
+	font-weight: 500;
+}
+
+.rdrDateRangePickerWrapper {
+    border-radius: 5px;
+}
+
 .rdrCalendarWrapper {
     color: #000000;
     font-size: 12px;
@@ -42,8 +58,7 @@
 
 .rdrMonthAndYearWrapper {
     align-items: center;
-    height: 45px;
-    padding-top: 10px;
+    height: 42px;
     background-color: #12191D;
 }
 
@@ -69,7 +84,7 @@
 
 .rdrMonthPicker,
 .rdrYearPicker {
-    margin: 0 5px
+    margin: 0 5px;
 }
 
 .rdrNextPrevButton {
@@ -122,6 +137,7 @@
 
 .rdrMonth {
     padding: 0 0.833em 1.666em 0.833em;
+    background-color: #12191D;
 
     .rdrWeekDays {
         padding: 0;
@@ -146,7 +162,7 @@
     line-height: 3.000em;
     height: 3.000em;
     text-align: center;
-    color: #1d2429;
+    color: red;
 
     &:focus {
         outline: 0;
@@ -166,6 +182,10 @@
     display: flex;
     align-items: center;
     justify-content: center;
+}
+
+.rdrDayNumber span {
+    color: #d5dce0;
 }
 
 .rdrDayToday .rdrDayNumber span {
@@ -412,7 +432,7 @@
     pointer-events: none;
 
     .rdrDayNumber span {
-        color: #d5dce0;
+        color: gray;
     }
 
     .rdrInRange,
