@@ -2,31 +2,33 @@ import React, { useEffect, useState } from 'react';
 import '../Styles/Components.css';
 import ReportsInterval from './ReportsInterval';
 
-function ReportsSection({ project, totalTime, intervals }) {
+function ReportsSection({ project, intervals }) {
     const [collapsed, setCollapsed] = useState(false);
     const [section, setSections] = useState([]);
+    const [totalTime, setTotalTime] = useState("");
 
     useEffect(() => {
-        const uniqueSections = {};
-        console.log(intervals);
-
-        for (let interval in intervals) {
-            if (!uniqueSections[interval.name]) {
-                uniqueSections[interval.name] = { hours: 0, minutes: 0, seconds: 0 };
-            }
-            const st = new Date(interval.start_time)
-            const et = new Date(interval.end_time)
-            const timeDifference = et - st;
-            uniqueSections[interval.name].hours += Math.floor(timeDifference / 3600000);
-            uniqueSections[interval.name].minutes += Math.floor((timeDifference % 3600000) / 60000);
-            uniqueSections[interval.name].seconds += Math.floor((timeDifference % 60000) / 1000);
-        }
         const output = [];
-        for (let name in uniqueSections) {
-            const timeString = String(uniqueSections[name].hours).padStart(2, '0') + ":" + String(uniqueSections[name].minutes).padStart(2, '0') + ":" + String(uniqueSections[name].seconds).padStart(2, '0');
-            output.push(<ReportsInterval key={name} name={name} project={project} timeString={timeString} />);
+        const time = { hours: 0, minutes: 0, seconds: 0 };
+        for (let intervalName in intervals) {
+            const newInterval = { hours: 0, minutes: 0, seconds: 0 };
+            console.log(intervals[intervalName]);
+            for (let i = 0; i < intervals[intervalName].length; i++) {
+                const st = new Date(intervals[intervalName][i].start_time)
+                const et = new Date(intervals[intervalName][i].end_time)
+                const timeDifference = et - st;
+                newInterval.hours += Math.floor(timeDifference / 3600000);
+                newInterval.minutes += Math.floor((timeDifference % 3600000) / 60000);
+                newInterval.seconds += Math.floor((timeDifference % 60000) / 1000);
+                time.hours += Math.floor(timeDifference / 3600000);
+                time.minutes += Math.floor((timeDifference % 3600000) / 60000);
+                time.seconds += Math.floor((timeDifference % 60000) / 1000);
+            }
+            const timeString = String(newInterval.hours).padStart(2, '0') + ":" + String(newInterval.minutes).padStart(2, '0') + ":" + String(newInterval.seconds).padStart(2, '0');
+            output.push(<ReportsInterval key={intervalName} name={intervalName} project={project} timeString={timeString} />);
         }
         setSections(output);
+        setTotalTime(String(time.hours).padStart(2, '0') + ":" + String(time.minutes).padStart(2, '0') + ":" + String(time.seconds).padStart(2, '0'));
     }, [intervals]);
 
     return (
