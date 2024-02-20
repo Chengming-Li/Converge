@@ -6,6 +6,7 @@ import Header from '../Components/Header';
 import Error from '../Components/Error';
 import Loading from '../Components/Loading';
 import ProjectsDropdown from '../Components/ProjectsDropdown';
+import ReportsSection from '../Components/ReportsSection';
 
 import { DateRangePicker } from 'react-date-range';
 
@@ -27,7 +28,7 @@ const Reports = () => {
     });
     const [intervals, setIntervals] = useState([]);
     const [projects, setProjects] = useState([]);
-    const [projectIdNameMapping, setProjectIdNameMapping] = useState({});
+    const [projectIdMapping, setProjectIdMapping] = useState({});
     const [dropdown, setDropdown] = useState(false);
     const dropdownRef = useRef(null);
     const [project, setProject] = useState({
@@ -35,7 +36,7 @@ const Reports = () => {
         project_id: null,
         name: "No Project"
     });
-    const [sections, setSections] = useState({});
+    const [sections, setSections] = useState([]);
 
     useEffect(() => {
         fetch(userDataAPI + userID).then((response) => {
@@ -50,9 +51,15 @@ const Reports = () => {
             setProjects(data.projects);
             const hashmap = {};
             for (const project of data.projects) {
-                hashmap[project.project_id] = project.name;
+                hashmap[project.project_id] = project;
             }
-            setProjectIdNameMapping(hashmap);
+            hashmap[null] = {
+                color: "white",
+                name: "No Project",
+                project_id: "",
+                user_id: ""
+            }
+            setProjectIdMapping(hashmap);
             setLoading(false);
         }).catch((error) => {
             setErrors(oldErrors => [...oldErrors, error.message]);
@@ -86,9 +93,17 @@ const Reports = () => {
         setDropdown(false);
     }
 
-    const separateIntervals = (selectedIntervals) => {
+    const filterIntervals = (range, project) => {
+        if (!userInfo) {
+            return;
+        }
+        const filteredIntervals = intervals.filter((interval) =>
+            new Date(interval.start_time) >= range.startDate
+            && new Date(interval.start_time) <= range.endDate
+            && (project ? interval.project == project.project_id : true)
+        );
         const hashmap = {};
-        selectedIntervals.forEach(interval => {
+        filteredIntervals.forEach(interval => {
             if (!hashmap[interval.project_id]) {
                 hashmap[interval.project_id] = {};
             }
@@ -97,22 +112,23 @@ const Reports = () => {
             }
             hashmap[interval.project_id][interval.name].push(interval);
         });
-        return hashmap;
-    }
-
-    const filterIntervals = (range, project) => {
-        if (!userInfo) {
-            return;
+        const sectionElements = [];
+        for (let project_id in hashmap) {
+            sectionElements.push(<ReportsSection
+                project={projectIdMapping[project_id]}
+                totalTime={"00:00"}
+                intervals={hashmap[project_id]}
+                key={project_id}
+            />);
         }
-        setSections(separateIntervals(intervals.filter((interval) =>
-            new Date(interval.start_time) >= range.startDate
-            && new Date(interval.start_time) <= range.endDate
-            && (project ? interval.project == project.project_id : true)
-        )));
+        setSections(sectionElements);
     }
 
+    // updates selected intervals
     useEffect(() => {
         filterIntervals(selectionRange, project);
+        setDropdown(false);
+        setDayMenu(false);
     }, [selectionRange, project]);
 
     return (
@@ -124,41 +140,47 @@ const Reports = () => {
             />
             <Header ToggleMenu={() => { setCollapsedMenu(!collapsedMenu) }} />
             <Sidebar collapsed={collapsedMenu} username={userInfo ? userInfo.username : "No User"} pfp={userInfo ? userInfo.profile_picture : null} />
-            <div className='buttonSection'>
-                <button className="dayMenuButton" onClick={() => { setDayMenu(true) }}>
-                    {"<   "} {selectionRange.startDate.toLocaleDateString('en-US', {
-                        year: 'numeric',
-                        month: '2-digit',
-                        day: '2-digit'
-                    })} - {selectionRange.endDate.toLocaleDateString('en-US', {
-                        year: 'numeric',
-                        month: '2-digit',
-                        day: '2-digit'
-                    })} {"   >"}
-                </button>
-                <button id="Project" onClick={() => { setDropdown(!dropdown) }}>
-                    <span style={{ whiteSpace: "nowrap", textOverflow: "ellipsis", display: 'inline-block', color: project.color, width: `500px`, overflow: "hidden" }}>{"Project: " + project.name}</span>
-                </button>
+            <div className='pageContents' style={{ left: `${collapsedMenu ? '58px' : '198px'}`, width: `calc(100% - ${collapsedMenu ? '68px' : '198px'})` }}>
+                <div id="selectionButtons">
+                    <button className="dayMenuButton" onClick={() => { setDayMenu(true) }}>
+                        {"<   "} {selectionRange.startDate.toLocaleDateString('en-US', {
+                            year: 'numeric',
+                            month: '2-digit',
+                            day: '2-digit'
+                        })} - {selectionRange.endDate.toLocaleDateString('en-US', {
+                            year: 'numeric',
+                            month: '2-digit',
+                            day: '2-digit'
+                        })} {"   >"}
+                    </button>
+                    <button className="Project" onClick={() => { setDropdown(!dropdown) }}>
+                        <span style={{ whiteSpace: "nowrap", textOverflow: "ellipsis", display: 'inline-block', color: project.color, overflow: "hidden" }}>{"Project: " + project.name}</span>
+                    </button>
+                    {dayMenu &&
+                        <div ref={dayMenuRef} style={{ position: 'absolute', left: '0px', top: '50px', borderRadius: "10px", overflow: "hidden" }}>
+                            <DateRangePicker
+                                ranges={[selectionRange]}
+                                onChange={handleSelect}
+                                rangeColors={["#005353"]}
+                                className="dateRange"
+                                fixedHeight={true}
+                            />
+                        </div>
+                    }
+                    {dropdown &&
+                        <div ref={dropdownRef} style={{ position: "absolute", top: "-10px" }}>
+                            <ProjectsDropdown
+                                projects={projects}
+                                selectProject={selectProject}
+                                left={"250px"}
+                            />
+                        </div>
+                    }
+                </div>
+                <div id="sections">
+                    {sections}
+                </div>
             </div>
-            {dayMenu &&
-                <div ref={dayMenuRef} style={{ position: 'absolute', left: `calc(${collapsedMenu ? '55px' : '125px'} + 50%)`, transform: "translateX(-50%)", top: '120px', borderRadius: "10px", overflow: "hidden" }}>
-                    <DateRangePicker
-                        ranges={[selectionRange]}
-                        onChange={handleSelect}
-                        rangeColors={["#005353"]}
-                        className="dateRange"
-                        fixedHeight={true}
-                    />
-                </div>
-            }
-            {dropdown &&
-                <div ref={dropdownRef}>
-                    <ProjectsDropdown
-                        projects={projects}
-                        selectProject={selectProject}
-                    />
-                </div>
-            }
         </div>
     );
 }

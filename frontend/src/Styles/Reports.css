@@ -1,7 +1,24 @@
+.pageContents {
+    position: absolute;
+    top: 75px;
+    height: calc(100% - 150px);
+}
+
+.pageContents #selectionButtons {
+    position: absolute;
+    width: 525px;
+    left: calc(50% - 262px);
+}
+
+.pageContents #sections {
+    position: absolute;
+    top: 75px;
+    width: 100%;
+    height: calc(100%);
+}
+
 .dayMenuButton {
     position: absolute;
-    transform: TranslateX(-50%);
-    top: 70px;
     background-color: #12191D;
     height: 50px;
     width: 230px;
@@ -9,6 +26,33 @@
     font-size: 15px;
     font-weight: 500;
     color: #75A4AE;
+    top: 0px;
+    left: 0px;
+}
+
+.Project {
+    position: absolute;
+    left: 275px;
+    background-color: #12191D;
+    height: 50px;
+    width: 250px;
+    border-radius: 5px;
+    font-size: 15px;
+    font-weight: 500;
+    color: #75A4AE;
+}
+
+@media (max-width: 830px) {
+
+    /* Styles to hide elements when screen width is 600px or less */
+    .Project {
+        display: none;
+    }
+
+    .pageContents #selectionButtons {
+        width: 230px;
+        left: calc(50% - 115px);
+    }
 }
 
 .rdrDateRangePickerWrapper {
