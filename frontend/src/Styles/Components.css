@@ -626,7 +626,13 @@ input {
 .ReportsSection #time {
     position: absolute;
     top: 13px;
-    right: 55px;
+    font-size: 18px;
+}
+
+.ReportsSection #percent {
+    position: absolute;
+    top: 13px;
+    right: 46px;
     font-size: 18px;
 }
 

@@ -159,7 +159,7 @@ const Settings = () => {
 
                 {timezoneMenuOpen &&
                     <div className='timezoneMenu' ref={timezoneMenuRef}>
-                        <button onClick={() => { setTimezone("America/Los_Angeles"); setTimezoneMenuOpen(false); }}>America/Los_Angeles</button>
+                        <button onClick={() => { setTimezone("PST"); setTimezoneMenuOpen(false); }}>PST</button>
                         <button onClick={() => { setTimezone("UTC"); setTimezoneMenuOpen(false); }}>UTC</button>
                         <button onClick={() => { setTimezone("GMT"); setTimezoneMenuOpen(false); }}>GMT</button>
                         <button onClick={() => { setTimezone("MST"); setTimezoneMenuOpen(false); }}>MST</button>

@@ -34,7 +34,7 @@ const Reports = () => {
     const [project, setProject] = useState({
         color: "white",
         project_id: null,
-        name: "No Project"
+        name: "All Projects"
     });
     const [sections, setSections] = useState([]);
 
@@ -55,7 +55,7 @@ const Reports = () => {
             }
             hashmap[null] = {
                 color: "white",
-                name: "No Project",
+                name: "All Projects",
                 project_id: "",
                 user_id: ""
             }
@@ -100,27 +100,49 @@ const Reports = () => {
         const filteredIntervals = intervals.filter((interval) =>
             new Date(interval.start_time) >= range.startDate
             && new Date(interval.start_time) <= range.endDate
-            && (project ? interval.project == project.project_id : true)
+            && (project.project_id ? interval.project_id == project.project_id : true)
         );
         const hashmap = {};
+        const projectTimes = {};
+        let time = 0;  // total time in seconds
         filteredIntervals.forEach(interval => {
             if (!hashmap[interval.project_id]) {
                 hashmap[interval.project_id] = {};
+                projectTimes[interval.project_id] = { hours: 0, minutes: 0, seconds: 0 };
             }
             if (!hashmap[interval.project_id][interval.name]) {
                 hashmap[interval.project_id][interval.name] = [];
             }
+            const st = new Date(interval.start_time)
+            const et = new Date(interval.end_time)
+            const timeDifference = et - st;
+            // add to total time
+            time += Math.floor(timeDifference / 1000);
+            // add to project time
+            projectTimes[interval.project_id].hours += Math.floor(timeDifference / 3600000);
+            projectTimes[interval.project_id].minutes += Math.floor((timeDifference % 3600000) / 60000);
+            projectTimes[interval.project_id].seconds += Math.floor((timeDifference % 60000) / 1000);
+            // set interval time
+            interval.hours = Math.floor(timeDifference / 3600000);
+            interval.minutes = Math.floor((timeDifference % 3600000) / 60000);
+            interval.seconds = Math.floor((timeDifference % 60000) / 1000);
+
             hashmap[interval.project_id][interval.name].push(interval);
         });
         const sectionElements = [];
         for (let project_id in hashmap) {
+            const projectTimeObject = projectTimes[project_id];
+            const projectTotalTime = projectTimeObject.seconds + 60 * projectTimeObject.minutes + 3600 * projectTimeObject.hours;
             sectionElements.push(<ReportsSection
                 project={projectIdMapping[project_id]}
-                totalTime={"00:00"}
                 intervals={hashmap[project_id]}
                 key={project_id}
+                time={projectTimes[project_id]}
+                percent={projectTotalTime / time * 100 < 1 ? Math.ceil(projectTotalTime / time * 100) : Math.floor(projectTotalTime / time * 100)}
             />);
         }
+        console.log(filteredIntervals);
+        console.log(project);
         setSections(sectionElements);
     }
 
@@ -173,6 +195,7 @@ const Reports = () => {
                                 projects={projects}
                                 selectProject={selectProject}
                                 left={"250px"}
+                                defaultProjectName={"All Projects"}
                             />
                         </div>
                     }
