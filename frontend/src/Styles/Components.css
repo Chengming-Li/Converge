@@ -583,3 +583,68 @@ input {
 .ProjectDisplay #colorButton:hover {
     opacity: 90%;
 }
+
+.ReportsSection {
+    width: 96%;
+    left: 2%;
+    position: relative;
+    top: 0%;
+    user-select: none;
+    background-color: #1b1d1e;
+    margin-top: 0px;
+    margin-bottom: 0px;
+    opacity: 100%;
+}
+
+.ReportsSection #Head {
+    position: relative;
+    background-color: #1B1D1E;
+    height: 48px;
+}
+
+.ReportsSection #title {
+    position: absolute;
+    top: 13px;
+    left: 21px;
+    font-size: 18px;
+}
+
+.ReportsSection #username {
+    position: absolute;
+    top: 20px;
+    left: 75px;
+    font-size: 18px;
+}
+
+.ReportsSection #pfp {
+    position: absolute;
+    left: 12px;
+    top: 6px;
+    width: 50px;
+}
+
+.ReportsSection #time {
+    position: absolute;
+    top: 13px;
+    font-size: 18px;
+}
+
+.ReportsSection #percent {
+    position: absolute;
+    top: 13px;
+    right: 46px;
+    font-size: 18px;
+}
+
+.ReportsSection #collapse {
+    position: absolute;
+    right: 12px;
+    height: 100%;
+    width: 30px;
+    background-color: #1B1D1E;
+}
+
+.ReportsSection img {
+    width: 100%;
+    object-fit: cover;
+}

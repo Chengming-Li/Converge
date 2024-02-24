@@ -335,7 +335,7 @@ const Rooms = () => {
                 setMessages={setErrors}
             />
             <Header ToggleMenu={() => { setCollapsedMenu(!collapsedMenu) }} />
-            <Sidebar collapsed={collapsedMenu} username={username ? username : "No User"} />
+            <Sidebar collapsed={collapsedMenu} username={username ? username : "No User"} pfp={thisUser ? thisUser.profile_picture : null} />
             {
                 room ?
                     <div>

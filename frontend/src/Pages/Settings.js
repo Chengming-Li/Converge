@@ -8,7 +8,7 @@ import Loading from '../Components/Loading';
 const userID = "931452152733499393";
 const userSettingsAPI = "http://localhost:5000//api/user/settings/";
 
-const Projects = () => {
+const Settings = () => {
     const [loading, setLoading] = useState(true);
     const [collapsedMenu, setCollapsedMenu] = useState(false);
     const [timezoneMenuOpen, setTimezoneMenuOpen] = useState(false);
@@ -159,7 +159,7 @@ const Projects = () => {
 
                 {timezoneMenuOpen &&
                     <div className='timezoneMenu' ref={timezoneMenuRef}>
-                        <button onClick={() => { setTimezone("America/Los_Angeles"); setTimezoneMenuOpen(false); }}>America/Los_Angeles</button>
+                        <button onClick={() => { setTimezone("PST"); setTimezoneMenuOpen(false); }}>PST</button>
                         <button onClick={() => { setTimezone("UTC"); setTimezoneMenuOpen(false); }}>UTC</button>
                         <button onClick={() => { setTimezone("GMT"); setTimezoneMenuOpen(false); }}>GMT</button>
                         <button onClick={() => { setTimezone("MST"); setTimezoneMenuOpen(false); }}>MST</button>
@@ -179,4 +179,4 @@ const Projects = () => {
     );
 }
 
-export default Projects;
+export default Settings;

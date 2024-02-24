@@ -188,7 +188,7 @@ const Projects = () => {
                 setMessages={setErrors}
             />
             <Header ToggleMenu={() => { setCollapsedMenu(!collapsedMenu) }} />
-            <Sidebar collapsed={collapsedMenu} username={userInfo ? userInfo.username : "No User"} />
+            <Sidebar collapsed={collapsedMenu} username={userInfo ? userInfo.username : "No User"} pfp={userInfo ? userInfo.profile_picture : null} />
             <div className="TimeSections" style={{ top: "85px", width: `${windowWidth - (collapsedMenu ? 114 : 254) + "px"}` }}>
                 <div className='ProjectDisplay' style={{ marginBottom: "-2px", backgroundColor: "#171919", height: "70px", borderTopLeftRadius: "15px", borderTopRightRadius: "15px", borderBottomLeftRadius: projects.length === 0 ? "15px" : "0px", borderBottomRightRadius: projects.length === 0 ? "15px" : "0px" }}>
                     <button id="colorButton" onClick={() => { setShowPicker(!showPicker) }} style={{ userSelect: "none", position: "absolute", width: "40px", backgroundColor: color, color: color, height: "40px", borderRadius: "50%" }}>Hi</button>
