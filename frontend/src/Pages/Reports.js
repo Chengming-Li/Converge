@@ -39,6 +39,20 @@ const Reports = () => {
     const [sections, setSections] = useState([]);
 
     useEffect(() => {
+        const selectRange = {
+            startDate: new Date(),
+            endDate: new Date(),
+            key: 'selection',
+        };
+        selectRange.endDate.setHours(23);
+        selectRange.endDate.setMinutes(59);
+        selectRange.endDate.setSeconds(59);
+        selectRange.endDate.setMilliseconds(999);
+        selectRange.startDate.setHours(0);
+        selectRange.startDate.setMinutes(0);
+        selectRange.startDate.setSeconds(0);
+        selectRange.startDate.setMilliseconds(0);
+        setSelectionRange(selectRange);
         fetch(userDataAPI + userID).then((response) => {
             if (!response.ok) {
                 console.log(response.json());
@@ -141,8 +155,6 @@ const Reports = () => {
                 percent={projectTotalTime / time * 100 < 1 ? Math.ceil(projectTotalTime / time * 100) : Math.floor(projectTotalTime / time * 100)}
             />);
         }
-        console.log(filteredIntervals);
-        console.log(project);
         setSections(sectionElements);
     }
 
@@ -151,7 +163,7 @@ const Reports = () => {
         filterIntervals(selectionRange, project);
         setDropdown(false);
         setDayMenu(false);
-    }, [selectionRange, project]);
+    }, [selectionRange, project, intervals]);
 
     return (
         <div className='App'>
