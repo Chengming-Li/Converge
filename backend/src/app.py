@@ -1,9 +1,10 @@
-from flask import Flask, request
+from flask import Flask, request, abort, redirect, url_for, session
 from flask_cors import CORS
 from flask_socketio import SocketIO, emit, join_room, leave_room
 import os
 from dotenv import load_dotenv
 import psycopg2
+from authlib.integrations.flask_client import OAuth
 
 import sys
 sys.path.append('/backend/src/actions')
@@ -12,6 +13,8 @@ from intervalActions import createIntervalTable, startInterval, endInterval, edi
 from projectActions import createProject, deleteProject, editProject, getProjects
 from roomActions import onConnect, onDisconnect, onJoin, onLeave, startRoomInterval, stopRoomInterval, editActiveInterval, hostRoom, changeProject
 
+CONF_URL = 'https://accounts.google.com/.well-known/openid-configuration'
+
 def create_app(test_config=None):
     load_dotenv()
     app = Flask(__name__)
@@ -19,6 +22,20 @@ def create_app(test_config=None):
     if test_config is None:
         app.config['SECRET_KEY'] = os.getenv("SECRET_KEY")
         app.config['DATABASE'] = os.getenv("DATABASE_URL")
+
+        app.config['OAUTH2_PROVIDERS'] = {
+            'google': {
+                'client_id': os.getenv("GOOGLE_AUTH_CLIENT_ID"),
+                'client_secret': os.getenv("GOOGLE_AUTH_SECRET"),
+                'authorize_url': 'https://accounts.google.com/o/oauth2/auth',
+                'token_url': 'https://accounts.google.com/o/oauth2/token',
+                'userinfo': {
+                    'url': 'https://www.googleapis.com/oauth2/v3/userinfo',
+                    'email': lambda json: json['email'],  # function that returns email from data returned by endpoint
+                },
+                'scopes': ['https://www.googleapis.com/auth/userinfo.email'],
+            }
+        }
     else:
         app.config.from_mapping(test_config)
 
@@ -28,6 +45,27 @@ def create_app(test_config=None):
     # remove when deploying
     CORS(app, resources={r"/api/*": {"origins": "http://localhost:3000"}}, supports_credentials=True)
     CORS(app, resources={r"/test/*": {"origins": "http://localhost:3000"}}, supports_credentials=True)
+
+    @app.route('/')
+    def index():
+        html_code = """
+        <!DOCTYPE html>
+        <html lang="en">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Default Page</title>
+        </head>
+        <body>
+            <h1>Hello, Flask!</h1>
+            <p>This is an example of returning HTML code directly from a Flask route.</p>
+            <p>
+                <a class="btn btn-primary" href="authorize/google">Login with Google</a>
+            </p>
+        </body>
+        </html>
+        """
+        return html_code
 
     #region interval API
     @app.get('/api')
@@ -159,6 +197,44 @@ def create_app(test_config=None):
         changeProject(data, establishConnection)
     #endregion
         
+    #region Oauth
+    oauth = OAuth(app)
+
+    @app.route('/authorize/<provider>')
+    def oauth2_authorize(provider):
+        # checks if logged in
+        if 'logged_in' in session and session['logged_in']:
+            return redirect(url_for('index'))
+
+        provider_data = app.config['OAUTH2_PROVIDERS'].get(provider)
+        if provider_data is None:
+            abort(404)
+
+        oauth.register(
+            name=provider,
+            client_id=provider_data["client_id"],
+            client_secret=provider_data["client_secret"],
+            server_metadata_url=CONF_URL,
+            client_kwargs={
+                'scope': 'openid email profile'
+            }
+        )
+        redirect_uri = url_for(provider + '_auth', _external=True)
+        return oauth.google.authorize_redirect(redirect_uri)
+    
+    @app.route('/google/auth/')
+    def google_auth():
+        try:
+            token = dict(oauth.google.authorize_access_token())
+            user = token["userinfo"]["email"]
+            print(" Google User ", user)
+            session['logged_in'] = True
+        except Exception as e:
+            session['logged_in'] = True
+            print(e)
+            return redirect('/api')
+        return redirect('/')
+    #endregion
     return app, socketio
 
 if __name__ == '__main__':
