@@ -1,10 +1,12 @@
-from flask import Flask, request, abort, redirect, url_for, session
+from flask import Flask, request, abort, redirect, url_for, session, make_response
 from flask_cors import CORS
 from flask_socketio import SocketIO, emit, join_room, leave_room
 import os
 from dotenv import load_dotenv
 import psycopg2
 from authlib.integrations.flask_client import OAuth
+import jwt
+import datetime
 
 import sys
 sys.path.append('/backend/src/actions')
@@ -22,6 +24,8 @@ def create_app(test_config=None):
     if test_config is None:
         app.config['SECRET_KEY'] = os.getenv("SECRET_KEY")
         app.config['DATABASE'] = os.getenv("DATABASE_URL")
+        
+        app.config['FRONTEND_URL'] = os.getenv("FRONTEND_URL")
 
         app.config['OAUTH2_PROVIDERS'] = {
             'google': {
@@ -45,27 +49,11 @@ def create_app(test_config=None):
     # remove when deploying
     CORS(app, resources={r"/api/*": {"origins": "http://localhost:3000"}}, supports_credentials=True)
     CORS(app, resources={r"/test/*": {"origins": "http://localhost:3000"}}, supports_credentials=True)
+    CORS(app, resources={r"/authenticate/*": {"origins": "http://localhost:3000"}}, supports_credentials=True)
 
     @app.route('/')
     def index():
-        html_code = """
-        <!DOCTYPE html>
-        <html lang="en">
-        <head>
-            <meta charset="UTF-8">
-            <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <title>Default Page</title>
-        </head>
-        <body>
-            <h1>Hello, Flask!</h1>
-            <p>This is an example of returning HTML code directly from a Flask route.</p>
-            <p>
-                <a class="btn btn-primary" href="authorize/google">Login with Google</a>
-            </p>
-        </body>
-        </html>
-        """
-        return html_code
+        return redirect(app.config['FRONTEND_URL'])
 
     #region interval API
     @app.get('/api')
@@ -200,11 +188,41 @@ def create_app(test_config=None):
     #region Oauth
     oauth = OAuth(app)
 
+    def generateToken(user_id):
+        """
+        Generates an authenication token that expires in 30 days
+
+        @param {string} user_id: the ID of the user
+
+        @returns {string}: the token
+        """
+        expiration_time = datetime.datetime.now() + datetime.timedelta(days=30)
+        payload = {'exp': expiration_time, 'userId': user_id}
+        token = jwt.encode(payload, app.config['SECRET_KEY'], algorithm='HS256')
+        return token
+    
+    def tokenValidator(token):
+        """
+        Checks if the authenication token is valid
+
+        @param {string} token: the token
+
+        @returns {boolean}: validity of token
+        @returns {string}: user id
+        """
+        try:
+            decoded_payload = jwt.decode(token, app.config['SECRET_KEY'], algorithms=['HS256'])
+            expiration_time = datetime.datetime.fromtimestamp(decoded_payload['exp'])
+            return expiration_time > datetime.datetime.now(), decoded_payload.get('userId')
+        except jwt.ExpiredSignatureError:
+            return False, None
+        except jwt.InvalidTokenError:
+            return False, None
+
     @app.route('/authorize/<provider>')
     def oauth2_authorize(provider):
-        # checks if logged in
-        if 'logged_in' in session and session['logged_in']:
-            return redirect(url_for('index'))
+        if request.cookies.get('token') and tokenValidator(request.cookies.get('token'))[0]:
+            return redirect(app.config['FRONTEND_URL'])
 
         provider_data = app.config['OAUTH2_PROVIDERS'].get(provider)
         if provider_data is None:
@@ -222,18 +240,32 @@ def create_app(test_config=None):
         redirect_uri = url_for(provider + '_auth', _external=True)
         return oauth.google.authorize_redirect(redirect_uri)
     
-    @app.route('/google/auth/')
+    @app.route('/google/auth')
     def google_auth():
+        resp = make_response(redirect(app.config['FRONTEND_URL']))
         try:
             token = dict(oauth.google.authorize_access_token())
             user = token["userinfo"]["email"]
             print(" Google User ", user)
-            session['logged_in'] = True
+            # query database, make new account if not found
+            resp.set_cookie('token', generateToken("931452152733499393"))
         except Exception as e:
-            session['logged_in'] = True
+            resp.set_cookie('token', "")
             print(e)
-            return redirect('/api')
-        return redirect('/')
+        return resp
+    
+    @app.route('/logout')
+    def logout():
+        resp = make_response(redirect(app.config['FRONTEND_URL']))
+        resp.set_cookie('token', "")
+        return resp
+    
+    @app.get('/authenticate')
+    def authenticate():
+        print(request.cookies.get('token'))
+        if request.cookies.get('token') and tokenValidator(request.cookies.get('token'))[0]:
+            return {"user_id": tokenValidator(request.cookies.get('token'))[1]}, 201
+        return {"error": f"Failed to authenticate"}, 401
     #endregion
     return app, socketio
 

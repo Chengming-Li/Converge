@@ -7,6 +7,7 @@ import Loading from '../Components/Loading';
 
 const userID = "931452152733499393";
 const userSettingsAPI = "http://localhost:5000//api/user/settings/";
+const LOGINPATH = "http://localhost:5000//authorize/google";
 
 const Settings = () => {
     const [loading, setLoading] = useState(true);
@@ -20,6 +21,10 @@ const Settings = () => {
     const [color, setColor] = useState(`rgb(${Math.floor(Math.random() * 256)}, ${Math.floor(Math.random() * 256)}, ${Math.floor(Math.random() * 256)})`);
     const timezoneMenuRef = useRef(null);
     const [data, setData] = useState(new FileReader());
+
+    const login = () => {
+        window.location.href = LOGINPATH;
+    };
 
     useEffect(() => {
         fetch(userSettingsAPI + userID).then((response) => {
@@ -172,8 +177,10 @@ const Settings = () => {
                 }} onClick={() => saveSettings(username, timezone, pfp)}>Save Changes</button>
                 <button id="discardChanges" style={{
                     display: ((userInfo && userInfo.username === username && userInfo.profile_picture === pfp && userInfo.timezone === timezone) ? "None" : "block")
-                }} onClick={resetSettings}
-                >Reset</button>
+                }} onClick={resetSettings}>
+                    Reset
+                </button>
+                <button onClick={login}>Sign In</button>
             </div>
         </div>
     );

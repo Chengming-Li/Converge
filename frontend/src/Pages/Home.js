@@ -9,10 +9,11 @@ import moment from "moment-timezone";
 import { SHA256 } from 'crypto-js';
 import Loading from '../Components/Loading';
 
-const userID = "931452152733499393"
-const userDataAPI = "http://localhost:5000/api/user/"
-const intervalAPI = "http://localhost:5000/api/interval"
-const endIntervalAPI = "http://localhost:5000/api/interval/end/"
+const backend = "http://localhost:5000"
+const userDataAPI = backend + "/api/user/"
+const intervalAPI = backend + "/api/interval"
+const endIntervalAPI = backend + "/api/interval/end/"
+const authenticateAPI = backend + "/authenticate"
 
 const Home = () => {
     const [collapsedMenu, setCollapsedMenu] = useState(false);
@@ -32,22 +33,42 @@ const Home = () => {
     });
 
     useEffect(() => {
-        fetch(userDataAPI + userID).then((response) => {
+        fetch(authenticateAPI, { credentials: 'include' }).then((response) => {
             if (!response.ok) {
-                console.log(response.json());
-                throw new Error(response.status);
+                if (response.status === 401) {
+                    throw new Error('Unauthorized');
+                } else {
+                    console.log(response.json());
+                    throw new Error(response.status);
+                }
             }
             return response.json();
         }).then((data) => {
-            setUserInfo(data.userInfo);
-            setInactiveIntervals(data.intervals);
-            setActiveInterval(data.activeInterval);
-            setProjects(data.projects);
-            setInputValue(data.activeInterval ? data.activeInterval.name : "")
-            setLoading(false);
+            fetch(userDataAPI + data.user_id).then((response) => {
+                if (!response.ok) {
+                    console.log(response.json());
+                    throw new Error(response.status);
+                }
+                return response.json();
+            }).then((data) => {
+                setUserInfo(data.userInfo);
+                setInactiveIntervals(data.intervals);
+                setActiveInterval(data.activeInterval);
+                setProjects(data.projects);
+                setInputValue(data.activeInterval ? data.activeInterval.name : "")
+                setLoading(false);
+            }).catch((error) => {
+                setErrors(oldErrors => [...oldErrors, error.message]);
+                setLoading(false);
+            });
         }).catch((error) => {
+            if (error.message === 'Unauthorized') {
+                console.log("Hi");
+                window.location.href = '/login';
+            } else {
+                setErrors(oldErrors => [...oldErrors, error.message]);
+            }
             setErrors(oldErrors => [...oldErrors, error.message]);
-            setLoading(false);
         });
     }, []);
 

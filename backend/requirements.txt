@@ -7,3 +7,4 @@ Flask-SocketIO==5.3.6
 pytest==7.4.3
 requests==2.31.0
 Flask-Authlib-Client==0.0.1
+PyJWT==2.8.0
