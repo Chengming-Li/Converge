@@ -1,13 +1,14 @@
 from flask import request, jsonify
 
 CREATE_USERS_TABLE = "CREATE TABLE IF NOT EXISTS users (id SERIAL PRIMARY KEY, username TEXT, email TEXT, timezone TEXT, profile_picture TEXT);"
-INSERT_USER = "INSERT INTO users (username, email, timezone, profile_picture) VALUES (%s, %s, %s, %s) RETURNING id;"
 FETCH_USER_INFO = "SELECT username, email, timezone, profile_picture FROM users WHERE id = (%s);"
 FETCH_MULTIPLE_USER_INFO = "SELECT id, username, profile_picture FROM users WHERE id IN %s;"
 DELETE_USER = "DELETE FROM users WHERE id = (%s);"
 EDIT_SETTINGS = "UPDATE users SET username = %s, profile_picture = (%s), timezone = (%s) WHERE id = (%s) RETURNING id;"
 GET_ALL_INTERVALS_BY_USER = "SELECT * FROM intervals WHERE user_id = %s ORDER BY start_time DESC;"
 GET_ALL_PROJECTS_BY_USER = "SELECT * FROM projects WHERE user_id = %s ORDER BY name ASC;"
+INSERT_USER = "INSERT INTO users (username, email, timezone, profile_picture) VALUES (%s, %s, %s, %s) RETURNING id;"
+LOGIN_CREATE = "INSERT INTO users (username, email, timezone, profile_picture) SELECT %s, %s, %s, %s WHERE NOT EXISTS (SELECT 1 FROM users WHERE email = %s); SELECT id FROM users WHERE email = %s;"
 
 # API Functions
 # region general functions, for testing
@@ -221,4 +222,44 @@ def editSettings(userId, establishConnection):
     except Exception as e:
         return {"error": f"Failed to edit settings: {str(e)}"}, 500
     return jsonify({"id": str(userId), "timezone": timezone, "username": username, "profile_picture": pfp}), 200
+
+def login_create(username, email, timezone, pfp, establishConnection):
+    """
+    Creates account if doesn't exist, then returns id
+    @params "username" : (str) name of user
+    @params "email" : (str) email of user
+    @params "timezone" : (str) timezone of user
+
+    @returns {json}: a dictionary containing the key "id", with user's ID
+    """
+    connection = establishConnection()
+    try:
+        with connection:
+            with connection.cursor() as cursor:
+                cursor.execute(LOGIN_CREATE, (username, email, timezone, pfp, email, email))
+                connection.commit()
+                userId = cursor.fetchone()[0]
+    except Exception as e:
+        print(e)
+        return e
+    return userId
+
+def userExists(userID, establishConnection):
+    """
+    Checks if user exists
+    @params "userID" : (str) ID of user
+
+    @returns boolean: if user exists or not
+    """
+    connection = establishConnection()
+    try:
+        with connection:
+            with connection.cursor() as cursor:
+                cursor.execute(FETCH_USER_INFO, (userID,))
+                connection.commit()
+                id = cursor.fetchone()
+    except Exception as e:
+        return e
+    return id is not None
+
 # endregion

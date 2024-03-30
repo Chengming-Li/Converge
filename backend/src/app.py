@@ -10,10 +10,13 @@ import datetime
 
 import sys
 sys.path.append('/backend/src/actions')
-from userActions import clearTable, createUser, getUser, getUsersInfo, getTable, deleteTable, deleteUser, editSettings, getUserSettings
+from userActions import userExists, login_create, clearTable, createUser, getUser, getUsersInfo, getTable, deleteTable, deleteUser, editSettings, getUserSettings
 from intervalActions import createIntervalTable, startInterval, endInterval, editInterval, deleteInterval, getIntervalsInfo
 from projectActions import createProject, deleteProject, editProject, getProjects
 from roomActions import onConnect, onDisconnect, onJoin, onLeave, startRoomInterval, stopRoomInterval, editActiveInterval, hostRoom, changeProject
+
+import requests
+import base64
 
 CONF_URL = 'https://accounts.google.com/.well-known/openid-configuration'
 
@@ -213,7 +216,7 @@ def create_app(test_config=None):
         try:
             decoded_payload = jwt.decode(token, app.config['SECRET_KEY'], algorithms=['HS256'])
             expiration_time = datetime.datetime.fromtimestamp(decoded_payload['exp'])
-            return expiration_time > datetime.datetime.now(), decoded_payload.get('userId')
+            return expiration_time > datetime.datetime.now() and userExists(decoded_payload.get('userId'), establishConnection), decoded_payload.get('userId')
         except jwt.ExpiredSignatureError:
             return False, None
         except jwt.InvalidTokenError:
@@ -246,12 +249,33 @@ def create_app(test_config=None):
         try:
             token = dict(oauth.google.authorize_access_token())
             user = token["userinfo"]["email"]
-            print(" Google User ", user)
+            try:
+                # Get the image data from the URL
+                response = requests.get(token["userinfo"]["picture"])
+                response.raise_for_status()  # Raise an exception for 4xx and 5xx status codes
+
+                # Encode the image data in base64
+                
+                imgString = f"data:image/jpeg;base64,{base64.b64encode(response.content).decode('utf-8')}"
+            except Exception as e:
+                print("Failed image: " + e)
+                imgString = ""
+            userID = login_create(
+                token["userinfo"]["name"], 
+                token["userinfo"]["email"], 
+                "UTC",
+                imgString,
+                establishConnection
+            )
+            if type(userID) == Exception:
+                resp.set_cookie('token', "")
+                print("Failed: " + userID)
+                return resp
             # query database, make new account if not found
-            resp.set_cookie('token', generateToken("931452152733499393"))
+            resp.set_cookie('token', generateToken(userID))
         except Exception as e:
             resp.set_cookie('token', "")
-            print(e)
+            print("Failed: " + e)
         return resp
     
     @app.route('/logout')
@@ -264,7 +288,7 @@ def create_app(test_config=None):
     def authenticate():
         print(request.cookies.get('token'))
         if request.cookies.get('token') and tokenValidator(request.cookies.get('token'))[0]:
-            return {"user_id": tokenValidator(request.cookies.get('token'))[1]}, 201
+            return {"user_id": str(tokenValidator(request.cookies.get('token'))[1])}, 201
         return {"error": f"Failed to authenticate"}, 401
     #endregion
     return app, socketio

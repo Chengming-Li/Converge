@@ -9,11 +9,11 @@ import moment from "moment-timezone";
 import { SHA256 } from 'crypto-js';
 import Loading from '../Components/Loading';
 
-const backend = "http://localhost:5000"
-const userDataAPI = backend + "/api/user/"
-const intervalAPI = backend + "/api/interval"
-const endIntervalAPI = backend + "/api/interval/end/"
-const authenticateAPI = backend + "/authenticate"
+const backend = "http://localhost:5000";
+const userDataAPI = backend + "/api/user/";
+const intervalAPI = backend + "/api/interval";
+const endIntervalAPI = backend + "/api/interval/end/";
+const authenticateAPI = backend + "/authenticate";
 
 const Home = () => {
     const [collapsedMenu, setCollapsedMenu] = useState(false);
@@ -62,13 +62,8 @@ const Home = () => {
                 setLoading(false);
             });
         }).catch((error) => {
-            if (error.message === 'Unauthorized') {
-                console.log("Hi");
-                window.location.href = '/login';
-            } else {
-                setErrors(oldErrors => [...oldErrors, error.message]);
-            }
-            setErrors(oldErrors => [...oldErrors, error.message]);
+            console.log("Hi");
+            window.location.href = '/login';
         });
     }, []);
 

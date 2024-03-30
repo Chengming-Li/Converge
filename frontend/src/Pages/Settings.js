@@ -5,9 +5,11 @@ import Header from '../Components/Header';
 import Error from '../Components/Error';
 import Loading from '../Components/Loading';
 
-const userID = "931452152733499393";
-const userSettingsAPI = "http://localhost:5000//api/user/settings/";
-const LOGINPATH = "http://localhost:5000//authorize/google";
+const backend = "http://localhost:5000";
+const authenticateAPI = backend + "/authenticate";
+const userSettingsAPI = backend + "/api/user/settings/";
+const loginPath = backend + "/authorize/google";
+const logoutPath = backend + "/logout";
 
 const Settings = () => {
     const [loading, setLoading] = useState(true);
@@ -21,27 +23,50 @@ const Settings = () => {
     const [color, setColor] = useState(`rgb(${Math.floor(Math.random() * 256)}, ${Math.floor(Math.random() * 256)}, ${Math.floor(Math.random() * 256)})`);
     const timezoneMenuRef = useRef(null);
     const [data, setData] = useState(new FileReader());
+    const [userID, setUserID] = useState("");
 
     const login = () => {
-        window.location.href = LOGINPATH;
+        // window.location.href = loginPath;
+        window.location.href = logoutPath;
     };
 
     useEffect(() => {
-        fetch(userSettingsAPI + userID).then((response) => {
+        fetch(authenticateAPI, { credentials: 'include' }).then((response) => {
             if (!response.ok) {
-                console.log(response.json());
-                throw new Error(response.status);
+                if (response.status === 401) {
+                    throw new Error('Unauthorized');
+                } else {
+                    console.log(response.json());
+                    throw new Error(response.status);
+                }
             }
             return response.json();
         }).then((data) => {
-            setUsername(data.username);
-            setTimezone(data.timezone);
-            setPfp(data.profile_picture);
-            setUserInfo(data);
-            setLoading(false);
+            setUserID(data.user_id);
+            fetch(userSettingsAPI + data.user_id).then((response) => {
+                if (!response.ok) {
+                    console.log(response.json());
+                    throw new Error(response.status);
+                }
+                return response.json();
+            }).then((data) => {
+                setUsername(data.username);
+                setTimezone(data.timezone);
+                setPfp(data.profile_picture);
+                setUserInfo(data);
+                setLoading(false);
+            }).catch((error) => {
+                setErrors(oldErrors => [...oldErrors, error.message]);
+                setLoading(false);
+            });
         }).catch((error) => {
+            if (error.message === 'Unauthorized') {
+                console.log("Hi");
+                window.location.href = '/login';
+            } else {
+                setErrors(oldErrors => [...oldErrors, error.message]);
+            }
             setErrors(oldErrors => [...oldErrors, error.message]);
-            setLoading(false);
         });
 
         const handleTimezoneClickOutside = (event) => {
