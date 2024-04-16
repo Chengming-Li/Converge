@@ -235,13 +235,7 @@ const Rooms = () => {
                 });
             });
         }).catch((error) => {
-            if (error.message === 'Unauthorized') {
-                console.log("Hi");
-                window.location.href = '/login';
-            } else {
-                setErrors(oldErrors => [...oldErrors, error.message]);
-            }
-            setErrors(oldErrors => [...oldErrors, error.message]);
+            window.location.href = '/login';
         });
 
         return () => {

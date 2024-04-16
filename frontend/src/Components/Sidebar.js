@@ -3,7 +3,14 @@ import '../Styles/Components.css';
 import SidebarButton from './SidebarButton';
 import { Link } from 'react-router-dom';
 
+const backend = "http://localhost:5000";
+const logoutPath = backend + "/logout";
 function Sidebar({ collapsed, username, pfp }) {
+
+    const logout = () => {
+        window.location.href = logoutPath;
+    }
+
     return (
         <div className={`Sidebar${collapsed ? 'Collapsed' : ''}`}>
             <SidebarButton Text={"TIME TRACKER"} IconSrc={"/Cheese.png"} route={"/"} />
@@ -20,6 +27,7 @@ function Sidebar({ collapsed, username, pfp }) {
                         }} />
                         <span>{username}</span>
                     </button>
+                    <button onClick={logout} style={{ height: "30px", fontWeight: "medium", color: "red", marginTop: "-10px" }}>Sign Out</button>
                 </Link>
             </div>
 

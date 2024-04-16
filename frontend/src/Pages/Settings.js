@@ -25,11 +25,6 @@ const Settings = () => {
     const [data, setData] = useState(new FileReader());
     const [userID, setUserID] = useState("");
 
-    const login = () => {
-        // window.location.href = loginPath;
-        window.location.href = logoutPath;
-    };
-
     useEffect(() => {
         fetch(authenticateAPI, { credentials: 'include' }).then((response) => {
             if (!response.ok) {
@@ -60,13 +55,7 @@ const Settings = () => {
                 setLoading(false);
             });
         }).catch((error) => {
-            if (error.message === 'Unauthorized') {
-                console.log("Hi");
-                window.location.href = '/login';
-            } else {
-                setErrors(oldErrors => [...oldErrors, error.message]);
-            }
-            setErrors(oldErrors => [...oldErrors, error.message]);
+            window.location.href = '/login';
         });
 
         const handleTimezoneClickOutside = (event) => {
@@ -205,7 +194,6 @@ const Settings = () => {
                 }} onClick={resetSettings}>
                     Reset
                 </button>
-                <button onClick={login}>Sign In</button>
             </div>
         </div>
     );

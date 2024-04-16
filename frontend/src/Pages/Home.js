@@ -62,7 +62,6 @@ const Home = () => {
                 setLoading(false);
             });
         }).catch((error) => {
-            console.log("Hi");
             window.location.href = '/login';
         });
     }, []);
