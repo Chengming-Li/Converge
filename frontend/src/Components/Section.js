@@ -12,7 +12,7 @@ function Section({ title, totalTime, intervals, deleteInterval, editInterval, re
                 <span id='title'>{title}</span>
                 <span id='time'>{totalTime}</span>
                 <button id="collapse" onClick={() => { setCollapsed(!collapsed) }}>
-                    <img src={'/Cheese.png'} alt="collapse" />
+                    <img src={collapsed ? '/collapse.png' : '/expand.png'} alt="collapse" />
                 </button>
             </div>
             {!collapsed &&

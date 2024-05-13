@@ -13,11 +13,11 @@ function Sidebar({ collapsed, username, pfp }) {
 
     return (
         <div className={`Sidebar${collapsed ? 'Collapsed' : ''}`}>
-            <SidebarButton Text={"TIME TRACKER"} IconSrc={"/Cheese.png"} route={"/"} />
-            <SidebarButton Text={"ROOMS"} IconSrc={"/Cheese.png"} route={"/rooms"} />
-            <SidebarButton Text={"REPORTS"} IconSrc={"/Cheese.png"} route={"/reports"} />
-            <SidebarButton Text={"PROJECTS"} IconSrc={"/Cheese.png"} route={"/projects"} />
-            <SidebarButton Text={"SETTINGS"} IconSrc={"/Cheese.png"} route={"/settings"} />
+            <SidebarButton Text={"TIME TRACKER"} IconSrc={"/time.png"} route={"/"} />
+            <SidebarButton Text={"ROOMS"} IconSrc={"/rooms.png"} route={"/rooms"} />
+            <SidebarButton Text={"REPORTS"} IconSrc={"/reports.png"} route={"/reports"} />
+            <SidebarButton Text={"PROJECTS"} IconSrc={"/projects.png"} route={"/projects"} />
+            <SidebarButton Text={"SETTINGS"} IconSrc={"/settings.png"} route={"/settings"} />
             <div className="Profile">
                 <Link to={"/settings"}>
                     <button className="Profile">
@@ -27,7 +27,7 @@ function Sidebar({ collapsed, username, pfp }) {
                         }} />
                         <span>{username}</span>
                     </button>
-                    <button onClick={logout} style={{ height: "30px", fontWeight: "medium", color: "red", marginTop: "-10px" }}>Sign Out</button>
+                    <button onClick={logout} style={{ height: "30px", fontSize: collapsed ? '12px' : '15px', fontWeight: "medium", color: "red", marginTop: "-10px" }}>Sign Out</button>
                 </Link>
             </div>
 

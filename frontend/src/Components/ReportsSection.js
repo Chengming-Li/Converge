@@ -30,7 +30,7 @@ function ReportsSection({ project, intervals, time, percent }) {
                 <span id='time' style={{ right: `${Math.floor(Math.log10(percent)) * 10 + 85}px` }}>{totalTime}</span>
                 <span id='percent' style={{ color: project.color }}>({percent.toString() + "%"})</span>
                 <button id="collapse" onClick={() => { setCollapsed(!collapsed) }}>
-                    <img src={'/Cheese.png'} alt="collapse" />
+                    <img src={collapsed ? '/collapse.png' : '/expand.png'} alt="collapse" />
                 </button>
             </div>
             {!collapsed &&
