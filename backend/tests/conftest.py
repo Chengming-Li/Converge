@@ -8,7 +8,10 @@ import pytest
 def app():
     load_dotenv()
     app, socketio = create_app({
-        "DATABASE": os.getenv("TEST_DATABASE_URL")
+        "DATABASE": os.getenv("TEST_DATABASE_URL"),
+        "GOOGLE_CLIENT_ID": None,
+        "GOOGLE_CLIENT_SECRET": None,
+        "SECRET_KEY": None,
     })
 
     socket1 = socketio.test_client(app, flask_test_client=app.test_client())

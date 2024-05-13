@@ -8,9 +8,10 @@ import ProjectDisplay from '../Components/ProjectDisplay';
 import { SHA256 } from 'crypto-js';
 import ColorPicker from '../Components/ColorPicker';
 
-const userID = "931452152733499393"
-const userDataAPI = "http://localhost:5000/api/user/"
-const projectAPI = "http://localhost:5000/api/project"
+const backend = "http://localhost:5000";
+const userDataAPI = backend + "/api/user/";
+const projectAPI = backend + "/api/project";
+const authenticateAPI = backend + "/authenticate";
 
 const Projects = () => {
     const [collapsedMenu, setCollapsedMenu] = useState(false);
@@ -24,6 +25,7 @@ const Projects = () => {
     const colorPickerRef = useRef(null);
     const [name, setName] = useState("");
     const [userInfo, setUserInfo] = useState(null);
+    const [userID, setUserID] = useState("");
 
     const handleKeyPress = (e) => {
         if (e.key === 'Enter') {
@@ -38,20 +40,35 @@ const Projects = () => {
     };
 
     useEffect(() => {
-        fetch(userDataAPI + userID).then((response) => {
+        fetch(authenticateAPI, { credentials: 'include' }).then((response) => {
             if (!response.ok) {
-                console.log(response.json());
-                throw new Error(response.status);
+                if (response.status === 401) {
+                    throw new Error('Unauthorized');
+                } else {
+                    console.log(response.json());
+                    throw new Error(response.status);
+                }
             }
             return response.json();
         }).then((data) => {
-            setProjects(data.projects);
-            setInactiveIntervals(data.intervals);
-            setUserInfo(data.userInfo);
-            setLoading(false);
+            setUserID(data.user_id);
+            fetch(userDataAPI + data.user_id).then((response) => {
+                if (!response.ok) {
+                    console.log(response.json());
+                    throw new Error(response.status);
+                }
+                return response.json();
+            }).then((data) => {
+                setProjects(data.projects);
+                setInactiveIntervals(data.intervals);
+                setUserInfo(data.userInfo);
+                setLoading(false);
+            }).catch((error) => {
+                setErrors(oldErrors => [...oldErrors, error.message]);
+                setLoading(false);
+            });
         }).catch((error) => {
-            setErrors(oldErrors => [...oldErrors, error.message]);
-            setLoading(false);
+            window.location.href = '/login';
         });
 
 

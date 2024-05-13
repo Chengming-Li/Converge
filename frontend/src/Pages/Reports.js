@@ -10,8 +10,9 @@ import ReportsSection from '../Components/ReportsSection';
 
 import { DateRangePicker } from 'react-date-range';
 
-const userID = "931452152733499393";
-const userDataAPI = "http://localhost:5000/api/user/"
+const backend = "http://localhost:5000";
+const userDataAPI = backend + "/api/user/";
+const authenticateAPI = backend + "/authenticate";
 
 const Reports = () => {
     const [loading, setLoading] = useState(true);
@@ -53,31 +54,45 @@ const Reports = () => {
         selectRange.startDate.setSeconds(0);
         selectRange.startDate.setMilliseconds(0);
         setSelectionRange(selectRange);
-        fetch(userDataAPI + userID).then((response) => {
+        fetch(authenticateAPI, { credentials: 'include' }).then((response) => {
             if (!response.ok) {
-                console.log(response.json());
-                throw new Error(response.status);
+                if (response.status === 401) {
+                    throw new Error('Unauthorized');
+                } else {
+                    console.log(response.json());
+                    throw new Error(response.status);
+                }
             }
             return response.json();
         }).then((data) => {
-            setUserInfo(data.userInfo);
-            setIntervals(data.intervals);
-            setProjects(data.projects);
-            const hashmap = {};
-            for (const project of data.projects) {
-                hashmap[project.project_id] = project;
-            }
-            hashmap[null] = {
-                color: "white",
-                name: "All Projects",
-                project_id: "",
-                user_id: ""
-            }
-            setProjectIdMapping(hashmap);
-            setLoading(false);
+            fetch(userDataAPI + data.user_id).then((response) => {
+                if (!response.ok) {
+                    console.log(response.json());
+                    throw new Error(response.status);
+                }
+                return response.json();
+            }).then((data) => {
+                setUserInfo(data.userInfo);
+                setIntervals(data.intervals);
+                setProjects(data.projects);
+                const hashmap = {};
+                for (const project of data.projects) {
+                    hashmap[project.project_id] = project;
+                }
+                hashmap[null] = {
+                    color: "white",
+                    name: "All Projects",
+                    project_id: "",
+                    user_id: ""
+                }
+                setProjectIdMapping(hashmap);
+                setLoading(false);
+            }).catch((error) => {
+                setErrors(oldErrors => [...oldErrors, error.message]);
+                setLoading(false);
+            });
         }).catch((error) => {
-            setErrors(oldErrors => [...oldErrors, error.message]);
-            setLoading(false);
+            window.location.href = '/login';
         });
 
         const handleClickOutside = (event) => {

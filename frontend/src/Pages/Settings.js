@@ -5,8 +5,11 @@ import Header from '../Components/Header';
 import Error from '../Components/Error';
 import Loading from '../Components/Loading';
 
-const userID = "931452152733499393";
-const userSettingsAPI = "http://localhost:5000//api/user/settings/";
+const backend = "http://localhost:5000";
+const authenticateAPI = backend + "/authenticate";
+const userSettingsAPI = backend + "/api/user/settings/";
+const loginPath = backend + "/authorize/google";
+const logoutPath = backend + "/logout";
 
 const Settings = () => {
     const [loading, setLoading] = useState(true);
@@ -20,23 +23,39 @@ const Settings = () => {
     const [color, setColor] = useState(`rgb(${Math.floor(Math.random() * 256)}, ${Math.floor(Math.random() * 256)}, ${Math.floor(Math.random() * 256)})`);
     const timezoneMenuRef = useRef(null);
     const [data, setData] = useState(new FileReader());
+    const [userID, setUserID] = useState("");
 
     useEffect(() => {
-        fetch(userSettingsAPI + userID).then((response) => {
+        fetch(authenticateAPI, { credentials: 'include' }).then((response) => {
             if (!response.ok) {
-                console.log(response.json());
-                throw new Error(response.status);
+                if (response.status === 401) {
+                    throw new Error('Unauthorized');
+                } else {
+                    console.log(response.json());
+                    throw new Error(response.status);
+                }
             }
             return response.json();
         }).then((data) => {
-            setUsername(data.username);
-            setTimezone(data.timezone);
-            setPfp(data.profile_picture);
-            setUserInfo(data);
-            setLoading(false);
+            setUserID(data.user_id);
+            fetch(userSettingsAPI + data.user_id).then((response) => {
+                if (!response.ok) {
+                    console.log(response.json());
+                    throw new Error(response.status);
+                }
+                return response.json();
+            }).then((data) => {
+                setUsername(data.username);
+                setTimezone(data.timezone);
+                setPfp(data.profile_picture);
+                setUserInfo(data);
+                setLoading(false);
+            }).catch((error) => {
+                setErrors(oldErrors => [...oldErrors, error.message]);
+                setLoading(false);
+            });
         }).catch((error) => {
-            setErrors(oldErrors => [...oldErrors, error.message]);
-            setLoading(false);
+            window.location.href = '/login';
         });
 
         const handleTimezoneClickOutside = (event) => {
@@ -172,8 +191,9 @@ const Settings = () => {
                 }} onClick={() => saveSettings(username, timezone, pfp)}>Save Changes</button>
                 <button id="discardChanges" style={{
                     display: ((userInfo && userInfo.username === username && userInfo.profile_picture === pfp && userInfo.timezone === timezone) ? "None" : "block")
-                }} onClick={resetSettings}
-                >Reset</button>
+                }} onClick={resetSettings}>
+                    Reset
+                </button>
             </div>
         </div>
     );

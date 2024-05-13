@@ -1,16 +1,24 @@
-from flask import Flask, request
+from flask import Flask, request, abort, redirect, url_for, session, make_response
 from flask_cors import CORS
 from flask_socketio import SocketIO, emit, join_room, leave_room
 import os
 from dotenv import load_dotenv
 import psycopg2
+from authlib.integrations.flask_client import OAuth
+import jwt
+import datetime
 
 import sys
 sys.path.append('/backend/src/actions')
-from userActions import clearTable, createUser, getUser, getUsersInfo, getTable, deleteTable, deleteUser, editSettings, getUserSettings
+from userActions import userExists, login_create, clearTable, createUser, getUser, getUsersInfo, getTable, deleteTable, deleteUser, editSettings, getUserSettings
 from intervalActions import createIntervalTable, startInterval, endInterval, editInterval, deleteInterval, getIntervalsInfo
 from projectActions import createProject, deleteProject, editProject, getProjects
 from roomActions import onConnect, onDisconnect, onJoin, onLeave, startRoomInterval, stopRoomInterval, editActiveInterval, hostRoom, changeProject
+
+import requests
+import base64
+
+CONF_URL = 'https://accounts.google.com/.well-known/openid-configuration'
 
 def create_app(test_config=None):
     load_dotenv()
@@ -19,6 +27,22 @@ def create_app(test_config=None):
     if test_config is None:
         app.config['SECRET_KEY'] = os.getenv("SECRET_KEY")
         app.config['DATABASE'] = os.getenv("DATABASE_URL")
+        
+        app.config['FRONTEND_URL'] = os.getenv("FRONTEND_URL")
+
+        app.config['OAUTH2_PROVIDERS'] = {
+            'google': {
+                'client_id': os.getenv("GOOGLE_AUTH_CLIENT_ID"),
+                'client_secret': os.getenv("GOOGLE_AUTH_SECRET"),
+                'authorize_url': 'https://accounts.google.com/o/oauth2/auth',
+                'token_url': 'https://accounts.google.com/o/oauth2/token',
+                'userinfo': {
+                    'url': 'https://www.googleapis.com/oauth2/v3/userinfo',
+                    'email': lambda json: json['email'],  # function that returns email from data returned by endpoint
+                },
+                'scopes': ['https://www.googleapis.com/auth/userinfo.email'],
+            }
+        }
     else:
         app.config.from_mapping(test_config)
 
@@ -28,6 +52,11 @@ def create_app(test_config=None):
     # remove when deploying
     CORS(app, resources={r"/api/*": {"origins": "http://localhost:3000"}}, supports_credentials=True)
     CORS(app, resources={r"/test/*": {"origins": "http://localhost:3000"}}, supports_credentials=True)
+    CORS(app, resources={r"/authenticate/*": {"origins": "http://localhost:3000"}}, supports_credentials=True)
+
+    @app.route('/')
+    def index():
+        return redirect(app.config['FRONTEND_URL'])
 
     #region interval API
     @app.get('/api')
@@ -159,6 +188,109 @@ def create_app(test_config=None):
         changeProject(data, establishConnection)
     #endregion
         
+    #region Oauth
+    oauth = OAuth(app)
+
+    def generateToken(user_id):
+        """
+        Generates an authenication token that expires in 30 days
+
+        @param {string} user_id: the ID of the user
+
+        @returns {string}: the token
+        """
+        expiration_time = datetime.datetime.now() + datetime.timedelta(days=30)
+        payload = {'exp': expiration_time, 'userId': user_id}
+        token = jwt.encode(payload, app.config['SECRET_KEY'], algorithm='HS256')
+        return token
+    
+    def tokenValidator(token):
+        """
+        Checks if the authenication token is valid
+
+        @param {string} token: the token
+
+        @returns {boolean}: validity of token
+        @returns {string}: user id
+        """
+        try:
+            decoded_payload = jwt.decode(token, app.config['SECRET_KEY'], algorithms=['HS256'])
+            expiration_time = datetime.datetime.fromtimestamp(decoded_payload['exp'])
+            return expiration_time > datetime.datetime.now() and userExists(decoded_payload.get('userId'), establishConnection), decoded_payload.get('userId')
+        except jwt.ExpiredSignatureError:
+            return False, None
+        except jwt.InvalidTokenError:
+            return False, None
+
+    @app.route('/authorize/<provider>')
+    def oauth2_authorize(provider):
+        if request.cookies.get('token') and tokenValidator(request.cookies.get('token'))[0]:
+            return redirect(app.config['FRONTEND_URL'])
+
+        provider_data = app.config['OAUTH2_PROVIDERS'].get(provider)
+        if provider_data is None:
+            abort(404)
+
+        oauth.register(
+            name=provider,
+            client_id=provider_data["client_id"],
+            client_secret=provider_data["client_secret"],
+            server_metadata_url=CONF_URL,
+            client_kwargs={
+                'scope': 'openid email profile'
+            }
+        )
+        redirect_uri = url_for(provider + '_auth', _external=True)
+        return oauth.google.authorize_redirect(redirect_uri)
+    
+    @app.route('/google/auth')
+    def google_auth():
+        resp = make_response(redirect(app.config['FRONTEND_URL']))
+        try:
+            token = dict(oauth.google.authorize_access_token())
+            user = token["userinfo"]["email"]
+            try:
+                # Get the image data from the URL
+                response = requests.get(token["userinfo"]["picture"])
+                response.raise_for_status()  # Raise an exception for 4xx and 5xx status codes
+
+                # Encode the image data in base64
+                
+                imgString = f"data:image/jpeg;base64,{base64.b64encode(response.content).decode('utf-8')}"
+            except Exception as e:
+                print("Failed image: " + e)
+                imgString = ""
+            userID = login_create(
+                token["userinfo"]["name"], 
+                token["userinfo"]["email"], 
+                "UTC",
+                imgString,
+                establishConnection
+            )
+            if type(userID) == Exception:
+                resp.set_cookie('token', "")
+                print("Failed: " + userID)
+                return resp
+            # query database, make new account if not found
+            resp.set_cookie('token', generateToken(userID))
+        except Exception as e:
+            resp.set_cookie('token', "")
+            print("Failed: " + e)
+        return resp
+    
+    @app.route('/logout')
+    def logout():
+        resp = make_response(redirect(app.config['FRONTEND_URL']))
+        resp.set_cookie('token', "")
+        return resp
+    
+    @app.get('/authenticate')
+    def authenticate():
+        print(request.cookies.get('token'))
+        if request.cookies.get('token') and tokenValidator(request.cookies.get('token'))[0]:
+            return {"user_id": str(tokenValidator(request.cookies.get('token'))[1])}, 201
+        return {"error": f"Failed to authenticate"}, 401
+    #endregion
     return app, socketio
 
 if __name__ == '__main__':
