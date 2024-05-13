@@ -13,3 +13,6 @@ Rooms are dynamic virtual spaces where multiple users can collaborate in real-ti
 
 ### Reports
 Converge's reports feature offers invaluable insights into users' productivity habits and project management endeavors. By providing a detailed breakdown of the percentage of time spent on each project over a selected period, along with a comprehensive overview of tasks completed and the cumulative time spent on each task, users gain actionable data to optimize their workflow and cultivate good productivity habits. These reports not only facilitate better decision-making and resource allocation but also encourage accountability and reflection. By understanding where time is invested most and identifying areas for improvement, users can refine their approach, prioritize effectively, and ultimately enhance productivity and efficiency in their work. With our reports feature, achieving your goals becomes not just a possibility, but a measurable reality.
+
+## How to Use
+**Status**: Currently not being publicly hosted, sorry for the inconvenience. Check back later!
