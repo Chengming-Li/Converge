@@ -376,7 +376,7 @@ const Rooms = () => {
                                     <UserSection
                                         username={user.username}
                                         activeInterval={user.active_interval}
-                                        pfp={"/pfp.png"}
+                                        pfp={user.profile_picture}
                                         intervals={user.intervals}
                                         key={SHA256(user.id + user.timeJoined)}
                                         resumeInterval={user === thisUser ? resumeInterval : null}

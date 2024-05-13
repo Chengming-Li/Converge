@@ -65,7 +65,9 @@ function UserSection({ username, pfp, intervals, activeInterval, resumeInterval,
                 backgroundColor: "#34464f"
             }}>
                 <span id='username'>{username}</span>
-                <img id="pfp" src={pfp} alt="pfp" />
+                <img id="pfp" src={pfp} alt="pfp" style={{
+                    borderRadius: "50%",
+                }} />
                 <span id='time' style={{ top: "19px" }}>{totalTime}</span>
                 <button id="collapse" style={{ height: "61px", backgroundColor: "#34464f" }} onClick={() => {
                     if (intervals.length > 0 || activeInterval) {
