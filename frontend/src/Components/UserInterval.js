@@ -10,7 +10,7 @@ function UserInterval({ info, editInterval, resumeInterval, projects, windowWidt
     const [menuIsOpen, setMenuIsOpen] = useState(false);
     const dropdownRef = useRef(null);
     const isInitialRender = useRef(true);
-    const [project, setProject] = useState(info.project_id ? projects.find(project => project.project_id === info.project_id) :
+    const [project, setProject] = useState(info.project_id ? (projects ?? []).find(project => project.project_id === info.project_id) :
         {
             color: "white",
             project_id: null,

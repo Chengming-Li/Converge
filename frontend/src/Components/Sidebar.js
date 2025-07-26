@@ -27,6 +27,8 @@ function Sidebar({ collapsed, username, pfp }) {
                         }} />
                         <span>{username}</span>
                     </button>
+                </Link>
+                <Link to={"/login"}>
                     <button onClick={logout} style={{ height: "30px", fontSize: collapsed ? '12px' : '15px', fontWeight: "medium", color: "red", marginTop: "-10px" }}>Sign Out</button>
                 </Link>
             </div>
