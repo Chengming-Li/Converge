@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: app-env
+data:
+  SECRET_KEY:
+  DATABASE_URL: 
+  FRONTEND_URL: 
+  GOOGLE_AUTH_CLIENT_ID: 
+  GOOGLE_AUTH_SECRET: 
+  DEV_PASSWORD: 
