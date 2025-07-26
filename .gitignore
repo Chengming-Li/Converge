@@ -26,3 +26,4 @@ __pycache__/
 .env
 .pytest_cache
 client_secret.json
+k8s/env-configmap.yaml
